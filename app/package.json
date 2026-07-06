@@ -1,0 +1,34 @@
+{
+  "name": "quali-nirs4all",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "quali-nirs4all — a guided WASM studio for NIRS analysis labs (sample triage, HPLC selection, calibration, prediction reliability). Thin shell over the nirs4all WASM stack; reuses studio-lite's engine and nirs4all-ui.",
+  "license": "(CECILL-2.1 OR AGPL-3.0-or-later)",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:single": "vite build --mode singlefile",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "smoke": "node scripts/wasm-smoke.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "0.487.0",
+    "nirs4all": "file:../../nirs4all-web/studio-lite/vendor/nirs4all",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "recharts": "2.15.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.1.12",
+    "@types/react": "18.3.18",
+    "@types/react-dom": "18.3.5",
+    "@vitejs/plugin-react": "4.7.0",
+    "playwright-core": "1.49.1",
+    "tailwindcss": "4.1.12",
+    "typescript": "5.6.3",
+    "vite": "6.4.3",
+    "vite-plugin-singlefile": "2.1.0"
+  }
+}

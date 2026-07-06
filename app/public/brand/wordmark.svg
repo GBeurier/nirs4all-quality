@@ -1,0 +1,14 @@
+<svg width="360" height="72" viewBox="0 0 360 72" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="quali-nirs4all">
+  <defs>
+    <linearGradient id="qnwTile" x1="8" y1="8" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0d9488"/><stop offset="1" stop-color="#0f766e"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="12" width="48" height="48" rx="12" fill="url(#qnwTile)"/>
+  <path d="M17 40 C 21 40 22 40 25 38.5 C 29 36.5 30 52 34 52 C 38 52 39 36 43 32"
+        fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="43" cy="32" r="5.5" fill="#10b981" stroke="#ffffff" stroke-width="1.8"/>
+  <text x="72" y="46" font-family="'IBM Plex Sans','Inter',system-ui,sans-serif" font-size="30" font-weight="600" letter-spacing="-0.5">
+    <tspan fill="#0f172a">quali</tspan><tspan fill="#10b981">-</tspan><tspan fill="#0d9488">nirs4all</tspan>
+  </text>
+</svg>

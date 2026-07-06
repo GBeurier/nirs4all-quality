@@ -1,0 +1,3 @@
+/* Superseded — the theme now comes from the shared nirs4all-ui brand theme
+ * (nirs4all-ui/assets/theme.css), imported + bridged to Tailwind in ./index.css.
+ * Kept as an empty file to avoid a dangling import; safe to delete. */

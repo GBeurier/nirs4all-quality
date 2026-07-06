@@ -1,0 +1,62 @@
+@import 'tailwindcss';
+/* the shared nirs4all brand theme (tokens + signature motifs) — one source of
+ * truth, shipped in nirs4all-ui so every project looks like one product. */
+@import '../../../../nirs4all-ui/assets/theme.css';
+
+@source '../**/*.{ts,tsx}';
+/* scan the reused lab components so their utility classes are generated too */
+@source '../../../../nirs4all-ui/src/lab/**/*.{ts,tsx}';
+
+/* map the shared brand tokens onto Tailwind utility color names */
+@theme inline {
+  --color-background: var(--paper);
+  --color-foreground: var(--text);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--text);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--text);
+  --color-muted: var(--bg-alt);
+  --color-muted-foreground: var(--text-3);
+  --color-border: var(--border);
+  --color-ring: var(--teal);
+  --color-primary: var(--primary);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--bg-alt);
+  --color-secondary-foreground: var(--text);
+  --color-accent: var(--teal-d);
+  --color-accent-foreground: #ffffff;
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: #ffffff;
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --font-sans: var(--font);
+  --font-mono: var(--mono);
+  --font-display: var(--display);
+  --radius-sm: var(--radius-sm);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  body { background: var(--paper); color: var(--text); font-family: var(--font); }
+  h1, h2, h3, h4 { font-family: var(--display); }
+}
+
+@layer components {
+  .input {
+    width: 100%;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text);
+  }
+  .input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+}

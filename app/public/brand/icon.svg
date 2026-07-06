@@ -1,0 +1,25 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="quali-nirs4all">
+  <defs>
+    <linearGradient id="qnTile" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0d9488"/>
+      <stop offset="1" stop-color="#0f766e"/>
+    </linearGradient>
+    <linearGradient id="qnWave" x1="80" y1="256" x2="432" y2="256" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#ccfbf1"/>
+    </linearGradient>
+  </defs>
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#qnTile)"/>
+  <!-- faint reading grid -->
+  <g stroke="#ffffff" stroke-opacity="0.10" stroke-width="3">
+    <line x1="80" y1="150" x2="432" y2="150"/>
+    <line x1="80" y1="256" x2="432" y2="256"/>
+    <line x1="80" y1="362" x2="432" y2="362"/>
+  </g>
+  <!-- NIRS-like spectrum: baseline with an absorption dip + a peak -->
+  <path d="M84 268 C 130 268 150 268 176 266 C 206 264 214 356 244 356 C 274 356 282 244 312 226 C 336 212 346 196 372 196 C 396 196 402 240 428 236"
+        fill="none" stroke="url(#qnWave)" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- the "quality" reading point: emerald dot with a white check -->
+  <circle cx="372" cy="196" r="44" fill="#10b981" stroke="#ffffff" stroke-width="10"/>
+  <path d="M353 197 l13 14 l24 -30" fill="none" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
