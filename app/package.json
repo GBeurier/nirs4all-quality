@@ -11,7 +11,8 @@
     "build:single": "vite build --mode singlefile",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "smoke": "node scripts/wasm-smoke.mjs"
+    "smoke": "node scripts/wasm-smoke.mjs",
+    "deploy": "bash scripts/deploy-pages.sh"
   },
   "dependencies": {
     "lucide-react": "0.487.0",

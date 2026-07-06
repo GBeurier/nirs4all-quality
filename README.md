@@ -1,5 +1,7 @@
 # nirs4all-quality
 
+### ▶ Application en ligne : **https://gbeurier.github.io/nirs4all-quality/**
+
 **Produit : `quali-nirs4all`** *(nom provisoire)* — un « studio miniature » pour **laboratoires d'analyse NIRS**, pensé pour des **laborantins néophytes en ML/stats**.
 
 Il cache la complexité du pipeline **AR-NIRS** derrière un workflow guidé, pédagogique et « pré-mâché », et répond à cinq questions du quotidien :
@@ -12,7 +14,19 @@ Il cache la complexité du pipeline **AR-NIRS** derrière un workflow guidé, p�
 
 ## Statut
 
-Design initial (v1). Aucun code applicatif pour l'instant — voir **[`DESIGN.md`](DESIGN.md)** pour la conception produit complète (écrans, UX, contrat de décision, faisabilité, réutilisation des briques écosystème, revue Codex).
+Application WASM fonctionnelle ([`app/`](app/README.md)) : exploration des données (spectres / PCA / **répétitions**), santé des données (preuves calculées : T²/Q, bruit par bande…), sélection HPLC, **calibration réelle (libn4m WASM)**, prédiction avec fiabilité, maintenance. Bilingue FR/EN, import CSV, persistance IndexedDB, exports CSV/`.n4a`. Conception complète dans **[`DESIGN.md`](DESIGN.md)**.
+
+## Déploiement (GitHub Pages)
+
+Le site est publié depuis la branche **`gh-pages`** (build préconstruit — l'app dépend de checkouts frères `nirs4all-ui` / `nirs4all-web/studio-lite`, donc le build se fait en local, pas en CI). Pour redéployer après une modification :
+
+```bash
+cd app
+export PATH="$HOME/.nvm/versions/node/v22.21.1/bin:$PATH"
+npm run deploy          # build + push de app/dist vers gh-pages
+```
+
+URL : **https://gbeurier.github.io/nirs4all-quality/**
 
 ## Périmètre technique acté
 
