@@ -36,6 +36,29 @@ export function meanSpectrum(sample: SampleSpectra): Float64Array {
   return out;
 }
 
+/** Crop the spectral axis to a wavelength window [from, to] (null = open bound).
+ *  Returns a NEW dataset with axis + every repetition sliced to the kept bands.
+ *  Used to trim noisy tails for analysis AND calibration (same crop everywhere so
+ *  the feature count stays consistent between training and prediction). */
+export function cropSpectra(ds: SpectraDataset, from: number | null, to: number | null): SpectraDataset {
+  if (from == null && to == null) return ds;
+  const lo = from ?? -Infinity;
+  const hi = to ?? Infinity;
+  const keep: number[] = [];
+  for (let j = 0; j < ds.axis.length; j++) { const a = ds.axis[j]!; if (a >= lo && a <= hi) keep.push(j); }
+  if (keep.length === 0 || keep.length === ds.axis.length) return ds;
+  const axis = keep.map((j) => ds.axis[j]!);
+  const samples = ds.samples.map((s) => ({
+    sampleId: s.sampleId,
+    reps: s.reps.map((r) => {
+      const v = new Float64Array(keep.length);
+      keep.forEach((j, k) => { v[k] = r.values[j] ?? 0; });
+      return r.suspect ? { repId: r.repId, values: v, suspect: r.suspect } : { repId: r.repId, values: v };
+    }),
+  }));
+  return { axis, axisUnit: ds.axisUnit, samples };
+}
+
 /** Euclidean distance between two equal-length spectra. */
 export function spectralDistance(a: Float64Array, b: Float64Array): number {
   let s = 0;

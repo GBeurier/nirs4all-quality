@@ -19,7 +19,7 @@ function paddedExtent(values: number[], pad = 0.05): [number, number] {
   return [lo - s, hi + s];
 }
 
-type Tab = 'parity' | 'residuals' | 'components';
+type Tab = 'parity' | 'residuals' | 'sweep';
 
 // The "scientific detail" for a fitted model: what pipeline ran + how it scored,
 // with the training-result charts (ported from studio-lite ResultsVisualization).
@@ -30,6 +30,19 @@ export function TrainingResults({ dsl, result }: { dsl: PipelineDSL; result: Run
   const m = result.refit.metrics;
   const [lo, hi] = paddedExtent([...rows.map((r) => r.actual), ...rows.map((r) => r.predicted)]);
   const [xlo, xhi] = paddedExtent(rows.map((r) => r.predicted));
+
+  // linear fit of residual vs predicted → a slope ≠ 0 reveals a trend/bias
+  const resFit = (() => {
+    const pts = rows.filter((r) => Number.isFinite(r.predicted) && Number.isFinite(r.residual));
+    const n = pts.length;
+    if (n < 2) return null;
+    const mx = pts.reduce((s, r) => s + r.predicted, 0) / n;
+    const my = pts.reduce((s, r) => s + r.residual, 0) / n;
+    let sxx = 0; let sxy = 0;
+    pts.forEach((r) => { const dx = r.predicted - mx; sxx += dx * dx; sxy += dx * (r.residual - my); });
+    const slope = sxx > 0 ? sxy / sxx : 0;
+    return { slope, intercept: my - slope * mx, meanResidual: my };
+  })();
 
   const steps: { label: string; params?: string }[] = [];
   if (dsl.split) steps.push({ label: dsl.split.type });
@@ -74,7 +87,7 @@ export function TrainingResults({ dsl, result }: { dsl: PipelineDSL; result: Run
         <TabBtn active={tab === 'parity'} onClick={() => setTab('parity')}>{tr('Observé vs prédit', 'Observed vs predicted')}</TabBtn>
         <TabBtn active={tab === 'residuals'} onClick={() => setTab('residuals')}>{tr('Résidus', 'Residuals')}</TabBtn>
         {result.variants && result.variants.length > 1 && (
-          <TabBtn active={tab === 'components'} onClick={() => setTab('components')}>{tr('RMSE vs composantes', 'RMSE vs components')}</TabBtn>
+          <TabBtn active={tab === 'sweep'} onClick={() => setTab('sweep')}>{tr('RMSE vs réglage', 'RMSE vs setting')}</TabBtn>
         )}
       </div>
 
@@ -104,19 +117,27 @@ export function TrainingResults({ dsl, result }: { dsl: PipelineDSL; result: Run
             <ZAxis range={[36, 36]} />
             <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ borderRadius: 10, border: '1px solid var(--border)', fontSize: 11 }} formatter={(v: number) => fmt(v)} />
             <ReferenceLine y={0} stroke="var(--chart-5)" strokeDasharray="5 5" />
+            {resFit && (
+              <ReferenceLine ifOverflow="extendDomain" stroke="var(--chart-3)" strokeWidth={2}
+                segment={[{ x: xlo, y: resFit.intercept + resFit.slope * xlo }, { x: xhi, y: resFit.intercept + resFit.slope * xhi }]} />
+            )}
             <Scatter data={rows} fill="var(--chart-2)" fillOpacity={0.65} isAnimationActive={false} />
           </ScatterChart>
         </ResponsiveContainer>
       )}
-      {tab === 'components' && result.variants && (
+      {tab === 'sweep' && result.variants && (
         <ResponsiveContainer width="100%" height={280}>
           <LineChart data={result.variants} margin={{ top: 10, right: 20, bottom: 16, left: 6 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="nComp" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} stroke="var(--border)"
-              label={{ value: tr('nb de composantes PLS', 'PLS components'), position: 'insideBottom', offset: -8, fontSize: 12, fill: 'var(--muted-foreground)' }} />
+            <XAxis dataKey="x" type={result.variantAxis?.categorical ? 'category' : 'number'}
+              {...(result.variantAxis?.logX ? { scale: 'log' as const, domain: ['auto', 'auto'] as [string, string] } : {})}
+              tickFormatter={(v: number) => result.variants?.find((z) => z.x === v)?.label ?? fmt(v)}
+              tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} stroke="var(--border)"
+              label={{ value: tr(result.variantAxis?.fr ?? 'réglage', result.variantAxis?.en ?? 'setting'), position: 'insideBottom', offset: -8, fontSize: 12, fill: 'var(--muted-foreground)' }} />
             <YAxis tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} stroke="var(--border)" width={48} tickFormatter={fmt}
               label={{ value: 'RMSE', angle: -90, position: 'insideLeft', fontSize: 12, fill: 'var(--muted-foreground)' }} />
-            <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid var(--border)', fontSize: 11 }} formatter={(v: number) => fmt(v)} labelFormatter={(l) => `${l} comp.`} />
+            <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid var(--border)', fontSize: 11 }} formatter={(v: number) => fmt(v)}
+              labelFormatter={(l) => result.variants?.find((z) => z.x === l)?.label ?? `${fmt(Number(l))}`} />
             <Line type="monotone" dataKey="rmse" stroke="var(--chart-1)" strokeWidth={2} isAnimationActive={false}
               dot={(props: { cx?: number; cy?: number; payload?: { selected?: boolean } }) => {
                 const sel = props.payload?.selected;
@@ -127,8 +148,19 @@ export function TrainingResults({ dsl, result }: { dsl: PipelineDSL; result: Run
       )}
       <p className="mt-2 text-xs text-muted-foreground">
         {tab === 'parity' && tr('Chaque point = un échantillon du test gelé. La diagonale est la prédiction parfaite ; plus les points serrent la diagonale, meilleur est le modèle.', 'Each point = a frozen-test sample. The diagonal is the perfect prediction; the tighter the points hug it, the better the model.')}
-        {tab === 'residuals' && tr('Résidu = prédit − observé. Ils doivent être répartis autour de 0 sans tendance ; une courbure signale un problème.', 'Residual = predicted − observed. They should scatter around 0 with no trend; curvature signals a problem.')}
-        {tab === 'components' && tr('RMSE selon le nombre de composantes PLS. Le point surligné est le choix retenu (meilleur compromis). Trop de composantes = sur-apprentissage.', 'RMSE vs number of PLS components. The highlighted point is the chosen one (best trade-off). Too many components = overfitting.')}
+        {tab === 'residuals' && (
+          <>
+            {tr('Résidu = prédit − observé. Ils doivent être répartis autour de 0 sans tendance.', 'Residual = predicted − observed. They should scatter around 0 with no trend.')}
+            {resFit && ' '}
+            {resFit && (
+              <span className={Math.abs(resFit.slope) > 0.05 || Math.abs(resFit.meanResidual) > (m.rmse ?? 1) * 0.3 ? 'text-warning' : ''}>
+                {tr(`Droite ajustée : biais moyen ${fmt(resFit.meanResidual)}, pente ${fmt(resFit.slope)}${Math.abs(resFit.slope) > 0.05 ? ' → tendance (biais dépendant de la valeur)' : ' → pas de tendance nette'}.`,
+                  `Fitted line: mean bias ${fmt(resFit.meanResidual)}, slope ${fmt(resFit.slope)}${Math.abs(resFit.slope) > 0.05 ? ' → trend (value-dependent bias)' : ' → no clear trend'}.`)}
+              </span>
+            )}
+          </>
+        )}
+        {tab === 'sweep' && tr('RMSE selon le réglage balayé (composantes, α, ou opérateur de préprocessing). Le point surligné est le choix retenu — le meilleur compromis sur le test gelé.', 'RMSE across the swept setting (components, α, or preprocessing operator). The highlighted point is the chosen one — the best trade-off on the frozen test.')}
       </p>
     </div>
   );

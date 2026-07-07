@@ -16,16 +16,21 @@ function demoSamples(projectId: string): Sample[] {
     const cycle = i % 5;
     const status: SampleStatus = cycle < 3 ? 'integrated' : cycle === 3 ? 'nirs_measured' : 'to_remeasure';
     const hasRef = status === 'integrated';
+    // Most samples are scanned 3× (routine triplicate); a few only 2× or 4×.
+    // ≥3 replicates is what makes the replicate-consistency chart meaningful —
+    // with only 2, both reps are equidistant from their mean and carry no signal.
+    const nReps = i % 8 === 3 ? 2 : i % 10 === 6 ? 4 : 3;
     samples.push({
       id: `S${String(i + 1).padStart(3, '0')}`,
       projectId,
       lotId: `L${(i % 4) + 1}`,
       barcode: `QN-${String(100000 + i)}`,
       status,
-      repetitions: [
-        { id: newId('rep'), spectrumRef: `spec_${i}_a`, acquiredAt: nowIso() },
-        { id: newId('rep'), spectrumRef: `spec_${i}_b`, acquiredAt: nowIso() },
-      ],
+      repetitions: Array.from({ length: nReps }, (_, k) => ({
+        id: newId('rep'),
+        spectrumRef: `spec_${i}_${k}`,
+        acquiredAt: nowIso(),
+      })),
       reference: hasRef
         ? { value: 5 + (i % 11) * 0.6, status: 'validated' }
         : null,
@@ -62,6 +67,11 @@ export function makeDemoState(): LabState {
     projects: [project],
     samplesByProject: { [projectId]: samples },
     spectraByProject: { [projectId]: makeDemoSpectra(samples) },
+    cropByProject: { [projectId]: { from: null, to: null } },
+    previewPpByProject: { [projectId]: 'none' },
+    repModeByProject: { [projectId]: 'mean' },
+    modelByProject: {},
+    calibByProject: {},
     audit: [],
   };
 }

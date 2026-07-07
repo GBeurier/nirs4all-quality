@@ -99,7 +99,7 @@ export const wasmEngine: LabEngine = {
       result: { preprocessing: result.preprocessing, model: result.model },
     };
     const variants = result.variants.map((v) => ({
-      nComp: v.n_components, rmse: v.rmse, selected: v.n_components === result.selected.n_components,
+      x: v.n_components, rmse: v.rmse, selected: v.n_components === result.selected.n_components,
     }));
     return {
       id: `wasm-${ds.nSamples}-${dsl.name}`,
@@ -113,7 +113,7 @@ export const wasmEngine: LabEngine = {
       scoreMetric: 'rmse',
       model: { taskType: 'regression', nFeatures: ds.nFeatures, state },
       createdAt: new Date().toISOString(),
-      ...(variants.length > 1 ? { variants } : {}),
+      ...(variants.length > 1 ? { variants, variantAxis: { fr: 'nb de composantes PLS', en: 'PLS components' } } : {}),
     };
   },
 

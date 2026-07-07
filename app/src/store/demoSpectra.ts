@@ -45,16 +45,29 @@ export function makeDemoSpectra(samples: readonly Sample[]): SpectraDataset {
   const out: SampleSpectra[] = samples.map((s, i) => {
     const yc = (s.reference?.value ?? yMean) - yMean;
     const latent2 = ((i % 7) / 7) - 0.5;
-    const base = baseSpectrum(yc, latent2);
+    // the spectrum encodes y IMPERFECTLY (reference/analytical error + NIR blind
+    // spots) via a per-SAMPLE deterministic wobble — shared by every replicate so
+    // it doesn't affect replicate distances, but it keeps calibration honest
+    // (a believable RPD ~3–5 instead of a synthetic-perfect fit).
+    const yEncoded = yc + 1.4 * noise(i, 997, 0);
+    const base = baseSpectrum(yEncoded, latent2);
+    const nReps = s.repetitions.length;
     const reps: RepetitionSpectrum[] = s.repetitions.map((rep, k) => {
-      // ~1 sample in 11 has a divergent 2nd replicate → the explorer flags it
-      const suspect = i % 11 === 3 && k === 1;
-      const offset = (suspect ? 0.05 : 0.006) * noise(i, 0, k);
-      const slope = (suspect ? 0.04 : 0.004) * noise(i, 1, k);
+      // Realistic replicate variation: an additive baseline offset, a slight
+      // slope tilt, and multiplicative scatter (particle packing / repositioning)
+      // — deterministic per (sample, rep) so every replicate lands at a distinct
+      // distance from its group mean. ~1 sample in 6 has one clearly divergent
+      // replicate (bad packing / bubble / mis-scan) → it sits above P95 and the
+      // explorer rings it and flags the sample.
+      const suspect = i % 6 === 2 && k === nReps - 1;
+      const sgn = (v: number) => (v >= 0 ? 1 : -1);
+      const offset = suspect ? 0.08 * sgn(noise(i, 101, k)) : 0.008 * noise(i, 101, k);
+      const slope = suspect ? 0.05 * sgn(noise(i, 202, k)) : 0.005 * noise(i, 202, k);
+      const scale = 1 + (suspect ? 0.05 * sgn(noise(i, 303, k)) : 0.008 * noise(i, 303, k));
       const values = new Float64Array(N);
       for (let j = 0; j < N; j++) {
         const t = j / (N - 1);
-        values[j] = (base[j] ?? 0) + offset + slope * t + 0.002 * noise(i, j, k);
+        values[j] = (base[j] ?? 0) * scale + offset + slope * t + 0.0015 * noise(i, j, k);
       }
       return suspect ? { repId: rep.id, values, suspect: true } : { repId: rep.id, values };
     });

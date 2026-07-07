@@ -1,16 +1,19 @@
-import { useMemo, useState } from 'react';
+import { Plus } from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
 import {
   Area, Bar, BarChart, CartesianGrid, Cell, ComposedChart, Line, ReferenceLine,
   ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis,
 } from 'recharts';
 
 import { meanSpectrum, type SpectraDataset } from '@/domain/spectra';
+import { parseReferenceColumn } from '@/lib/dataset';
 import { histogram } from '@/lib/histogram';
 import { computePca } from '@/lib/pca';
+import { applyPreviewPp, PREVIEW_PP } from '@/lib/preview';
 import { buildRepetitionModel, distanceColor, type RepSort } from '@/lib/repetitions';
 import { downloadText, slug, toCsv } from '@/lib/export';
 import { useTr } from '@/i18n';
-import { useLab } from '@/store/store';
+import { useLab, useProjectSpectra } from '@/store/store';
 import { Explain } from '@/ui/Explain';
 import { EXPLAIN } from '@/ui/explanations';
 
@@ -31,11 +34,33 @@ function continuousColor(t: number): string {
 type Tab = 'spectra' | 'target' | 'pca' | 'reps';
 
 export function DatasetExplorer({ projectId }: { projectId: string }) {
-  const { state } = useLab();
+  const { state, dispatch } = useLab();
   const tr = useTr();
-  const spectra = state.spectraByProject[projectId];
+  const spectra = useProjectSpectra(projectId);
   const samples = state.samplesByProject[projectId] ?? [];
+  const previewPp = state.previewPpByProject[projectId] ?? 'none';
+  const repMode = state.repModeByProject[projectId] ?? 'mean';
+  // display-only preprocessing preview (shared with Data-health), applied to the
+  // spectra + PCA views so the tech sees the corrected signal
+  const displaySpectra = useMemo(() => (spectra ? applyPreviewPp(spectra, previewPp) : spectra), [spectra, previewPp]);
   const [tab, setTab] = useState<Tab>('spectra');
+  const yInputRef = useRef<HTMLInputElement>(null);
+  const [yMsg, setYMsg] = useState('');
+
+  async function onAddY(file: File | undefined) {
+    if (!file) return;
+    try {
+      const values = parseReferenceColumn(await file.text());
+      // align to the samples by order (a value per row of X, missing cells = null)
+      const aligned = samples.map((_, i) => values[i] ?? null);
+      const added = aligned.filter((v): v is number => typeof v === 'number' && Number.isFinite(v)).length;
+      if (added === 0) { setYMsg(tr('Aucune valeur numérique trouvée.', 'No numeric value found.')); return; }
+      dispatch({ kind: 'set_references', projectId, values: aligned });
+      setYMsg(tr(`${added} référence(s) ajoutée(s) — prêtes pour la calibration.`, `${added} reference(s) added — ready for calibration.`));
+    } catch (e) {
+      setYMsg(tr('Fichier illisible : ', 'Unreadable file: ') + (e instanceof Error ? e.message : ''));
+    }
+  }
 
   const yBySample = useMemo(() => {
     const m: Record<string, number | undefined> = {};
@@ -55,19 +80,32 @@ export function DatasetExplorer({ projectId }: { projectId: string }) {
       <div className="mb-1 flex items-center gap-2">
         <h1 className="font-display text-2xl font-semibold">{tr('Explorer les données', 'Explore data')}</h1>
         <Explain content={EXPLAIN.datasetOverview} />
-        <button
-          className="ml-auto rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-muted"
-          onClick={() => downloadText('lims-samples.csv', toCsv(
-            samples.map((s) => ({
-              sample_id: s.id, barcode: s.barcode ?? '', lot_id: s.lotId ?? '', status: s.status,
-              reference_value: s.reference?.value ?? '', reference_status: s.reference?.status ?? '',
-              site: s.metadata['site'] ?? '', year: s.metadata['year'] ?? '', instrument: s.metadata['instrument'] ?? '',
-            })),
-            ['sample_id', 'barcode', 'lot_id', 'status', 'reference_value', 'reference_status', 'site', 'year', 'instrument']))}
-        >
-          {tr('Export LIMS (CSV)', 'Export LIMS (CSV)')}
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-primary hover:bg-primary/5"
+            title={tr('Ajouter les valeurs de référence y (une par échantillon, cellules vides = manquant)', 'Add reference values y (one per sample, empty cells = missing)')}
+            onClick={() => yInputRef.current?.click()}
+          >
+            <Plus size={13} /> {tr('Ajouter y', 'Add y')}
+          </button>
+          <Explain content={EXPLAIN.addY} />
+          <input ref={yInputRef} type="file" accept=".csv,.txt,.tsv" className="hidden"
+            onChange={(e) => { void onAddY(e.target.files?.[0]); e.target.value = ''; }} />
+          <button
+            className="rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-muted"
+            onClick={() => downloadText('lims-samples.csv', toCsv(
+              samples.map((s) => ({
+                sample_id: s.id, barcode: s.barcode ?? '', lot_id: s.lotId ?? '', status: s.status,
+                reference_value: s.reference?.value ?? '', reference_status: s.reference?.status ?? '',
+                site: s.metadata['site'] ?? '', year: s.metadata['year'] ?? '', instrument: s.metadata['instrument'] ?? '',
+              })),
+              ['sample_id', 'barcode', 'lot_id', 'status', 'reference_value', 'reference_status', 'site', 'year', 'instrument']))}
+          >
+            {tr('Export LIMS (CSV)', 'Export LIMS (CSV)')}
+          </button>
+        </div>
       </div>
+      {yMsg && <p className="mb-2 text-xs text-success">{yMsg}</p>}
       <p className="mb-4 text-sm text-muted-foreground">
         {tr(
           `${spectra.samples.length} échantillons · ${nRep} spectres · ${spectra.axis.length} longueurs d'onde (${spectra.axisUnit}) · ${nLabelled} avec référence`,
@@ -82,11 +120,28 @@ export function DatasetExplorer({ projectId }: { projectId: string }) {
         <TabBtn active={tab === 'reps'} onClick={() => setTab('reps')}>{tr('Répétitions', 'Replicates')}</TabBtn>
       </div>
 
+      {/* preprocessing preview — applied to the spectra + PCA views (display only) */}
+      {(tab === 'spectra' || tab === 'pca') && (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-medium text-muted-foreground">{tr('Aperçu préprocessing', 'Preprocessing preview')} :</span>
+          <div className="flex flex-wrap gap-1">
+            {PREVIEW_PP.map((pp) => (
+              <button key={pp.id} onClick={() => dispatch({ kind: 'set_preview_pp', projectId, pp: pp.id })}
+                className={`rounded-md px-2 py-0.5 text-xs transition ${previewPp === pp.id ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}>
+                {tr(pp.fr, pp.en)}
+              </button>
+            ))}
+          </div>
+          <Explain content={EXPLAIN.preprocessingPreview} />
+          <span className="w-full text-[11px] text-muted-foreground">{tr('Aperçu visuel — n’altère pas les données brutes ; le choix est partagé avec « Santé des données ».', 'Visual preview — does not alter the raw data; the choice is shared with "Data health".')}</span>
+        </div>
+      )}
+
       <div className="rounded-xl border border-border bg-card p-4">
-        {tab === 'spectra' && <SpectraTab spectra={spectra} />}
+        {tab === 'spectra' && <SpectraTab spectra={displaySpectra ?? spectra} />}
         {tab === 'target' && <TargetTab y={Object.values(yBySample).filter((v): v is number => typeof v === 'number')} />}
-        {tab === 'pca' && <PcaTab spectra={spectra} yBySample={yBySample} />}
-        {tab === 'reps' && <RepsTab spectra={spectra} yBySample={yBySample} />}
+        {tab === 'pca' && <PcaTab spectra={displaySpectra ?? spectra} yBySample={yBySample} />}
+        {tab === 'reps' && <RepsTab spectra={spectra} yBySample={yBySample} repMode={repMode} onRepMode={(m) => dispatch({ kind: 'set_rep_mode', projectId, mode: m })} />}
       </div>
     </div>
   );
@@ -222,7 +277,7 @@ function PcaTab({ spectra, yBySample }: { spectra: SpectraDataset; yBySample: Re
 }
 
 // ------------------------------------------------------------ Repetitions tab
-function RepsTab({ spectra, yBySample }: { spectra: SpectraDataset; yBySample: Record<string, number | undefined> }) {
+function RepsTab({ spectra, yBySample, repMode, onRepMode }: { spectra: SpectraDataset; yBySample: Record<string, number | undefined>; repMode: 'mean' | 'raw'; onRepMode: (m: 'mean' | 'raw') => void }) {
   const [sort, setSort] = useState<RepSort>('index');
   const model = useMemo(() => buildRepetitionModel(spectra, yBySample, sort), [spectra, yBySample, sort]);
   const xMax = Math.max(1, model.order.length - 1);
@@ -234,6 +289,24 @@ function RepsTab({ spectra, yBySample }: { spectra: SpectraDataset; yBySample: R
 
   return (
     <>
+      {/* how replicates feed calibration: the per-sample mean, or every raw replicate */}
+      <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/30 p-2 text-xs">
+        <span className="font-medium text-muted-foreground">Répétitions pour la calibration :</span>
+        <div className="flex overflow-hidden rounded-md border border-border">
+          {(['mean', 'raw'] as const).map((m) => (
+            <button key={m} onClick={() => onRepMode(m)}
+              className={`px-2.5 py-1 ${repMode === m ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:bg-muted'}`}>
+              {m === 'mean' ? 'moyenne par échantillon' : 'répétitions brutes'}
+            </button>
+          ))}
+        </div>
+        <Explain content={EXPLAIN.repMode} />
+        <span className="w-full text-[11px] text-muted-foreground">
+          {repMode === 'mean'
+            ? 'Chaque échantillon = son spectre moyen (défaut, robuste au bruit de répétition).'
+            : 'Chaque répétition = une ligne d’apprentissage (garde la variabilité inter-répétitions).'}
+        </span>
+      </div>
       <div className="mb-2 flex flex-wrap items-center gap-2 text-sm font-medium">
         Consistance des répétitions (distance de chaque répétition à la moyenne de son échantillon)
         <Explain content={EXPLAIN.repetitions} />

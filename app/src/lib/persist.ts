@@ -31,7 +31,10 @@ export async function saveState(state: unknown): Promise<void> {
     const db = await openDb();
     await run(db, 'readwrite', (s) => s.put(state, KEY));
     db.close();
-  } catch { /* fail-soft */ }
+  } catch (e) {
+    // not silent: a large upload can exceed the IndexedDB clone/quota — surface it
+    console.warn('[quali-nirs4all] persistence failed (dataset too large for the browser?)', e);
+  }
 }
 
 export async function loadState<T>(): Promise<T | null> {

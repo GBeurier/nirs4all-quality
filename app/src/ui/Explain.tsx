@@ -1,5 +1,6 @@
 import { HelpCircle, X } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 import { pick, useLang, useTr, type Localized } from '@/i18n';
 
@@ -34,26 +35,45 @@ export function Explain({
   const { lang } = useLang();
   const tr = useTr();
   const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ left: number; top?: number; bottom?: number }>({ left: 0, top: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
   const c = pick(content, lang);
 
+  // Position the popover with a PORTAL + fixed coords so ancestor overflow:hidden
+  // (e.g. .card) can never clip it, and it stays within the viewport.
+  const toggle = () => {
+    if (!open) {
+      const r = btnRef.current?.getBoundingClientRect();
+      if (r) {
+        const w = wide ? 544 : 320;
+        const left = Math.max(8, Math.min(align === 'right' ? r.right - w : r.left, window.innerWidth - w - 8));
+        const below = r.bottom < window.innerHeight * 0.6;
+        setPos(below ? { left, top: r.bottom + 6 } : { left, bottom: window.innerHeight - r.top + 6 });
+      }
+    }
+    setOpen((o) => !o);
+  };
+
   return (
-    <span className={`relative inline-flex ${className ?? ''}`}>
+    <span className={`inline-flex ${className ?? ''}`}>
       <button
+        ref={btnRef}
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={toggle}
         aria-label={`${tr('Expliquer', 'Explain')} : ${c.title}`}
         aria-expanded={open}
         className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:bg-muted hover:text-foreground"
       >
         <HelpCircle size={13} />
       </button>
-      {open && (
+      {open && createPortal(
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="fixed inset-0 z-[60]" onClick={() => setOpen(false)} />
           <div
             role="dialog"
             aria-label={c.title}
-            className={`absolute top-6 z-50 ${wide ? 'w-[34rem]' : 'w-80'} max-h-[72vh] max-w-[92vw] overflow-auto rounded-xl border border-border bg-popover p-4 text-left shadow-lg ${align === 'right' ? 'right-0' : 'left-0'}`}
+            style={{ position: 'fixed', left: pos.left, ...(pos.top != null ? { top: pos.top } : {}), ...(pos.bottom != null ? { bottom: pos.bottom } : {}) }}
+            className={`z-[61] ${wide ? 'w-[34rem]' : 'w-80'} max-h-[72vh] max-w-[92vw] overflow-auto rounded-xl border border-border bg-popover p-4 text-left shadow-lg`}
           >
             <div className="mb-2 flex items-start justify-between gap-2">
               <span className="font-medium leading-tight">{c.title}</span>
@@ -78,7 +98,8 @@ export function Explain({
               </div>
             ) : null}
           </div>
-        </>
+        </>,
+        document.body,
       )}
     </span>
   );

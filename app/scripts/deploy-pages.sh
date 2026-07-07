@@ -14,6 +14,7 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 cp -r dist/. "$TMP/"
 touch "$TMP/.nojekyll"   # let GitHub Pages serve Vite's assets/ verbatim
+echo "quali.nirs4all.org" > "$TMP/CNAME"   # custom domain (must persist across force-pushes)
 
 cd "$TMP"
 git init -b gh-pages -q

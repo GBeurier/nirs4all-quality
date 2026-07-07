@@ -2,16 +2,29 @@ import { summarizeHealth, type HealthFindingInput, type HealthSeverity } from '@
 import { AlertTriangle, Ban, Check, ChevronDown } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
 import {
-  Area, CartesianGrid, ComposedChart, Cell, ReferenceArea, ReferenceLine,
-  ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis,
+  Area, CartesianGrid, ComposedChart, Cell, Line, ReferenceArea, ReferenceLine,
+  ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis,
 } from 'recharts';
 
+import { meanSpectrum, type SpectraDataset } from '@/domain/spectra';
+import { computePca } from '@/lib/pca';
+import { applyPreviewPp, PREVIEW_PP } from '@/lib/preview';
 import { buildRepetitionModel } from '@/lib/repetitions';
 import { computeQuality } from '@/lib/quality';
 import { useTr } from '@/i18n';
-import { useLab } from '@/store/store';
+import { useLab, useProjectSpectra } from '@/store/store';
 import { Explain } from '@/ui/Explain';
 import { EXPLAIN } from '@/ui/explanations';
+
+// each problematic category gets its OWN colour so you can tell saturated from flat
+// from atypical at a glance (design: distinguish which is which).
+type FlagCat = 'saturation' | 'flat' | 'atypical';
+const CAT_COLOR: Record<FlagCat, string> = { saturation: 'var(--warning)', flat: 'var(--chart-4)', atypical: 'var(--destructive)' };
+const CAT_LABEL: Record<FlagCat, { fr: string; en: string }> = {
+  saturation: { fr: 'saturation', en: 'saturation' },
+  flat: { fr: 'spectre plat', en: 'flat spectrum' },
+  atypical: { fr: 'atypique T²/Q', en: 'atypical T²/Q' },
+};
 
 const SEV: Record<HealthSeverity, { color: string; bg: string; icon: ReactNode }> = {
   ok: { color: 'text-success', bg: 'bg-success/10', icon: <Check size={16} /> },
@@ -33,16 +46,46 @@ interface Finding {
 export function Health({ projectId }: { projectId: string }) {
   const { state, dispatch } = useLab();
   const tr = useTr();
-  const spectra = state.spectraByProject[projectId];
+  const spectra = useProjectSpectra(projectId);
+  const fullSpectra = state.spectraByProject[projectId];
+  const crop = state.cropByProject[projectId] ?? { from: null, to: null };
+  const previewPp = state.previewPpByProject[projectId] ?? 'none';
   const samples = state.samplesByProject[projectId] ?? [];
+  // display spectra with the shared preprocessing preview (findings stay on raw)
+  const displaySpectra = useMemo(() => (spectra ? applyPreviewPp(spectra, previewPp) : spectra), [spectra, previewPp]);
 
-  const findings = useMemo<Finding[]>(() => {
-    if (!spectra || spectra.samples.length === 0) return [];
+  const quality = useMemo(() => {
+    if (!spectra || spectra.samples.length === 0) return null;
     const yBySample: Record<string, number | undefined> = {};
     const metaBySample: Record<string, Record<string, string | number | null>> = {};
     for (const s of samples) { if (typeof s.reference?.value === 'number') yBySample[s.id] = s.reference.value; metaBySample[s.id] = s.metadata; }
-    const Q = computeQuality(spectra, yBySample, metaBySample);
-    const rep = buildRepetitionModel(spectra, yBySample, 'variance');
+    return { Q: computeQuality(spectra, yBySample, metaBySample), rep: buildRepetitionModel(spectra, yBySample, 'variance') };
+  }, [spectra, samples]);
+
+  // per-category sets of problematic samples (so each can be toggled + coloured)
+  const cats = useMemo(() => {
+    const saturation = new Set(quality?.Q.saturation.flagged.map((f) => f.sampleId) ?? []);
+    const flat = new Set(quality?.Q.flat.flagged.map((f) => f.sampleId) ?? []);
+    const atypical = new Set(quality?.Q.outliers.flaggedIds ?? []);
+    return { saturation, flat, atypical };
+  }, [quality]);
+
+  // which problematic categories are highlighted right now (check/uncheck cards)
+  const [enabled, setEnabled] = useState<Record<FlagCat, boolean>>({ saturation: true, flat: true, atypical: true });
+
+  // sample id → its dominant ENABLED category (for the coloured highlight)
+  const flaggedCat = useMemo(() => {
+    const map = new Map<string, FlagCat>();
+    const order: FlagCat[] = ['saturation', 'flat', 'atypical'];
+    for (const s of spectra?.samples ?? []) {
+      for (const c of order) if (enabled[c] && cats[c].has(s.sampleId)) { map.set(s.sampleId, c); break; }
+    }
+    return map;
+  }, [spectra, cats, enabled]);
+
+  const findings = useMemo<Finding[]>(() => {
+    if (!quality || !spectra) return [];
+    const { Q, rep } = quality;
     const out: Finding[] = [];
 
     // 1. Saturation
@@ -180,14 +223,14 @@ export function Health({ projectId }: { projectId: string }) {
     });
 
     return out;
-  }, [spectra, samples, tr, EXPLAIN]);
+  }, [quality, spectra, tr]);
 
   const summary = useMemo(() => summarizeHealth(findings.map((f): HealthFindingInput => ({ id: f.id, title: f.title, severity: f.severity }))), [findings]);
 
   if (findings.length === 0) return <div className="mx-auto max-w-3xl text-sm text-muted-foreground">{tr('Aucun spectre chargé.', 'No spectra loaded.')}</div>;
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-4xl">
       <div className="mb-1 flex items-center gap-2">
         <h1 className="font-display text-2xl font-semibold">{tr('Santé des données', 'Data health')}</h1>
         <Explain content={EXPLAIN.healthScore} />
@@ -202,6 +245,36 @@ export function Health({ projectId }: { projectId: string }) {
         </div>
       </div>
 
+      {/* controls: which problematic categories to highlight + spectral-tail crop */}
+      <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-border bg-card p-3">
+        <span className="text-xs font-medium text-muted-foreground">{tr('Afficher', 'Show')} :</span>
+        {(['saturation', 'flat', 'atypical'] as FlagCat[]).map((c) => {
+          const count = cats[c].size;
+          return (
+            <label key={c} className={`flex cursor-pointer items-center gap-1.5 text-xs ${count === 0 ? 'opacity-40' : ''}`}>
+              <input type="checkbox" checked={enabled[c]} disabled={count === 0}
+                onChange={(e) => setEnabled((prev) => ({ ...prev, [c]: e.target.checked }))} />
+              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: CAT_COLOR[c] }} />
+              <span className="font-medium">{tr(CAT_LABEL[c].fr, CAT_LABEL[c].en)}</span>
+              <span className="tabular-nums text-muted-foreground">({count})</span>
+            </label>
+          );
+        })}
+        {fullSpectra && <CropControl full={fullSpectra} crop={crop} onApply={(from, to) => dispatch({ kind: 'set_crop', projectId, from, to })} tr={tr} />}
+        <div className="flex w-full flex-wrap items-center gap-2 border-t border-border/60 pt-2">
+          <span className="text-xs font-medium text-muted-foreground">{tr('Aperçu préprocessing', 'Preprocessing preview')} :</span>
+          {PREVIEW_PP.map((pp) => (
+            <button key={pp.id} onClick={() => dispatch({ kind: 'set_preview_pp', projectId, pp: pp.id })}
+              className={`rounded-md px-2 py-0.5 text-xs transition ${previewPp === pp.id ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}>
+              {tr(pp.fr, pp.en)}
+            </button>
+          ))}
+          <Explain content={EXPLAIN.preprocessingPreview} />
+        </div>
+      </div>
+
+      {displaySpectra && <HealthSpectraView spectra={displaySpectra} flaggedCat={flaggedCat} tr={tr} />}
+
       <ul className="space-y-2">
         {findings.map((f) => (
           <FindingCard key={f.id} f={f} tr={tr}
@@ -210,6 +283,133 @@ export function Health({ projectId }: { projectId: string }) {
               : undefined} />
         ))}
       </ul>
+    </div>
+  );
+}
+
+// Spectral-tail crop: trim noisy ends for analysis AND calibration (one window, one
+// feature axis everywhere). Persisted per project; drops any stale model on change.
+function CropControl({ full, crop, onApply, tr }: { full: SpectraDataset; crop: { from: number | null; to: number | null }; onApply: (from: number | null, to: number | null) => void; tr: (fr: string, en: string) => string }) {
+  const axis = full.axis;
+  const lo = axis[0] ?? 0;
+  const hi = axis[axis.length - 1] ?? 0;
+  const [from, setFrom] = useState(String(crop.from ?? Math.round(lo)));
+  const [to, setTo] = useState(String(crop.to ?? Math.round(hi)));
+  const cropped = crop.from != null || crop.to != null;
+  const apply = () => {
+    const f = Number(from); const t = Number(to);
+    onApply(Number.isFinite(f) && f > lo ? f : null, Number.isFinite(t) && t < hi ? t : null);
+  };
+  return (
+    <div className="ml-auto flex flex-wrap items-center gap-1.5 text-xs">
+      <span className="font-medium text-muted-foreground">{tr('Couper les bords', 'Crop tails')} :</span>
+      <input type="number" value={from} onChange={(e) => setFrom(e.target.value)} className="w-20 rounded-md border border-border bg-background px-1.5 py-0.5 tabular-nums" />
+      <span className="text-muted-foreground">–</span>
+      <input type="number" value={to} onChange={(e) => setTo(e.target.value)} className="w-20 rounded-md border border-border bg-background px-1.5 py-0.5 tabular-nums" />
+      <span className="text-muted-foreground">{full.axisUnit}</span>
+      <button onClick={apply} className="rounded-md bg-primary/10 px-2 py-0.5 font-medium text-primary hover:bg-primary/20">{tr('Appliquer', 'Apply')}</button>
+      {cropped && <button onClick={() => onApply(null, null)} className="rounded-md border border-border px-2 py-0.5 text-muted-foreground hover:bg-muted">{tr('Réinit.', 'Reset')}</button>}
+      <span className="w-full text-[11px] text-muted-foreground">
+        {cropped
+          ? tr(`Fenêtre active ${crop.from ?? lo.toFixed(0)}–${crop.to ?? hi.toFixed(0)} ${full.axisUnit} (gamme complète ${lo.toFixed(0)}–${hi.toFixed(0)}). Appliquée à l’analyse ET à la calibration.`, `Active window ${crop.from ?? lo.toFixed(0)}–${crop.to ?? hi.toFixed(0)} ${full.axisUnit} (full range ${lo.toFixed(0)}–${hi.toFixed(0)}). Applied to analysis AND calibration.`)
+          : tr(`Gamme complète ${lo.toFixed(0)}–${hi.toFixed(0)} ${full.axisUnit}. Recadrer retire les bords bruités pour l’analyse et la calibration.`, `Full range ${lo.toFixed(0)}–${hi.toFixed(0)} ${full.axisUnit}. Cropping removes noisy tails for analysis and calibration.`)}
+      </span>
+    </div>
+  );
+}
+
+function quantile(sorted: number[], p: number): number {
+  if (sorted.length === 0) return NaN;
+  const pos = (sorted.length - 1) * p;
+  const lo = Math.floor(pos), hi = Math.ceil(pos);
+  return (sorted[lo] ?? 0) + ((sorted[hi] ?? 0) - (sorted[lo] ?? 0)) * (pos - lo);
+}
+
+// Explore/HPLC-style spectra + PCA views, with the problematic spectra (saturated
+// / flat / atypical) drawn in a per-category colour so you can tell which is which.
+function HealthSpectraView({ spectra, flaggedCat, tr }: { spectra: SpectraDataset; flaggedCat: Map<string, FlagCat>; tr: (fr: string, en: string) => string }) {
+  const spec = useMemo(() => {
+    const p = spectra.axis.length;
+    const means = spectra.samples.map((s) => ({ m: meanSpectrum(s), cat: flaggedCat.get(s.sampleId) }));
+    const good = means.filter((x) => !x.cat).map((x) => x.m);
+    const bad = means.filter((x) => x.cat).slice(0, 15) as { m: Float64Array; cat: FlagCat }[];
+    const step = Math.max(1, Math.floor(p / 70));
+    const rows: Record<string, number | number[] | null>[] = [];
+    for (let j = 0; j < p; j += step) {
+      const vals = good.map((m) => m[j] ?? NaN).filter(Number.isFinite).sort((a, b) => a - b);
+      const row: Record<string, number | number[] | null> = {
+        x: spectra.axis[j] ?? j,
+        b1090: vals.length ? [quantile(vals, 0.1), quantile(vals, 0.9)] : null,
+        b2575: vals.length ? [quantile(vals, 0.25), quantile(vals, 0.75)] : null,
+        med: vals.length ? quantile(vals, 0.5) : null,
+      };
+      bad.forEach((b, k) => { row['c' + k] = b.m[j] ?? null; });
+      rows.push(row);
+    }
+    return { rows, cLines: bad.map((b, k) => ({ key: 'c' + k, color: CAT_COLOR[b.cat] })), nBad: means.filter((x) => x.cat).length };
+  }, [spectra, flaggedCat]);
+
+  const pca = useMemo(() => {
+    const p = spectra.axis.length;
+    const n = spectra.samples.length;
+    const X = new Float64Array(n * p);
+    spectra.samples.forEach((s, i) => { const m = meanSpectrum(s); for (let j = 0; j < p; j++) X[i * p + j] = m[j] ?? 0; });
+    const r = computePca(X, n, p, 2);
+    const pts = r.scores.map((sc, i) => {
+      const row = r.usedIdx[i] ?? i;
+      const id = spectra.samples[row]?.sampleId ?? '';
+      return { x: sc[0] ?? 0, y: sc[1] ?? 0, cat: flaggedCat.get(id) };
+    });
+    return { pts, ev: (k: number) => ((r.explained[k] ?? 0) * 100).toFixed(1) };
+  }, [spectra, flaggedCat]);
+
+  return (
+    <div className="mb-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="card p-4">
+        <div className="mb-2 flex items-center gap-2 text-sm font-medium">{tr('Spectres — problématiques en rouge', 'Spectra — problematic in red')} <Explain content={EXPLAIN.healthSpectra} /></div>
+        <ResponsiveContainer width="100%" height={230}>
+          <ComposedChart data={spec.rows} margin={{ top: 8, right: 12, bottom: 16, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis dataKey="x" type="number" domain={['dataMin', 'dataMax']} tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} stroke="var(--border)"
+              label={{ value: `λ (${spectra.axisUnit})`, position: 'insideBottom', offset: -8, fontSize: 11, fill: 'var(--muted-foreground)' }} />
+            <YAxis tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} stroke="var(--border)" width={44} tickFormatter={fmt} />
+            <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid var(--border)', fontSize: 11 }} formatter={(v: unknown) => (Array.isArray(v) ? `${fmt(v[0])}…${fmt(v[1])}` : fmt(Number(v)))} labelFormatter={(l) => `λ ${l}`} />
+            <Area type="monotone" dataKey="b1090" stroke="none" fill="var(--chart-1)" fillOpacity={0.1} isAnimationActive={false} connectNulls />
+            <Area type="monotone" dataKey="b2575" stroke="none" fill="var(--chart-1)" fillOpacity={0.2} isAnimationActive={false} connectNulls />
+            <Line type="monotone" dataKey="med" stroke="var(--chart-1)" strokeWidth={2} dot={false} isAnimationActive={false} />
+            {spec.cLines.map((c) => (
+              <Line key={c.key} type="monotone" dataKey={c.key} stroke={c.color} strokeWidth={1} strokeOpacity={0.85} dot={false} isAnimationActive={false} connectNulls />
+            ))}
+          </ComposedChart>
+        </ResponsiveContainer>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {tr(`Bandes = quantiles des spectres sains (P10–P90, P25–P75, médiane). Lignes colorées = ${spec.nBad} spectre(s) problématique(s), couleur par catégorie (saturation / plat / atypique).`,
+            `Bands = healthy spectra quantiles (P10–P90, P25–P75, median). Coloured lines = ${spec.nBad} problematic spectrum(s), coloured by category (saturation / flat / atypical).`)}
+        </p>
+      </div>
+      <div className="card p-4">
+        <div className="mb-2 flex items-center gap-2 text-sm font-medium">{tr('PCA — problématiques en rouge', 'PCA — problematic in red')} <Explain content={EXPLAIN.healthPca} /></div>
+        <ResponsiveContainer width="100%" height={230}>
+          <ScatterChart margin={{ top: 8, right: 16, bottom: 16, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis type="number" dataKey="x" tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} stroke="var(--border)"
+              label={{ value: `PC1 (${pca.ev(0)} %)`, position: 'insideBottom', offset: -8, fontSize: 11, fill: 'var(--muted-foreground)' }} />
+            <YAxis type="number" dataKey="y" tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} stroke="var(--border)" width={44}
+              label={{ value: `PC2 (${pca.ev(1)} %)`, angle: -90, position: 'insideLeft', fontSize: 11, fill: 'var(--muted-foreground)' }} />
+            <ZAxis range={[34, 34]} />
+            <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ borderRadius: 10, border: '1px solid var(--border)', fontSize: 11 }} formatter={(v: number) => fmt(v)} />
+            <Scatter data={pca.pts} isAnimationActive={false}>
+              {pca.pts.map((pt, i) => <Cell key={i} fill={pt.cat ? CAT_COLOR[pt.cat] : 'var(--chart-1)'} fillOpacity={pt.cat ? 0.95 : 0.5} />)}
+            </Scatter>
+          </ScatterChart>
+        </ResponsiveContainer>
+        <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: 'var(--chart-1)' }} /> {tr('sain', 'healthy')}</span>
+          {(['saturation', 'flat', 'atypical'] as FlagCat[]).map((c) => (
+            <span key={c} className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: CAT_COLOR[c] }} /> {tr(CAT_LABEL[c].fr, CAT_LABEL[c].en)}</span>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

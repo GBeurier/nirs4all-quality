@@ -43,9 +43,38 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* --- nirs4all-studio app look ---------------------------------------------
+ * Re-skins THIS app with studio's cool-slate + flat chrome over the shared
+ * brand tokens (keeps the teal brand hue). The shared theme.css stays warm for
+ * the marketing/web sites; these overrides only affect quali-nirs4all. */
+:root {
+  /* cool slate surfaces (studio) instead of warm paper */
+  --paper: #f8fafc; --paper-2: #f1f5f9;
+  --bg: #ffffff; --bg-alt: #f1f5f9; --bg-grid: #eef2f7;
+  --surface: #ffffff; --border: #e2e8f0; --border-warm: #e2e8f0;
+  --text: #0f172a; --text-2: #475569; --text-3: #64748b;
+  /* tighter radius + flat cool shadows + a teal hover glow */
+  --radius: 12px; --radius-sm: 8px;
+  --shadow: 0 1px 2px rgba(15, 23, 42, .05), 0 1px 3px rgba(15, 23, 42, .08);
+  --shadow-lg: 0 12px 32px -12px rgba(15, 23, 42, .18);
+  --shadow-warm: 0 1px 2px rgba(15, 23, 42, .05), 0 1px 3px rgba(15, 23, 42, .08);
+  --glow: 0 0 0 1px rgba(13, 148, 136, .18), 0 10px 28px -14px rgba(13, 148, 136, .30);
+  /* Inter everywhere — studio drops the IBM Plex display face */
+  --display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --grid-size: 48px;
+}
+/* studio's cool near-white canvas (no warm paper grid / aurora) */
+.n4-app-bg {
+  background-color: var(--paper);
+  background-image: radial-gradient(ellipse 80% 40% at 50% -10%, rgba(13, 148, 136, .05), transparent 70%);
+  background-attachment: fixed;
+}
+
 @layer base {
   body { background: var(--paper); color: var(--text); font-family: var(--font); }
-  h1, h2, h3, h4 { font-family: var(--display); }
+  h1, h2, h3, h4 { font-family: var(--display); letter-spacing: -0.01em; }
+  /* studio uses tabular mono numerals for metrics */
+  .font-mono, .tabular { font-variant-numeric: tabular-nums; }
 }
 
 @layer components {
@@ -59,4 +88,113 @@
     color: var(--text);
   }
   .input:focus { outline: 2px solid var(--teal); outline-offset: 1px; }
+
+  /* --- Ecosystem components (verbatim recipes from nirs4all-formats / cockpit) --- */
+
+  /* warm-surface card; add .card-hover for the lift + teal top-accent reveal */
+  .card {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    transition: transform .25s, box-shadow .25s, border-color .25s;
+  }
+  .card-hover::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--teal), var(--cyan));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .25s;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--glow);
+    border-color: color-mix(in srgb, var(--teal) 40%, var(--border));
+  }
+  .card-hover:hover::before { transform: scaleX(1); }
+
+  /* stat card with the signature faint tinted corner circle */
+  .kpi {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+  .kpi::after {
+    content: '';
+    position: absolute;
+    right: -13px;
+    top: -13px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--teal);
+    opacity: .07;
+  }
+
+  /* rounded icon tile: tinted bg + accent glyph (svg ~half the tile) */
+  .icon-tile {
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--teal) 12%, transparent);
+    color: var(--teal);
+  }
+
+  /* tinted status pills */
+  .n4-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: .72rem;
+    font-weight: 600;
+    font-family: var(--mono);
+    white-space: nowrap;
+  }
+  .n4-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .n4-pill--teal  { color: var(--teal-d); background: color-mix(in srgb, var(--teal) 12%, transparent); }
+  .n4-pill--green { color: #047857;       background: color-mix(in srgb, var(--green) 14%, transparent); }
+  .n4-pill--amber { color: var(--amber);  background: color-mix(in srgb, var(--amber) 14%, transparent); }
+  .n4-pill--rose  { color: var(--rose);   background: color-mix(in srgb, var(--rose) 12%, transparent); }
+  .n4-pill--muted { color: var(--text-3); background: var(--bg-alt); }
+
+  /* buttons */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: .86rem;
+    border: none;
+    cursor: pointer;
+    background: var(--teal);
+    color: #fff;
+    transition: all .2s;
+  }
+  .btn-primary:hover { background: var(--teal-d); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(13, 148, 136, .35); }
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 15px;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: .82rem;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--text-2);
+    transition: all .2s;
+  }
+  .btn-outline:hover { border-color: var(--teal); color: var(--teal-d); background: color-mix(in srgb, var(--teal) 5%, transparent); }
 }

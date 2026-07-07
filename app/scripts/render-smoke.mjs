@@ -18,8 +18,12 @@ const fail = (m) => { console.error('✗ ' + m); code = 1; };
 
 try {
   await page.goto(URL, { waitUntil: 'load', timeout: 30000 });
-  await page.waitForSelector('text=quali-nirs4all', { timeout: 15000 });
-  console.log('✓ app shell rendered');
+  await page.waitForSelector('header img[alt="nirs4all"]', { timeout: 15000 });
+  console.log('✓ app shell rendered (brand icon)');
+
+  // the drag-and-drop quick-start dropzone is on the projects window
+  if (/Déposez X|Drop X/i.test((await page.textContent('body')) || '')) console.log('✓ drag-and-drop dropzone present');
+  else fail('project dropzone not rendered');
 
   await page.locator('button', { hasText: 'Protéines' }).first().click();
   await page.waitForSelector('[data-step-id="explore"]', { timeout: 10000 });
@@ -30,12 +34,16 @@ try {
   const charts = await page.locator('svg.recharts-surface').count();
   if (charts < 1) fail('no recharts chart rendered'); else console.log(`✓ ${charts} chart(s) rendered`);
 
-  // the replicate explorer tab
+  // the replicate explorer tab — and assert the chart is MEANINGFUL (the demo
+  // now has ≥3 replicates with real spread + clearly-divergent reps above P95)
   await page.locator('button', { hasText: 'Répétitions' }).first().click();
   await page.waitForTimeout(500);
   const body = (await page.textContent('body')) || '';
   if (/répétitions|P95|Distance/i.test(body)) console.log('✓ replicate explorer rendered');
   else fail('replicate explorer did not render');
+  const suspects = Number((body.match(/(\d+)\s+répétitions suspectes/) || [])[1] || '0');
+  if (suspects > 0) console.log(`✓ replicate chart is meaningful (${suspects} suspect replicates > P95)`);
+  else fail('replicate chart shows no suspect replicates — demo data still degenerate');
 
   // a "?" explanation opens
   await page.locator('[aria-label^="Expliquer"]').first().click();

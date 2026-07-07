@@ -100,8 +100,10 @@ export interface RunResult {
   scoreMetric: keyof Metrics;
   model: FittedModel;
   createdAt: string;
-  /** per-n_components sweep scores (for the RMSE-vs-components curve), if swept */
-  variants?: { nComp: number; rmse: number; selected: boolean }[];
+  /** per-hyperparameter sweep scores (RMSE vs components / alpha / operator), if swept */
+  variants?: { x: number; rmse: number; selected: boolean; label?: string }[];
+  /** what the sweep's x axis means (PLS components, Ridge alpha, AOM operator…) */
+  variantAxis?: { fr: string; en: string; categorical?: boolean; logX?: boolean };
 }
 
 export interface RunProgress {

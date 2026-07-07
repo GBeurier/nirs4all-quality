@@ -12,7 +12,7 @@ const fail = (m) => { console.error('✗ ' + m); code = 1; };
 
 try {
   await page.goto(URL, { waitUntil: 'load', timeout: 30000 });
-  await page.waitForSelector('text=quali-nirs4all', { timeout: 15000 });
+  await page.waitForSelector('header img[alt="nirs4all"]', { timeout: 15000 });
 
   // (1) EN toggle
   await page.getByRole('button', { name: 'EN', exact: true }).click();
@@ -24,7 +24,7 @@ try {
 
   // (2) CSV ingestion via a new project
   await page.getByRole('button', { name: /Nouveau projet|New project/ }).click();
-  await page.waitForSelector('input[type=file]', { timeout: 8000 });
+  await page.waitForSelector('input[type=file]', { state: 'attached', timeout: 8000 });
   const csv = ['1000,1100,1200,1300,1400', ...Array.from({ length: 8 }, (_, i) => `0.3,0.4,${(0.5 + i * 0.02).toFixed(3)},0.4,0.3`)].join('\n');
   await page.locator('input[type=file]').first().setInputFiles({ name: 'spectra.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) });
   await page.waitForTimeout(400);
