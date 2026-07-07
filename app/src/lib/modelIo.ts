@@ -10,7 +10,7 @@
 import type { FittedModel } from '@/engine';
 import type { StoredModel } from '@/store/store';
 
-const OK_FORMATS = ['quali-nirs4all/n4a', 'nirs4all-core/n4a', 'nirs4all-web/n4a', 'nirs4all-lite/n4a'];
+const OK_FORMATS = ['quali-nirs4all/n4a', 'nirs4all-core/n4a', 'nirs4all-web/n4a'];
 
 export function parseModelBundle(text: string): { model: StoredModel } | { error: string } {
   let obj: Record<string, unknown>;
