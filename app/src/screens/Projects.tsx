@@ -1,4 +1,4 @@
-import { countSampleStatuses } from '@lab';
+import { countSampleStatuses } from 'nirs4all-ui/lab';
 import { FlaskConical, Plus, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 

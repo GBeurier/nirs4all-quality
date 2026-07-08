@@ -1,4 +1,4 @@
-import { resolveSafety, summarizeWorklist, WorklistTable, type WorklistItemInput } from '@lab';
+import { resolveSafety, summarizeWorklist, WorklistTable, type WorklistItemInput } from 'nirs4all-ui/lab';
 import { Activity, FlaskConical, RefreshCw } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import {

@@ -28,7 +28,6 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': abs('./src'),
-        '@lab': abs('../../nirs4all-ui/src/lab/index.ts'),
         '@nirs4all/methods': staged('methods/index.js'),
         '@nirs4all/methods-wasm': staged('methods/index.js'),
         '@nirs4all/formats-wasm': staged('formats/nirs4all_formats_wasm.js'),

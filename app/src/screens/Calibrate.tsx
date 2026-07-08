@@ -1,4 +1,4 @@
-import { ModelReportCard } from '@lab';
+import { ModelReportCard } from 'nirs4all-ui/lab';
 import { Loader2, Play, Trophy } from 'lucide-react';
 import { useMemo, useState } from 'react';
 

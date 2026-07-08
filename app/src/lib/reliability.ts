@@ -5,7 +5,7 @@
 //   • extrapolation      = predicted value outside the trained reference range
 //   • intervalWidth      = a heuristic ± band (model RMSEP widened by distance)
 // The traffic-light colour then comes from buildDecisionView (pure view-model).
-import type { DecisionInput } from '@lab';
+import type { DecisionInput } from 'nirs4all-ui/lab';
 
 import { meanSpectrum, type SampleSpectra } from '@/domain/spectra';
 import { computePca } from './pca';

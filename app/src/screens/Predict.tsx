@@ -1,7 +1,7 @@
 import {
   buildDecisionView, DecisionCard,
   type DecisionColor, type DecisionInput, type DecisionView,
-} from '@lab';
+} from 'nirs4all-ui/lab';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import {

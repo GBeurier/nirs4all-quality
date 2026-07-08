@@ -18,7 +18,7 @@ Application WASM fonctionnelle ([`app/`](app/README.md)) : exploration des donn�
 
 ## Déploiement (GitHub Pages)
 
-Le site est publié depuis la branche **`gh-pages`** (build préconstruit — l'app dépend de checkouts frères `nirs4all-ui` / `nirs4all-web/studio-lite`, donc le build se fait en local, pas en CI). Pour redéployer après une modification :
+Le site est publié depuis la branche **`gh-pages`** (build préconstruit — l'app dépend de packages locaux `nirs4all-ui` / `nirs4all-web/studio-lite`, donc le build se fait en local, pas en CI). Pour redéployer après une modification :
 
 ```bash
 cd app

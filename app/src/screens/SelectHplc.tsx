@@ -1,7 +1,7 @@
 import {
   buildWorklistViews, resolveSafety, summarizeWorklist,
   TrafficLightLegend, type EnrichmentReason, type WorklistItemInput,
-} from '@lab';
+} from 'nirs4all-ui/lab';
 import { Download } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {

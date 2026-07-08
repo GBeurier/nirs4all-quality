@@ -1,4 +1,4 @@
-import { StepProgress, type StepProgressItem } from '@lab';
+import { StepProgress, type StepProgressItem } from 'nirs4all-ui/lab';
 import { useState } from 'react';
 
 import { deriveStatus, STAGE_TONE } from '@/lib/status';

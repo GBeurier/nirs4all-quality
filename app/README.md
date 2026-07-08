@@ -12,14 +12,14 @@ A guided, WASM-first "mini studio" for NIRS analysis labs, implementing the desi
 | Engine port + stub + Python client (`src/engine/`) | ✅ complete |
 | **WASM target — real libn4m via the `nirs4all` portable pipeline** | ✅ **working** (bundles `n4m.wasm`; smoke passes) |
 | App shell + workflow rail + 7 screens | ✅ building + serving |
-| Reuse of `nirs4all-ui/lab` (decision contract, cards, worklist…) | ✅ via `@lab` alias |
+| Reuse of `nirs4all-ui/lab` (decision contract, cards, worklist…) | ✅ via package export |
 | Real dataset ingestion (upload → `nirs4all-io` WASM) | ⏳ next — Calibrate currently uses demo spectra |
 | Native kernels (D-optimal, conformal, GMM, PDS) | ⏳ next — see DESIGN §8.3 |
 
 ## Architecture (thin shell)
 
 ```
-UI (screens)  ──►  @lab (nirs4all-ui/lab)      decision contract + lab view-models + components
+UI (screens)  ──►  nirs4all-ui/lab             decision contract + lab view-models + components
    │
    ├──►  src/domain/*        lab data model (project/lot/sample/reference/status/audit) — §1bis
    └──►  src/engine/*        the LabEngine PORT (hexagonal seam)
@@ -52,20 +52,12 @@ The naive approach — importing studio-lite's `src/engine` by source — **fail
 
 **Scope of the portable path:** regression + PLS with SNV / Savitzky-Golay and a Kennard-Stone split (the design's MVP calibration). Broader coverage (CV/OOF, D-optimal, conformal) plugs in behind the same `LabEngine` port when the dag-ml scheduler path is wired (or the runtime is extracted to a shared package).
 
-## Integration hand-off (needs coordination)
+## Integration contract
 
-### `nirs4all-ui/lab` subpath export
-The reusable `lab` domain lives at `nirs4all-ui/src/lab/**` (new, self-contained, tested). Its **package export was deliberately not wired** to avoid colliding with the Codex agent editing `nirs4all-ui`. To publish it, add (in `nirs4all-ui`):
-
-```ts
-// src/index.ts
-export * as lab from "./lab/index.js";
-```
-```jsonc
-// package.json "exports"
-"./lab": { "types": "./dist/lab/index.d.ts", "import": "./dist/lab/index.js" },
-```
-then `npm run build` in `nirs4all-ui`. After that, replace the `@lab` alias here (one line in `tsconfig.json` + `vite.config.ts`) with the `nirs4all-ui/lab` specifier. Until then, the app consumes the lab **source** through the `@lab` alias, which works for dev/build.
+The reusable `lab` domain is consumed through the public `nirs4all-ui/lab`
+subpath export. The shared theme is imported through
+`nirs4all-ui/assets/theme.css`, so this app no longer depends on
+`nirs4all-ui/src/**` source aliases.
 
 ## Layout
 
@@ -76,6 +68,6 @@ src/
   store/       React context/reducer over the domain + demo seed
   screens/     Projects · Setup · Health · SelectHplc · Calibrate · Predict · Maintenance
   app/         App shell + workflow rail
-  ui/          host-provided icons for the @lab components
+  ui/          host-provided icons for the nirs4all-ui/lab components
   styles/      theme (mirrors the nirs4all teal palette) + tailwind v4
 ```

@@ -1,11 +1,11 @@
 @import 'tailwindcss';
 /* the shared nirs4all brand theme (tokens + signature motifs) — one source of
  * truth, shipped in nirs4all-ui so every project looks like one product. */
-@import '../../../../nirs4all-ui/assets/theme.css';
+@import 'nirs4all-ui/assets/theme.css';
 
 @source '../**/*.{ts,tsx}';
 /* scan the reused lab components so their utility classes are generated too */
-@source '../../../../nirs4all-ui/src/lab/**/*.{ts,tsx}';
+@source '../../node_modules/nirs4all-ui/dist/lab/**/*.{js,d.ts}';
 
 /* map the shared brand tokens onto Tailwind utility color names */
 @theme inline {

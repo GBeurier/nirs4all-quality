@@ -17,8 +17,7 @@
     "allowImportingTsExtensions": false,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@lab": ["../../nirs4all-ui/src/lab/index.ts"]
+      "@/*": ["src/*"]
     }
   },
   "include": ["src"]

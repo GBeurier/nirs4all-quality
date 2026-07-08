@@ -1,4 +1,4 @@
-import { summarizeHealth, type HealthFindingInput, type HealthSeverity } from '@lab';
+import { summarizeHealth, type HealthFindingInput, type HealthSeverity } from 'nirs4all-ui/lab';
 import { AlertTriangle, Ban, Check, ChevronDown } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
 import {

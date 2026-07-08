@@ -5,7 +5,7 @@
 // sits from what the model already knows. High score ⇒ it extends coverage
 // (informative); a very high score ⇒ a strong outlier held back to verify (the
 // golden rule — an outlier isn't automatically a good candidate). Deterministic.
-import type { EnrichmentReason } from '@lab';
+import type { EnrichmentReason } from 'nirs4all-ui/lab';
 
 import { meanSpectrum, type SpectraDataset } from '@/domain/spectra';
 import { computePca } from './pca';

@@ -17,6 +17,7 @@
   "dependencies": {
     "lucide-react": "0.487.0",
     "nirs4all": "file:../../nirs4all-web/studio-lite/vendor/nirs4all",
+    "nirs4all-ui": "file:../../nirs4all-ui",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "recharts": "2.15.2"
