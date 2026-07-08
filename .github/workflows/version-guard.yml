@@ -1,0 +1,35 @@
+name: version-guard
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  version-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Ensure package version is not ahead of the latest tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./app/package.json').version")"
+          latest_tag="$(git tag --list 'v*' --sort=-v:refname | head -n 1 || true)"
+          if [[ -z "$latest_tag" ]]; then
+            echo "No v* tags found; package version is $version."
+            exit 0
+          fi
+          latest="${latest_tag#v}"
+          if [[ "$version" != "$latest" ]]; then
+            echo "::error::app/package.json version ($version) must match latest release tag ($latest_tag)."
+            exit 1
+          fi
+          echo "app/package.json version matches $latest_tag."

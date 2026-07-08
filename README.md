@@ -1,6 +1,6 @@
 # nirs4all-quality
 
-### ▶ Application en ligne : **https://gbeurier.github.io/nirs4all-quality/**
+### ▶ Application en ligne : **https://quali.nirs4all.org/**
 
 **Produit : `quali-nirs4all`** *(nom provisoire)* — un « studio miniature » pour **laboratoires d'analyse NIRS**, pensé pour des **laborantins néophytes en ML/stats**.
 
@@ -26,7 +26,7 @@ export PATH="$HOME/.nvm/versions/node/v22.21.1/bin:$PATH"
 npm run deploy          # build + push de app/dist vers gh-pages
 ```
 
-URL : **https://gbeurier.github.io/nirs4all-quality/**
+URL : **https://quali.nirs4all.org/**
 
 ## Périmètre technique acté
 

@@ -22,4 +22,4 @@ git -c user.name="Gregory Beurier" -c user.email="beurier@cirad.fr" add -A
 git -c user.name="Gregory Beurier" -c user.email="beurier@cirad.fr" commit -q -m "Deploy quali-nirs4all to GitHub Pages"
 git push -f "$REPO_URL" gh-pages
 
-echo "Deployed → https://gbeurier.github.io/nirs4all-quality/"
+echo "Deployed → https://quali.nirs4all.org/"
