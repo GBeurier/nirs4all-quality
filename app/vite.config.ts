@@ -9,7 +9,7 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 //
 // The WASM target reuses the `nirs4all` package's portable pipeline (libn4m).
 // That package resolves its numeric engines through OPTIONAL peer packages
-// (`@nirs4all/methods-wasm`, `dag-ml-wasm`, …); we alias those to studio-lite's
+// (`@nirs4all/methods`, `dag-ml-wasm`, …); we alias those to studio-lite's
 // staged WASM builds — exactly as studio-lite does — so no WASM is re-staged here.
 //
 // Two build modes:
@@ -29,6 +29,7 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': abs('./src'),
         '@lab': abs('../../nirs4all-ui/src/lab/index.ts'),
+        '@nirs4all/methods': staged('methods/index.js'),
         '@nirs4all/methods-wasm': staged('methods/index.js'),
         '@nirs4all/formats-wasm': staged('formats/nirs4all_formats_wasm.js'),
         '@nirs4all/io-wasm': staged('io/nirs4all_io_wasm.js'),

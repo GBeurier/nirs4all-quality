@@ -1,5 +1,5 @@
 // WASM target — a REAL working engine that reuses the `nirs4all` package's
-// portable pipeline (libn4m WASM via the aliased `@nirs4all/methods-wasm`). This
+// portable pipeline (libn4m WASM via the aliased `@nirs4all/methods`). This
 // deliberately does NOT pull studio-lite's `@/`-aliased engine (which collides
 // with this app's `@/` when bundled by source); it consumes the clean, package-
 // exported `runPortablePipeline` / `predictPortablePipeline` surface instead.

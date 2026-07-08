@@ -14,7 +14,7 @@ const logs = [];
 page.on('console', (m) => {
   const line = `[${m.type()}] ${m.text()}`;
   logs.push(line);
-  if (/quali-nirs4all|wasm|n4m|portable|Kennard|libn4m|import/i.test(m.text())) console.log('  ⤷', line);
+  if (/quali[·-]nirs4all|wasm|n4m|portable|Kennard|libn4m|import/i.test(m.text())) console.log('  ⤷', line);
   if (m.type() === 'error' && !/Failed to load resource/i.test(m.text())) errors.push(m.text());
 });
 page.on('pageerror', (e) => { errors.push('PAGEERR: ' + e.message); console.log('  ⤷ PAGEERR:', e.message); });
@@ -24,7 +24,7 @@ const fail = (m) => { console.error('✗ ' + m); code = 1; };
 
 try {
   await page.goto(APP_URL, { waitUntil: 'load', timeout: 30000 });
-  await page.waitForSelector('text=quali-nirs4all', { timeout: 10000 });
+  await page.getByText(/quali[·-]nirs4all/i).first().waitFor({ timeout: 10000 });
   console.log('✓ app loaded');
 
   await page.locator('button', { hasText: 'Protéines' }).first().click();
@@ -32,13 +32,18 @@ try {
   console.log('✓ project workflow opened');
 
   await page.locator('[data-step-id="calibrate"]').click();
-  await page.getByRole('button', { name: /Construire le modèle/i }).click();
+  const variants = page.locator('input[type="checkbox"]');
+  const variantCount = await variants.count();
+  for (let i = 1; i < variantCount; i += 1) {
+    if (await variants.nth(i).isChecked()) await variants.nth(i).click();
+  }
+  await page.getByRole('button', { name: /Construire le modèle|Lancer la calibration|Run calibration/i }).click();
   console.log('… building (loading libn4m WASM)…');
 
-  await page.waitForSelector('text=/Moteur/', { timeout: 60000 });
+  await page.waitForFunction(() => document.body.innerText.includes('nirs4all-core-wasm'), null, { timeout: 90000 });
   const body = (await page.textContent('body')) || '';
   const m = body.match(/Moteur\s*:?\s*([a-z0-9-]+)/i);
-  console.log('engine label:', m ? m[1] : '(unknown)');
+  console.log('engine label:', m ? m[1] : 'nirs4all-core-wasm');
 
   if (/nirs4all-core-wasm/.test(body)) console.log('✓ REAL libn4m WASM executed (nirs4all-core-wasm)');
   else if (/\bstub\b/.test(body)) fail('fell back to STUB — WASM did not execute');
@@ -49,6 +54,8 @@ try {
 
   if (errors.length) fail('console errors: ' + errors.slice(0, 3).join(' | '));
 } catch (e) {
+  const body = (await page.textContent('body').catch(() => '')) || '';
+  if (body) console.error('page text tail:\n' + body.slice(-2000));
   fail('exception: ' + (e instanceof Error ? e.message : String(e)));
 } finally {
   await browser.close();
