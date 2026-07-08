@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://quali.nirs4all.org/sitemap.xml
