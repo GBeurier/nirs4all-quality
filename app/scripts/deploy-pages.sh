@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Build the app and publish app/dist to the `gh-pages` branch of the repo.
-# The app builds against sibling checkouts (nirs4all-ui, nirs4all-web/studio-lite),
-# so this runs LOCALLY (not in CI). The built dist/ is fully self-contained.
+# The app builds against local package dependencies (nirs4all-ui and the
+# studio-lite-vendored nirs4all runtime), so this runs LOCALLY (not in CI).
+# The built dist/ is fully self-contained.
 set -euo pipefail
 cd "$(dirname "$0")/.."   # → app/
 
