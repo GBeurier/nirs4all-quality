@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build the app and publish app/dist to the `gh-pages` branch of the repo.
-# The app builds against local package dependencies (nirs4all-ui and the
-# studio-lite-vendored nirs4all runtime), so this runs LOCALLY (not in CI).
+# The UI and aggregate bindings are pinned npm packages. The Vite build still
+# uses nirs4all-web/web-app's staged WASM files, so this runs locally.
 # The built dist/ is fully self-contained.
 set -euo pipefail
 cd "$(dirname "$0")/.."   # → app/

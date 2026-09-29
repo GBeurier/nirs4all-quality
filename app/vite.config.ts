@@ -9,8 +9,8 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 //
 // The WASM target reuses the `nirs4all` package's portable pipeline (libn4m).
 // That package resolves its numeric engines through OPTIONAL peer packages
-// (`@nirs4all/methods`, `dag-ml-wasm`, …); we alias those to studio-lite's
-// staged WASM builds — exactly as studio-lite does — so no WASM is re-staged here.
+// (`@nirs4all/methods`, `dag-ml-wasm`, …); we alias those to nirs4all-web's
+// current staged WASM builds, so no WASM is re-staged here.
 //
 // Two build modes:
 //   default        → served static site (lazy WASM)          → dist/
@@ -18,7 +18,7 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 //                    Portable/offline; under file:// the WASM may not run, so the
 //                    engine falls back to the stub (the app still fully renders).
 const abs = (p: string) => fileURLToPath(new URL(p, import.meta.url));
-const staged = (p: string) => abs(`../../nirs4all-web/studio-lite/src/engine/wasm/${p}`);
+const staged = (p: string) => abs(`../../nirs4all-web/web-app/src/engine/wasm/${p}`);
 
 export default defineConfig(({ mode }) => {
   const single = mode === 'singlefile';

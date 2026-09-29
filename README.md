@@ -18,7 +18,7 @@ Application WASM fonctionnelle ([`app/`](app/README.md)) : exploration des donn�
 
 ## Déploiement (GitHub Pages)
 
-Le site est publié depuis la branche **`gh-pages`** (build préconstruit — l'app dépend de packages locaux `nirs4all-ui` / `nirs4all-web/studio-lite`, donc le build se fait en local, pas en CI). Pour redéployer après une modification :
+Le site est publié depuis la branche **`gh-pages`** (build préconstruit — les packages UI et agrégat sont épinglés sur npm, mais la construction utilise les modules WASM préparés dans `nirs4all-web/web-app`; le build se fait donc encore en local). Pour redéployer après une modification :
 
 ```bash
 cd app
@@ -33,7 +33,7 @@ URL : **https://quali.nirs4all.org/**
 - **WASM thin-shell uniquement** — moteur = `nirs4all-core` (aggregate) + `dag-ml` (runtime) + `nirs4all-methods`/libn4m (méthodes) + `nirs4all-io` / `nirs4all-formats` (WASM).
 - **Pas** de dépendance à la lib Python `nirs4all`, **pas** de backend Python. *Aucune logique numérique en TypeScript* (doctrine « thin shell »).
 - Cibles : **navigateur** (GitHub Pages) + **desktop** installable (Tauri, même code).
-- Base de départ : dériver **`nirs4all-web/studio-lite`** (déjà ~80–90 % du workflow en WASM).
+- Base de départ : réutiliser les contrats du client actif **`nirs4all-web/web-app`**.
 
 ## Sources
 
