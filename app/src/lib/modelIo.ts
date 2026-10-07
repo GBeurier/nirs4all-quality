@@ -1,16 +1,65 @@
 // Load a trained model from a JSON .n4a bundle so a calibration made elsewhere
 // (this app, or another quali/core export) can be deployed and used to predict.
 //
-// Browser reality: only a JS-runnable fitted state (js-pls / js-ridge — plain
-// coefficients + preprocessing steps) can predict in this WASM-thin build. A model
-// whose state is a native libn4m blob (e.g. a Studio/Python export via the
-// dag-ml/n4a JSON) carries its numerics opaquely and needs the libn4m WASM predict
-// path, which is not wired here — we detect and report that honestly rather than
-// pretend to load it.
+// The app's own portable PLS state also runs in the shipped WASM engine.
+// Other native archives remain unsupported; a backend label alone is not proof
+// that an imported state has the portable shape this engine consumes.
 import type { FittedModel } from '@/engine';
 import type { StoredModel } from '@/store/store';
 
 const OK_FORMATS = ['quali-nirs4all/n4a', 'nirs4all-core/n4a', 'nirs4all-web/n4a'];
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function finiteVector(value: unknown, length: number): boolean {
+  return Array.isArray(value) && value.length === length
+    && value.every((item) => typeof item === 'number' && Number.isFinite(item));
+}
+
+function exactKeys(value: Record<string, unknown>, keys: string[]): boolean {
+  return Object.keys(value).length === keys.length
+    && keys.every((key) => Object.prototype.hasOwnProperty.call(value, key));
+}
+
+function isOwnPortableModel(bundle: Record<string, unknown>, model: unknown): boolean {
+  if (bundle['format'] !== 'quali-nirs4all/n4a' || bundle['version'] !== 1
+      || !isRecord(model) || model['taskType'] !== 'regression') return false;
+  const features = model['nFeatures'];
+  if (typeof features !== 'number' || !Number.isSafeInteger(features) || features < 1
+      || bundle['nFeatures'] !== features) return false;
+  const state = model['state'];
+  if (!isRecord(state) || !exactKeys(state, ['backendId', 'result'])
+      || state['backendId'] !== 'nirs4all-core-wasm') return false;
+  const result = state['result'];
+  if (!isRecord(result) || !exactKeys(result, ['preprocessing', 'model'])
+      || !Array.isArray(result['preprocessing'])) return false;
+  for (const step of result['preprocessing']) {
+    if (!isRecord(step) || !exactKeys(step, ['type', 'params'])) return false;
+    if (step['type'] === 'StandardNormalVariate') {
+      if (!finiteVector(step['params'], 0)) return false;
+    } else if (step['type'] === 'SavitzkyGolay') {
+      if (!finiteVector(step['params'], 5)) return false;
+      const [window, order, derivative, mode, constant] = step['params'] as number[];
+      if (!Number.isSafeInteger(window) || window < 1 || window % 2 !== 1
+          || !Number.isSafeInteger(order) || order < 0 || order >= window
+          || !Number.isSafeInteger(derivative) || derivative < 0 || derivative > order
+          || !Number.isSafeInteger(mode) || mode < 0 || mode > 4
+          || !Number.isFinite(constant)) return false;
+    } else return false;
+  }
+  const pls = result['model'];
+  if (!isRecord(pls) || pls['type'] !== 'PLSRegression'
+      || !exactKeys(pls, ['type', 'n_components', 'coefficients', 'xMean', 'yMean', 'intercept', 'n_features', 'n_targets'])
+      || pls['n_features'] !== features || pls['n_targets'] !== 1) return false;
+  const components = pls['n_components'];
+  if (typeof components !== 'number' || !Number.isSafeInteger(components)
+      || components < 1 || components > features) return false;
+  return finiteVector(pls['coefficients'], features) && finiteVector(pls['xMean'], features)
+    && finiteVector(pls['yMean'], 1)
+    && (pls['intercept'] === null || finiteVector(pls['intercept'], 1));
+}
 
 export function parseModelBundle(text: string): { model: StoredModel } | { error: string } {
   let obj: Record<string, unknown>;
@@ -22,7 +71,9 @@ export function parseModelBundle(text: string): { model: StoredModel } | { error
   const m = obj['model'] as (FittedModel & { state?: Record<string, unknown> }) | undefined;
   if (!m || !m.state) return { error: 'Bundle sans modèle exploitable (champ "model" manquant).' };
   const backend = (m.state as { backendId?: string }).backendId;
-  if (backend !== 'js-pls' && backend !== 'js-ridge') {
+  if (backend === 'nirs4all-core-wasm') {
+    if (!isOwnPortableModel(obj, m)) return { error: 'Modèle portable WASM invalide ou incompatible.' };
+  } else if (backend !== 'js-pls' && backend !== 'js-ridge') {
     return { error: `Ce modèle utilise un moteur natif (${backend ?? 'libn4m/WASM'}) que cette version navigateur ne peut pas exécuter. Exportez-le au format quali-nirs4all/n4a (coefficients js-pls/js-ridge) pour le charger ici.` };
   }
 

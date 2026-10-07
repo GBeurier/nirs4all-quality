@@ -1,7 +1,7 @@
 {
   "name": "quali-nirs4all",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "description": "quali-nirs4all — a guided WASM studio for NIRS analysis labs (sample triage, HPLC selection, calibration, prediction reliability). Thin shell over the nirs4all WASM stack; reuses nirs4all-web's staged engine and nirs4all-ui.",
   "license": "(CECILL-2.1 OR AGPL-3.0-or-later)",
@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "smoke": "node scripts/wasm-smoke.mjs",
+    "test:model-import": "node scripts/model-import-contract.mjs",
     "deploy": "bash scripts/deploy-pages.sh"
   },
   "dependencies": {

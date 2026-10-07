@@ -139,6 +139,16 @@ function Workflow({ projectId, step, onStep, onExit }: {
           activeClassName="bg-primary/10 text-primary before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-1 before:rounded-r-full before:bg-primary"
           markerClassName="flex h-6 w-6 items-center justify-center rounded-full border border-border text-xs"
           captionClassName="ml-auto text-[10px] uppercase tracking-wider text-muted-foreground"
+          renderMarker={(state, index) => (
+            <button
+              type="button"
+              aria-label={steps[index].label}
+              aria-current={state === 'active' ? 'step' : undefined}
+              className="flex h-full w-full items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              {index + 1}
+            </button>
+          )}
         />
         <button className="mt-4 px-2 text-xs text-muted-foreground transition hover:text-foreground" onClick={onExit}>{tr('← Tous les projets', '← All projects')}</button>
       </aside>
