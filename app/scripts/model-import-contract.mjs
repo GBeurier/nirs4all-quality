@@ -69,6 +69,11 @@ for (const params of [[2, 1, 1, 4, 0], [3, 3, 1, 4, 0], [3, 2, 3, 4, 0], [3, 2, 
   invalid.model.state.result.preprocessing[0].params = params;
   check(invalid, false, 'invalid SG domain');
 }
+for (const mode of [0, 1, 2, 3, 4]) {
+  const invalid = structuredClone(sg);
+  invalid.model.state.result.preprocessing[0].params = [5, 2, 1, mode, 0];
+  check(invalid, false, `SG window exceeds feature width in mode ${mode}`);
+}
 for (const backendId of ['js-pls', 'js-ridge']) {
   check({ ...own, model: { ...own.model, state: { backendId } } }, true, `existing ${backendId} route unchanged`);
 }

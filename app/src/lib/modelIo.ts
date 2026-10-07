@@ -42,7 +42,7 @@ function isOwnPortableModel(bundle: Record<string, unknown>, model: unknown): bo
     } else if (step['type'] === 'SavitzkyGolay') {
       if (!finiteVector(step['params'], 5)) return false;
       const [window, order, derivative, mode, constant] = step['params'] as number[];
-      if (!Number.isSafeInteger(window) || window < 1 || window % 2 !== 1
+      if (!Number.isSafeInteger(window) || window < 1 || window > features || window % 2 !== 1
           || !Number.isSafeInteger(order) || order < 0 || order >= window
           || !Number.isSafeInteger(derivative) || derivative < 0 || derivative > order
           || !Number.isSafeInteger(mode) || mode < 0 || mode > 4
