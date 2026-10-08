@@ -11,6 +11,7 @@ import {
   predictPortablePipeline,
   runPortablePipeline,
   type PortablePlsModel,
+  type PortablePreprocessingStep,
 } from 'nirs4all';
 
 import { regressionMetrics } from './metrics.js';
@@ -30,7 +31,7 @@ import type {
 interface PortableFitState {
   backendId: 'nirs4all-core-wasm';
   result: {
-    preprocessing: { type: string; params: number[] }[];
+    preprocessing: PortablePreprocessingStep[];
     model: PortablePlsModel;
   };
 }
