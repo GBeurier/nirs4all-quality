@@ -1,0 +1,34 @@
+{
+  "owner_commit": "881250d5fc26c3978cb0a3d9e25701a2deba05d2",
+  "source": "nirs4all-preflight/examples/assessment/intrinsic-v1",
+  "files": {
+    "canonical-source.json": {
+      "sha256": "e473400f760d7a2921ebc08e0b826ef62f881a4dea710324143375c411534e20",
+      "bytes": 5238
+    },
+    "context.json": {
+      "sha256": "5b9b077c9584752d5d102cd5d61a7fe5210fe3a5611881c8c08926c8bf920cc7",
+      "bytes": 450
+    },
+    "canonical-input.json": {
+      "sha256": "61575ad23b4401c2ea733edf0fea165f8e5f0464fc9d9ae1f9ac7cc488c043c7",
+      "bytes": 10610
+    },
+    "report.json": {
+      "sha256": "f0bf6b55997e26fa26c57aa9907b700b49203e3b156812b758bd33c79d5453e7",
+      "bytes": 183701
+    },
+    "README.md": {
+      "sha256": "585b2b18db3e78505ca8924fe19868a758c4ef19efe4d1a8bedf69fe5fef1cd8",
+      "bytes": 913
+    },
+    "findings.json": {
+      "sha256": "412f05681d409fdff20d2d55eda0c59311087737bb750d18e379f1fc53dc69cc",
+      "bytes": 821
+    },
+    "assessment.json": {
+      "sha256": "23fd7b899d4e9391265a91f3a17c640f21cb4af2be39aadfcabcb77654e4a396",
+      "bytes": 438239
+    }
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "content_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "context_id": "intrinsic/native/v1",
+  "dataset_id": "synthetic-nirs-fixture",
+  "engine_version": "0.1.0",
+  "evaluation_population_id": null,
+  "fit_population_id": null,
+  "metrics": [
+    {
+      "availability": "available",
+      "confidence_status": "unknown",
+      "evidence_coverage": null,
+      "kind": "measured_observation",
+      "metric_id": "structure.effective_dimension",
+      "native_metric": {
+        "denominators": {
+          "eligible_observations": 20
+        },
+        "metric_id": "structure.effective_dimension",
+        "parameters": {
+          "reference": "development_real_only"
+        },
+        "population_id": "development_real",
+        "protocol_version": "0.1.0",
+        "reason_code": null,
+        "scope": "source",
+        "source_id": "nir",
+        "status": "computed",
+        "target_id": null,
+        "unit": null,
+        "value": 2.5,
+        "view_id": "native"
+      },
+      "native_status": "computed",
+      "protocol_version": "0.1.0",
+      "reason_code": null,
+      "signal_strength": null,
+      "unit": null,
+      "value": 2.5,
+      "view_id": "native"
+    },
+    {
+      "availability": "unavailable",
+      "confidence_status": "unknown",
+      "evidence_coverage": null,
+      "kind": "measured_observation",
+      "metric_id": "repeatability.pooled_sd",
+      "native_metric": {
+        "denominators": {
+          "complete_repeat_groups": 0
+        },
+        "metric_id": "repeatability.pooled_sd",
+        "parameters": {},
+        "population_id": "development_real",
+        "protocol_version": "0.1.0",
+        "reason_code": "NO_REPEAT_GROUPS",
+        "scope": "source",
+        "source_id": "nir",
+        "status": "insufficient_data",
+        "target_id": null,
+        "unit": "absorbance",
+        "value": null,
+        "view_id": "native"
+      },
+      "native_status": "insufficient_data",
+      "protocol_version": "0.1.0",
+      "reason_code": "NO_REPEAT_GROUPS",
+      "signal_strength": null,
+      "unit": "absorbance",
+      "value": null,
+      "view_id": "native"
+    }
+  ],
+  "population_id": "development_real",
+  "producer": "nirs4all-preflight",
+  "protocol_version": "0.1.0",
+  "report": {
+    "capabilities": [],
+    "engine_version": "0.1.0",
+    "example_provenance": "hand-authored synthetic migration fixture",
+    "findings": [
+      {
+        "action": "Declare physical repeat-group identities before evaluating repeatability.",
+        "confidence": "unknown",
+        "evidence": [
+          "repeatability.pooled_sd"
+        ],
+        "message": "Repeatability is unavailable without declared repeat groups.",
+        "rule_id": "repeatability.missing_groups.v1",
+        "severity": "info"
+      }
+    ],
+    "limitations": [
+      "Synthetic fixture; no physical-cause or predictive-coverage claim"
+    ],
+    "metrics": [
+      {
+        "denominators": {
+          "eligible_observations": 20
+        },
+        "metric_id": "structure.effective_dimension",
+        "parameters": {
+          "reference": "development_real_only"
+        },
+        "population_id": "development_real",
+        "protocol_version": "0.1.0",
+        "reason_code": null,
+        "scope": "source",
+        "source_id": "nir",
+        "status": "computed",
+        "target_id": null,
+        "unit": null,
+        "value": 2.5,
+        "view_id": "native"
+      },
+      {
+        "denominators": {
+          "complete_repeat_groups": 0
+        },
+        "metric_id": "repeatability.pooled_sd",
+        "parameters": {},
+        "population_id": "development_real",
+        "protocol_version": "0.1.0",
+        "reason_code": "NO_REPEAT_GROUPS",
+        "scope": "source",
+        "source_id": "nir",
+        "status": "insufficient_data",
+        "target_id": null,
+        "unit": "absorbance",
+        "value": null,
+        "view_id": "native"
+      }
+    ],
+    "profile_status": "synthetic_example",
+    "protocol_bundle_version": "0.1.0",
+    "schema_version": 1,
+    "status": "partial",
+    "validation": {
+      "issues": [],
+      "valid": true
+    }
+  },
+  "schema_version": "1",
+  "scope": "intrinsic",
+  "source_id": "nir",
+  "split_id": null,
+  "target_id": null
+}

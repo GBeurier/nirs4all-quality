@@ -1,0 +1,23 @@
+[
+  {
+    "confidence_status": "unknown",
+    "context_id": "intrinsic/native-observations",
+    "evidence": [],
+    "evidence_coverage": null,
+    "kind": "heuristic_signature",
+    "message": "Independent unit is unknown; inferential X-Y checks cannot be identified",
+    "original_finding": {
+      "action": "Declare and verify a physical or grouped independence unit",
+      "confidence": "unknown",
+      "evidence": [],
+      "message": "Independent unit is unknown; inferential X-Y checks cannot be identified",
+      "rule_id": "independence.unknown.v1",
+      "severity": "warning"
+    },
+    "recommended_action": "Declare and verify a physical or grouped independence unit",
+    "rule_id": "independence.unknown.v1",
+    "severity": "warning",
+    "signal_strength": null,
+    "unresolved_evidence": []
+  }
+]
