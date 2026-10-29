@@ -1,109 +1,45 @@
-// Client PCA — dependency-free Gram-matrix power-iteration + deflation, ported
-// from studio-lite's pca.ts (n×n Gram is ideal for wide NIRS data). Deterministic.
+import { fitPcaReference, type Matrix } from '@/engine/nativeDiagnostics';
+
 export interface PcaResult {
-  scores: number[][];   // [usedRow][component]
-  explained: number[];  // explained-variance ratio per component (0..1)
+  scores: number[][];
+  explained: number[];
   nComp: number;
-  usedIdx: number[];    // sample rows used
+  usedIdx: number[];
+  reason: string | null;
 }
 
-function mulberry32(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+export function rowsOf(X: Matrix): number[][] {
+  return Array.from({ length: X.rows }, (_, i) => Array.from(X.data.subarray(i * X.cols, (i + 1) * X.cols)));
 }
 
-function normalize(v: Float64Array): void {
-  let s = 0;
-  for (let i = 0; i < v.length; i++) s += v[i] * v[i];
-  const nrm = Math.sqrt(s) || 1;
-  for (let i = 0; i < v.length; i++) v[i] /= nrm;
+function varianceRatios(input: Matrix, scores: number[][]): number[] {
+  const means = Array.from({ length: input.cols }, (_, j) => scores.reduce((sum, _, i) => sum + input.data[i * input.cols + j]!, 0) / input.rows);
+  const total = input.data.reduce((sum, value, index) => sum + (value - means[index % input.cols]!) ** 2, 0);
+  return Array.from({ length: scores[0]?.length ?? 0 }, (_, j) => total > 0 ? scores.reduce((sum, row) => sum + row[j]! ** 2, 0) / total : 0);
 }
 
-export function computePca(
-  X: Float64Array,
-  nSamples: number,
-  nFeatures: number,
-  maxComp = 4,
-  maxSamples = 2000,
-): PcaResult {
-  let usedIdx: number[];
-  if (nSamples > maxSamples) {
-    const idx = Array.from({ length: nSamples }, (_, i) => i);
-    const rnd = mulberry32(12345);
-    for (let i = idx.length - 1; i > 0; i--) {
-      const j = Math.floor(rnd() * (i + 1));
-      const tmp = idx[i]!; idx[i] = idx[j]!; idx[j] = tmp;
-    }
-    usedIdx = idx.slice(0, maxSamples).sort((a, b) => a - b);
-  } else {
-    usedIdx = Array.from({ length: nSamples }, (_, i) => i);
-  }
+/** Native PCA for descriptive plots; any display subsampling is in usedIdx. */
+export function computePca(X: Float64Array, nSamples: number, nFeatures: number, maxComp = 4, maxSamples = 2000): PcaResult {
+  if (nSamples < 2 || nFeatures < 1) return { scores: [], explained: [], nComp: 0, usedIdx: [], reason: 'PCA needs at least two samples and a spectral band.' };
+  const usedIdx = Array.from({ length: Math.min(nSamples, maxSamples) }, (_, i) => Math.floor(i * nSamples / Math.min(nSamples, maxSamples)));
+  const data = Float64Array.from(usedIdx.flatMap((i) => Array.from(X.subarray(i * nFeatures, (i + 1) * nFeatures))));
+  const input = { data, rows: usedIdx.length, cols: nFeatures };
+  let reference: ReturnType<typeof fitPcaReference> | undefined;
+  try {
+    reference = fitPcaReference(input, maxComp);
+    const scores = rowsOf(reference.transform(input));
+    return { scores, explained: varianceRatios(input, scores), nComp: scores[0]?.length ?? 0, usedIdx, reason: null };
+  } catch (error) {
+    return { scores: [], explained: [], nComp: 0, usedIdx: [], reason: error instanceof Error ? error.message : String(error) };
+  } finally { reference?.dispose(); }
+}
 
-  const n = usedIdx.length;
-  const p = nFeatures;
-  const mean = new Float64Array(p);
-  for (const row of usedIdx) {
-    for (let j = 0; j < p; j++) {
-      const v = X[row * p + j];
-      if (Number.isFinite(v)) mean[j] += v;
-    }
-  }
-  for (let j = 0; j < p; j++) mean[j] /= n || 1;
-
-  const Xc = new Float64Array(n * p);
-  for (let i = 0; i < n; i++) {
-    const row = usedIdx[i]!;
-    for (let j = 0; j < p; j++) {
-      const v = X[row * p + j];
-      Xc[i * p + j] = Number.isFinite(v) ? v - mean[j] : 0;
-    }
-  }
-
-  const K = new Float64Array(n * n);
-  let trace = 0;
-  for (let i = 0; i < n; i++) {
-    for (let k = i; k < n; k++) {
-      let s = 0;
-      for (let j = 0; j < p; j++) s += Xc[i * p + j] * Xc[k * p + j];
-      K[i * n + k] = s;
-      K[k * n + i] = s;
-      if (i === k) trace += s;
-    }
-  }
-
-  const comps = Math.max(0, Math.min(maxComp, n - 1, p));
-  const scores: number[][] = Array.from({ length: n }, () => new Array<number>(comps).fill(0));
-  const explained: number[] = [];
-  for (let c = 0; c < comps; c++) {
-    const rnd = mulberry32(7 + c);
-    let v = new Float64Array(n);
-    for (let i = 0; i < n; i++) v[i] = rnd() - 0.5;
-    normalize(v);
-    let lambda = 0;
-    for (let it = 0; it < 160; it++) {
-      const w = new Float64Array(n);
-      for (let i = 0; i < n; i++) {
-        let s = 0;
-        for (let k = 0; k < n; k++) s += K[i * n + k] * v[k];
-        w[i] = s;
-      }
-      lambda = 0;
-      for (let i = 0; i < n; i++) lambda += v[i] * w[i];
-      normalize(w);
-      v = w;
-    }
-    const sigma = Math.sqrt(Math.max(lambda, 0));
-    for (let i = 0; i < n; i++) scores[i]![c] = v[i] * sigma;
-    explained.push(trace > 0 ? Math.max(lambda, 0) / trace : 0);
-    for (let i = 0; i < n; i++) {
-      for (let k = 0; k < n; k++) K[i * n + k] -= lambda * v[i] * v[k];
-    }
-  }
-
-  return { scores, explained, nComp: comps, usedIdx };
+/** Calibration-only fit and evaluation-only projection for applicability. */
+export function referenceProjection(calibration: Matrix, evaluation: Matrix, components = 2) {
+  const reference = fitPcaReference(calibration, components);
+  try {
+    const calibrationScores = rowsOf(reference.transform(calibration));
+    const evaluationScores = evaluation.rows ? rowsOf(reference.transform(evaluation)) : [];
+    return { calibrationScores, evaluationScores, explained: varianceRatios(calibration, calibrationScores) };
+  } finally { reference.dispose(); }
 }

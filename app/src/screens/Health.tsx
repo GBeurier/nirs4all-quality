@@ -15,6 +15,8 @@ import { useTr } from '@/i18n';
 import { useLab, useProjectSpectra } from '@/store/store';
 import { Explain } from '@/ui/Explain';
 import { EXPLAIN } from '@/ui/explanations';
+import { SharedAssessmentPanel } from '@/ui/SharedAssessmentPanel';
+import type { SharedAssessment } from '@/lib/sharedAssessment';
 
 // each problematic category gets its OWN colour so you can tell saturated from flat
 // from atypical at a glance (design: distinguish which is which).
@@ -45,6 +47,7 @@ interface Finding {
 
 export function Health({ projectId }: { projectId: string }) {
   const { state, dispatch } = useLab();
+  const [assessment, setAssessment] = useState<SharedAssessment | null>(null);
   const tr = useTr();
   const spectra = useProjectSpectra(projectId);
   const fullSpectra = state.spectraByProject[projectId];
@@ -55,12 +58,12 @@ export function Health({ projectId }: { projectId: string }) {
   const displaySpectra = useMemo(() => (spectra ? applyPreviewPp(spectra, previewPp) : spectra), [spectra, previewPp]);
 
   const quality = useMemo(() => {
-    if (!spectra || spectra.samples.length === 0) return null;
+    if (assessment || !spectra || spectra.samples.length === 0) return null;
     const yBySample: Record<string, number | undefined> = {};
     const metaBySample: Record<string, Record<string, string | number | null>> = {};
     for (const s of samples) { if (typeof s.reference?.value === 'number') yBySample[s.id] = s.reference.value; metaBySample[s.id] = s.metadata; }
     return { Q: computeQuality(spectra, yBySample, metaBySample), rep: buildRepetitionModel(spectra, yBySample, 'variance') };
-  }, [spectra, samples]);
+  }, [assessment, spectra, samples]);
 
   // per-category sets of problematic samples (so each can be toggled + coloured)
   const cats = useMemo(() => {
@@ -91,16 +94,16 @@ export function Health({ projectId }: { projectId: string }) {
     // 1. Saturation
     out.push({
       id: 'saturation',
-      severity: Q.saturation.flagged.length > 0 ? 'critical' : 'ok',
-      title: tr('Saturation du signal', 'Signal saturation'),
+      severity: Q.saturation.flagged.length > 0 ? 'warning' : 'ok',
+      title: tr('Proximité du maximum observé (proxy)', 'Proximity to the observed maximum (proxy)'),
       detail: Q.saturation.flagged.length > 0
-        ? tr(`${Q.saturation.flagged.length} spectre(s) atteignent le plafond (≥ 99 % du max)`, `${Q.saturation.flagged.length} spectrum(s) hit the ceiling (≥ 99% of max)`)
-        : tr('Aucun spectre saturé.', 'No saturated spectra.'),
+        ? tr(`${Q.saturation.flagged.length} spectre(s) proches du maximum du lot (≥ 99 %) ; saturation physique non établie`, `${Q.saturation.flagged.length} spectrum(s) near the batch maximum (≥ 99%); physical saturation is not established`)
+        : tr('Aucun dépassement du proxy relatif ; saturation physique non évaluée.', 'No relative proxy exceedance; physical saturation was not evaluated.'),
       affected: Q.saturation.flagged.length,
       affectedIds: Q.saturation.flagged.map((f) => f.sampleId),
       evidence: (
         <div className="text-xs">
-          <p className="mb-1 text-muted-foreground">{tr('Seuil de saturation', 'Saturation threshold')} = 0,99 × max = <b>{fmt(Q.saturation.threshold)}</b>. {tr('Un échantillon est signalé si au moins une bande dépasse ce seuil.', 'A sample is flagged if at least one band exceeds this threshold.')}</p>
+          <p className="mb-1 text-muted-foreground">{tr('Seuil descriptif relatif', 'Relative descriptive threshold')} = 0,99 × max = <b>{fmt(Q.saturation.threshold)}</b>. {tr('Un échantillon est signalé si au moins une bande dépasse ce seuil.', 'A sample is flagged if at least one band exceeds this threshold.')}</p>
           {Q.saturation.flagged.length === 0 ? <p className="text-success">✓ {tr('rien à signaler', 'nothing to report')}</p>
             : <ul className="font-mono">{Q.saturation.flagged.slice(0, 8).map((f) => <li key={f.sampleId}>{f.sampleId}: {f.count} {tr('bandes', 'bands')}</li>)}</ul>}
         </div>
@@ -111,17 +114,17 @@ export function Health({ projectId }: { projectId: string }) {
     const pts = Q.outliers.points.map((o) => ({ x: o.t2, y: o.q, flagged: o.flagged, id: o.sampleId }));
     out.push({
       id: 'outliers',
-      severity: Q.outliers.flaggedIds.length > 0 ? 'warning' : 'ok',
+      severity: !Q.outliers.available || Q.outliers.flaggedIds.length > 0 ? 'warning' : 'ok',
       title: tr('Spectres atypiques (T² / Q)', 'Atypical spectra (T² / Q)'),
-      detail: Q.outliers.flaggedIds.length > 0
-        ? tr(`${Q.outliers.flaggedIds.length} spectre(s) au-delà du 95e percentile (T² ou Q).`, `${Q.outliers.flaggedIds.length} spectrum(s) beyond the 95th percentile (T² or Q).`)
+      detail: !Q.outliers.available ? tr('Diagnostic PCA indisponible : ', 'PCA diagnostic unavailable: ') + Q.outliers.reason : Q.outliers.flaggedIds.length > 0
+        ? tr(`${Q.outliers.flaggedIds.length} spectre(s) au-delà des limites natives T²/Q (α = 0,05).`, `${Q.outliers.flaggedIds.length} spectrum(s) beyond native T²/Q control limits (α = 0.05).`)
         : tr('Aucun spectre franchement atypique.', 'No clearly atypical spectra.'),
       affected: Q.outliers.flaggedIds.length,
       affectedIds: Q.outliers.flaggedIds,
-      evidence: (
+      evidence: !Q.outliers.available ? <p role="status">{Q.outliers.reason}</p> : (
         <div className="text-xs">
           <p className="mb-1 text-muted-foreground">
-            {tr(`PCA à ${Q.outliers.nComp} composantes. T² = leverage dans le modèle PCA ; Q = erreur de reconstruction (ce que la PCA n'explique pas). Seuils = 95e percentile : T²>`, `PCA with ${Q.outliers.nComp} components. T² = leverage in the PCA model; Q = reconstruction error (what PCA does not explain). Thresholds = 95th percentile: T²>`)}<b>{fmt(Q.outliers.t2p95)}</b>, Q&gt;<b>{fmt(Q.outliers.qp95)}</b>.
+            {tr(`PCA à ${Q.outliers.nComp} composantes. T² = leverage dans le modèle PCA ; Q = erreur de reconstruction (ce que la PCA n'explique pas). Limites de contrôle natives (α = 0,05), pas des percentiles du lot : T²>`, `PCA with ${Q.outliers.nComp} components. T² = leverage in the PCA model; Q = reconstruction error (what PCA does not explain). Native control limits (α = 0.05), not batch percentiles: T²>`)}<b>{fmt(Q.outliers.t2Limit)}</b>, Q&gt;<b>{fmt(Q.outliers.qLimit)}</b>.
           </p>
           <ResponsiveContainer width="100%" height={190}>
             <ScatterChart margin={{ top: 8, right: 12, bottom: 16, left: 4 }}>
@@ -131,13 +134,14 @@ export function Health({ projectId }: { projectId: string }) {
               <YAxis type="number" dataKey="y" name="Q" tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} stroke="var(--border)" width={42}
                 label={{ value: 'Q (SPE)', angle: -90, position: 'insideLeft', fontSize: 10, fill: 'var(--muted-foreground)' }} />
               <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ borderRadius: 10, border: '1px solid var(--border)', fontSize: 11 }} formatter={(v: number) => fmt(v)} />
-              <ReferenceLine x={Q.outliers.t2p95} stroke="var(--destructive)" strokeDasharray="3 3" />
-              <ReferenceLine y={Q.outliers.qp95} stroke="var(--destructive)" strokeDasharray="3 3" />
+              <ReferenceLine x={Q.outliers.t2Limit} stroke="var(--destructive)" strokeDasharray="3 3" />
+              <ReferenceLine y={Q.outliers.qLimit} stroke="var(--destructive)" strokeDasharray="3 3" />
               <Scatter data={pts} isAnimationActive={false}>
                 {pts.map((pt, i) => <Cell key={i} fill={pt.flagged ? 'var(--destructive)' : 'var(--chart-1)'} fillOpacity={pt.flagged ? 0.9 : 0.5} />)}
               </Scatter>
             </ScatterChart>
           </ResponsiveContainer>
+          <details className="mt-2"><summary>{tr('Valeurs T²/Q par échantillon', 'Per-sample T²/Q values')}</summary><table><thead><tr><th>{tr('Échantillon', 'Sample')}</th><th>T²</th><th>Q</th><th>{tr('Signalé', 'Flagged')}</th></tr></thead><tbody>{Q.outliers.points.map((pt) => <tr key={pt.sampleId}><td>{pt.sampleId}</td><td>{fmt(pt.t2)}</td><td>{fmt(pt.q)}</td><td>{pt.flagged ? tr('oui', 'yes') : tr('non', 'no')}</td></tr>)}</tbody></table></details>
           <p className="mt-1 text-muted-foreground">{tr('En rouge : au-delà d’un seuil. Point à T² élevé = extrême mais expliqué ; à Q élevé = forme mal reconstruite (artefact possible).', 'Red: beyond a threshold. High-T² = extreme but explained; high-Q = poorly reconstructed shape (possible artefact).')}</p>
         </div>
       ),
@@ -150,7 +154,7 @@ export function Health({ projectId }: { projectId: string }) {
       severity: 'ok',
       title: tr('Bruit spectral par bande', 'Per-band spectral noise'),
       detail: Q.noise.peakFrom !== null
-        ? tr(`Variation la plus forte vers ${Q.noise.peakFrom}–${Q.noise.peakTo} nm (bandes d’eau).`, `Strongest variation around ${Q.noise.peakFrom}–${Q.noise.peakTo} nm (water bands).`)
+        ? tr(`Variation la plus forte vers ${Q.noise.peakFrom}–${Q.noise.peakTo} ${spectra.axisUnit} (variation descriptive).`, `Strongest variation around ${Q.noise.peakFrom}–${Q.noise.peakTo} ${spectra.axisUnit} (descriptive variation).`)
         : tr('Bruit homogène.', 'Homogeneous noise.'),
       evidence: (
         <div className="text-xs">
@@ -227,6 +231,8 @@ export function Health({ projectId }: { projectId: string }) {
 
   const summary = useMemo(() => summarizeHealth(findings.map((f): HealthFindingInput => ({ id: f.id, title: f.title, severity: f.severity }))), [findings]);
 
+  if (assessment) return <div className="mx-auto max-w-4xl"><SharedAssessmentPanel assessment={assessment} onChange={setAssessment} /></div>;
+
   if (findings.length === 0) return <div className="mx-auto max-w-3xl text-sm text-muted-foreground">{tr('Aucun spectre chargé.', 'No spectra loaded.')}</div>;
 
   return (
@@ -235,6 +241,7 @@ export function Health({ projectId }: { projectId: string }) {
         <h1 className="font-display text-2xl font-semibold">{tr('Santé des données', 'Data health')}</h1>
         <Explain content={EXPLAIN.healthScore} />
       </div>
+      <SharedAssessmentPanel assessment={assessment} onChange={setAssessment} />
       <div className="mb-5 flex items-center gap-4 rounded-xl border border-border bg-card p-4">
         <div className="text-4xl font-bold text-primary">{summary.score}</div>
         <div>
@@ -353,14 +360,14 @@ function HealthSpectraView({ spectra, flaggedCat, tr }: { spectra: SpectraDatase
     const p = spectra.axis.length;
     const n = spectra.samples.length;
     const X = new Float64Array(n * p);
-    spectra.samples.forEach((s, i) => { const m = meanSpectrum(s); for (let j = 0; j < p; j++) X[i * p + j] = m[j] ?? 0; });
+    spectra.samples.forEach((s, i) => { const m = meanSpectrum(s); for (let j = 0; j < p; j++) X[i * p + j] = m[j] ?? NaN; });
     const r = computePca(X, n, p, 2);
     const pts = r.scores.map((sc, i) => {
       const row = r.usedIdx[i] ?? i;
       const id = spectra.samples[row]?.sampleId ?? '';
       return { x: sc[0] ?? 0, y: sc[1] ?? 0, cat: flaggedCat.get(id) };
     });
-    return { pts, ev: (k: number) => ((r.explained[k] ?? 0) * 100).toFixed(1) };
+    return { pts, reason: r.reason, ev: (k: number) => ((r.explained[k] ?? 0) * 100).toFixed(1) };
   }, [spectra, flaggedCat]);
 
   return (
@@ -389,6 +396,7 @@ function HealthSpectraView({ spectra, flaggedCat, tr }: { spectra: SpectraDatase
       </div>
       <div className="card p-4">
         <div className="mb-2 flex items-center gap-2 text-sm font-medium">{tr('PCA — problématiques en rouge', 'PCA — problematic in red')} <Explain content={EXPLAIN.healthPca} /></div>
+        {pca.reason && <p role="status">{tr('PCA indisponible : ', 'PCA unavailable: ')}{pca.reason}</p>}
         <ResponsiveContainer width="100%" height={230}>
           <ScatterChart margin={{ top: 8, right: 16, bottom: 16, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />

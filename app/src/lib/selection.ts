@@ -8,7 +8,7 @@
 import type { EnrichmentReason } from 'nirs4all-ui/lab';
 
 import { meanSpectrum, type SpectraDataset } from '@/domain/spectra';
-import { computePca } from './pca';
+import { referenceProjection } from './pca';
 
 export interface Candidate {
   sampleId: string;
@@ -59,15 +59,14 @@ export function scoreCandidates(spectra: SpectraDataset, labelledIds: Set<string
   const coldStart = cal.length < 2;
   const ref = coldStart ? pool : cal;
   const nRef = ref.length;
-  const allRows = coldStart ? pool : cal.concat(pool);
-  const nAll = allRows.length;
-  const X = new Float64Array(nAll * p);
-  allRows.forEach((s, i) => { const m = meanSpectrum(s); for (let j = 0; j < p; j++) X[i * p + j] = m[j] ?? 0; });
-  const pca = computePca(X, nAll, p, 2, nAll);
-  const pos = new Map(pca.usedIdx.map((r, i) => [r, i]));
-  const scoreOf = (row: number): number[] => pca.scores[pos.get(row) ?? 0] ?? [0, 0];
+  const matrix = (rows: typeof ref) => {
+    const data = new Float64Array(rows.length * p);
+    rows.forEach((sample, i) => data.set(meanSpectrum(sample), i * p));
+    return { data, rows: rows.length, cols: p };
+  };
+  const projected = referenceProjection(matrix(ref), matrix(pool));
+  const ref2 = projected.calibrationScores;
 
-  const ref2 = Array.from({ length: nRef }, (_, i) => scoreOf(i));
   const c = [0, 0];
   ref2.forEach((s) => { c[0]! += s[0] ?? 0; c[1]! += s[1] ?? 0; });
   c[0]! /= nRef; c[1]! /= nRef;
@@ -76,11 +75,10 @@ export function scoreCandidates(spectra: SpectraDataset, labelledIds: Set<string
   sd[0] = Math.sqrt(sd[0]! / nRef) || 1;
   sd[1] = Math.sqrt(sd[1]! / nRef) || 1;
 
-  const poolStart = coldStart ? 0 : cal.length;
   // each candidate carries its normalized PC coordinates (nx, ny) so we can measure
   // spectral distance between candidates for de-duplication.
   const candidates: (Candidate & { nx: number; ny: number })[] = pool.map((s, i) => {
-    const sc = scoreOf(poolStart + i);
+    const sc = projected.evaluationScores[i]!;
     const nx = ((sc[0] ?? 0) - c[0]!) / sd[0]!;
     const ny = ((sc[1] ?? 0) - c[1]!) / sd[1]!;
     const novelty = Math.sqrt(nx * nx + ny * ny);
@@ -119,5 +117,5 @@ export function scoreCandidates(spectra: SpectraDataset, labelledIds: Set<string
   const recommended = Math.max(Math.min(3, nDistinct), Math.min(informative, nDistinct));
   // in cold start the pool IS the whole cloud → don't draw a separate grey set
   const calPts = coldStart ? [] : ref2.map((s) => ({ x: s[0] ?? 0, y: s[1] ?? 0 }));
-  return { candidates, calPts, maxNovelty, recommended, duplicates, ev: (k) => ((pca.explained[k] ?? 0) * 100).toFixed(1) };
+  return { candidates, calPts, maxNovelty, recommended, duplicates, ev: (k) => ((projected.explained[k] ?? 0) * 100).toFixed(1) };
 }

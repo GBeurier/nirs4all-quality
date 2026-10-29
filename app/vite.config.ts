@@ -1,9 +1,11 @@
 import { fileURLToPath, URL } from 'node:url';
+import { resolve } from 'node:path';
 
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import { viteSingleFile } from 'vite-plugin-singlefile';
+import { methodsRoot, qualifiedMethodsStage } from './scripts/methods-stage.mjs';
 
 // quali-nirs4all — thin-shell WASM app.
 //
@@ -18,18 +20,22 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 //                    Portable/offline; under file:// the WASM may not run, so the
 //                    engine falls back to the stub (the app still fully renders).
 const abs = (p: string) => fileURLToPath(new URL(p, import.meta.url));
-const staged = (p: string) => abs(`../../nirs4all-web/web-app/src/engine/wasm/${p}`);
+const staged = (p: string) => process.env.NIRS4ALL_WASM_ROOT ? resolve(process.env.NIRS4ALL_WASM_ROOT, p) : abs(`../../nirs4all-web/web-app/src/engine/wasm/${p}`);
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(async ({ mode }) => {
   const single = mode === 'singlefile';
+  const methodsCohort = await qualifiedMethodsStage();
   return {
     base: './',
-    plugins: [react(), tailwindcss(), ...(single ? [viteSingleFile()] : [])],
+    plugins: [react(), tailwindcss(), {
+      name: 'qualified-methods-cohort',
+      generateBundle() { this.emitFile({ type: 'asset', fileName: 'methods-cohort.json', source: JSON.stringify(methodsCohort, null, 2) }); },
+    }, ...(single ? [viteSingleFile()] : [])],
     resolve: {
       alias: [
         { find: '@', replacement: abs('./src') },
-        { find: '@nirs4all/methods', replacement: staged('methods/index.js') },
-        { find: '@nirs4all/methods-wasm', replacement: staged('methods/index.js') },
+        { find: '@nirs4all/methods', replacement: resolve(methodsRoot, 'index.js') },
+        { find: '@nirs4all/methods-wasm', replacement: resolve(methodsRoot, 'index.js') },
         { find: '@nirs4all/formats-wasm', replacement: staged('formats/nirs4all_formats_wasm.js') },
         { find: /^@nirs4all\/io-wasm$/, replacement: staged('io/nirs4all_io_wasm.js') },
         { find: /^@nirs4all\/io-wasm\/public-dataset$/, replacement: staged('io/public-dataset.mjs') },
