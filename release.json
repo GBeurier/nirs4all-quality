@@ -1,20 +1,22 @@
 {
-  "version": "0.0.4",
-  "source_sha": "1df44eeb4200f49ae333f8d5666e61ec8f5ae88f",
-  "tag": "v0.0.4",
+  "version": "0.0.5",
+  "source_sha": "c4b03c5d97eafa0c91e8ad57552da5f425ed5020",
+  "tag": "v0.0.5",
   "methods": {
     "schema_version": 1,
     "package": "@nirs4all/methods",
-    "minimum_version": "1.3.9",
-    "runtime_version": "1.3.9+abi.2.20.0",
+    "minimum_version": "1.3.10",
+    "runtime_version": "1.3.10+abi.2.20.0",
     "abi": [
       2,
       20,
       0
     ],
     "delivery": "local_source_override",
-    "wasm_sha256": "bda33b89ebe7dba33e1f7360ab427bb32543fe4c49aa7366ee9fbd7cd625e5b7",
+    "wasm_sha256": "2f88cca83aca2ac27dd0c0ac08c586fd3093f804b446019739f5a4453b2fbd20",
     "loader_sha256": "256aca1d6d03d210a053d08de99a01a1a63fd19aba3512cc402b8ac13c1e3023",
     "publication_claimed": false
-  }
+  },
+  "qualification_archive_sha256": "52239d5e7ec0f3367beb92b121df4a1e7aac69dbaf4933127de21ffb82648058",
+  "provenance": "Methods1310/DAG343/Data214 actual public npm artifacts; Formats213/IO211/Datasets314 web builds of exact published source tags; full wasm-cohort.json retained."
 }
