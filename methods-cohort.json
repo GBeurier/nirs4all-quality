@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "package": "@nirs4all/methods",
+  "minimum_version": "1.3.9",
+  "runtime_version": "1.3.9+abi.2.20.0",
+  "abi": [
+    2,
+    20,
+    0
+  ],
+  "delivery": "local_source_override",
+  "wasm_sha256": "bda33b89ebe7dba33e1f7360ab427bb32543fe4c49aa7366ee9fbd7cd625e5b7",
+  "loader_sha256": "256aca1d6d03d210a053d08de99a01a1a63fd19aba3512cc402b8ac13c1e3023",
+  "publication_claimed": false
+}
