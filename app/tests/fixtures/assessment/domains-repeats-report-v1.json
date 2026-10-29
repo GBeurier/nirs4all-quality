@@ -1,0 +1,2260 @@
+{
+  "schema_version": 1,
+  "engine_version": "0.1.0-alpha.3",
+  "protocol_version": "domains.canonical.v0.2",
+  "context": {
+    "dataset_id": "synthetic-qualified_technical_repeats",
+    "content_version": "1.0.0",
+    "source_id": "nir",
+    "target_id": "concentration",
+    "split_id": "explicit-v1"
+  },
+  "data_origin": "synthetic",
+  "status": "partial",
+  "test_target_accessed": false,
+  "policy": {
+    "independence_unit": "physical_sample",
+    "representation": "technical_mean",
+    "audit_mode": "pre_training",
+    "seed": 17,
+    "pca_max_components": 3,
+    "pca_variance_fraction": 0.95
+  },
+  "provenance": {
+    "domains": "0.1.0-alpha.3",
+    "fixture_generator": "controlled-v1; deterministic; no RNG draws",
+    "methods": "1.3.6+abi.2.19.0",
+    "methods_abi": "2.19.0",
+    "methods_binary_sha256": "096bae41ffc5e4f6ec8d73b0ca43f0cec83f66dda806b2d43b2d893ba07db164",
+    "preflight": "0.1.0-alpha.1",
+    "sanitized_task_sha256": "c301c5469a72b11e3a0faae178ceffd82c6283298a4522c173657f7fad7a4d94"
+  },
+  "fit": {
+    "eigenvalues": [
+      36.000000000000014
+    ],
+    "fit_observation_ids": [
+      "mean:5c313414d42b0a37f2e80a0d2081b887b40c1833dee99c29a5784a716eab13ee",
+      "mean:fc8800a68a0587a543bbf9f8f8c6238b885699317b5f470dcf207647ca06b806",
+      "o-train-2",
+      "o-train-3",
+      "o-train-4",
+      "o-train-5",
+      "o-train-6",
+      "o-train-7"
+    ],
+    "fit_partition": "train",
+    "fit_x_sha256": "9a4b8d2a158431b394806f05350c2052cc4931dc1e9a70d2335fec5aa0aa361b",
+    "full_moments": [
+      36.0,
+      1296.0
+    ],
+    "loadings": [
+      [
+        0.408248290463863,
+        0.816496580927726,
+        -0.408248290463863
+      ]
+    ],
+    "mean": [
+      0.5,
+      1.0,
+      0.5
+    ],
+    "n_components": 1,
+    "nn_threshold": 2.449489742783178,
+    "reconstruction_squared_threshold": 3.8499999999999996e-11,
+    "requested_variance_reached": true,
+    "retained_variance_fraction": 1.0000000000000004,
+    "solver": "Methods automatic; exact or deterministic approximate depending on matrix shape; solver flag not exposed by ABI",
+    "threshold_rule": "train q75 + 1.5 IQR; residual numerical floor 1e-12*(1+mean_norm_squared+trace)"
+  },
+  "preflight": {
+    "capabilities": [
+      {
+        "available": true,
+        "capability_id": "integrity",
+        "qualified": false,
+        "reason": "ALPHA_PROTOCOL_UNQUALIFIED"
+      },
+      {
+        "available": true,
+        "capability_id": "target.coverage",
+        "qualified": false,
+        "reason": "ALPHA_PROTOCOL_UNQUALIFIED"
+      },
+      {
+        "available": true,
+        "capability_id": "methods.pca",
+        "qualified": false,
+        "reason": "Methods 1.3.6+abi.2.19.0 ABI 2.18; alpha protocol"
+      },
+      {
+        "available": true,
+        "capability_id": "methods.repeatability",
+        "qualified": false,
+        "reason": "Methods 1.3.6+abi.2.19.0 ABI 2.18; alpha protocol"
+      },
+      {
+        "available": true,
+        "capability_id": "methods.summary",
+        "qualified": false,
+        "reason": "Methods 1.3.6+abi.2.19.0 ABI 2.18; alpha protocol"
+      },
+      {
+        "available": true,
+        "capability_id": "methods.nearest_neighbors",
+        "qualified": false,
+        "reason": "Methods 1.3.6+abi.2.19.0 ABI 2.18; alpha protocol"
+      },
+      {
+        "available": true,
+        "capability_id": "methods.local_contrast",
+        "qualified": false,
+        "reason": "Methods 1.3.6+abi.2.19.0 ABI 2.18; alpha protocol"
+      },
+      {
+        "available": false,
+        "capability_id": "validation_probe",
+        "qualified": false,
+        "reason": "PROTOCOL_NOT_IMPLEMENTED"
+      },
+      {
+        "available": false,
+        "capability_id": "clustering",
+        "qualified": false,
+        "reason": "PROTOCOL_NOT_IMPLEMENTED"
+      },
+      {
+        "available": false,
+        "capability_id": "confounding",
+        "qualified": false,
+        "reason": "PROTOCOL_NOT_IMPLEMENTED"
+      },
+      {
+        "available": false,
+        "capability_id": "domain_shift",
+        "qualified": false,
+        "reason": "PROTOCOL_NOT_IMPLEMENTED"
+      },
+      {
+        "available": false,
+        "capability_id": "noise_proxy",
+        "qualified": false,
+        "reason": "PROTOCOL_NOT_IMPLEMENTED"
+      },
+      {
+        "available": false,
+        "capability_id": "repeatability_uncertainty",
+        "qualified": false,
+        "reason": "PROTOCOL_NOT_IMPLEMENTED"
+      },
+      {
+        "available": false,
+        "capability_id": "snv_sensitivity",
+        "qualified": false,
+        "reason": "PROTOCOL_NOT_IMPLEMENTED"
+      },
+      {
+        "available": false,
+        "capability_id": "quasi_duplicates",
+        "qualified": false,
+        "reason": "PROTOCOL_NOT_IMPLEMENTED"
+      },
+      {
+        "available": false,
+        "capability_id": "metadata_association_tests",
+        "qualified": false,
+        "reason": "PROTOCOL_NOT_IMPLEMENTED"
+      },
+      {
+        "available": true,
+        "capability_id": "local.descriptive",
+        "qualified": false,
+        "reason": "ALPHA_PROTOCOL_UNQUALIFIED"
+      }
+    ],
+    "data_origin": "synthetic",
+    "engine_version": "0.1.0-alpha.1",
+    "findings": [
+      {
+        "action": "Review physical identities and partition assignment before fitting",
+        "confidence": "unknown",
+        "evidence": [
+          "integrity.cross_partition_exact_duplicate_pairs"
+        ],
+        "message": "10 exact spectral pairs span development and retained test in nir",
+        "rule_id": "identity.possible_cross_partition_duplicate.v1",
+        "severity": "high"
+      }
+    ],
+    "limitations": [
+      "Alpha protocols have not passed cross-language scientific qualification",
+      "No validation probe or calibrated thresholds are available"
+    ],
+    "metrics": [
+      {
+        "denominators": {},
+        "metric_id": "population.development_real_samples",
+        "parameters": {},
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": null,
+        "status": "computed",
+        "target_id": null,
+        "unit": null,
+        "value": 8,
+        "view_id": "native"
+      },
+      {
+        "denominators": {},
+        "metric_id": "population.retained_test_samples",
+        "parameters": {},
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": null,
+        "status": "computed",
+        "target_id": null,
+        "unit": null,
+        "value": 8,
+        "view_id": "native"
+      },
+      {
+        "denominators": {},
+        "metric_id": "population.augmented_samples_excluded",
+        "parameters": {},
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": null,
+        "status": "computed",
+        "target_id": null,
+        "unit": null,
+        "value": 0,
+        "view_id": "native"
+      },
+      {
+        "denominators": {
+          "n_cells": 54
+        },
+        "metric_id": "integrity.missing_cells",
+        "parameters": {},
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": "nir",
+        "status": "computed",
+        "target_id": null,
+        "unit": null,
+        "value": 0,
+        "view_id": "native"
+      },
+      {
+        "denominators": {},
+        "metric_id": "integrity.axis_order",
+        "parameters": {
+          "axis_transform": "none; source column order retained"
+        },
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": "nir",
+        "status": "computed",
+        "target_id": null,
+        "unit": "nm",
+        "value": "ascending",
+        "view_id": "native"
+      },
+      {
+        "denominators": {
+          "n_observations_source": 18
+        },
+        "metric_id": "integrity.development_observations",
+        "parameters": {},
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": "nir",
+        "status": "computed",
+        "target_id": null,
+        "unit": null,
+        "value": 10,
+        "view_id": "native"
+      },
+      {
+        "denominators": {
+          "n_development_observations": 10
+        },
+        "metric_id": "integrity.cross_physical_exact_duplicate_pairs",
+        "parameters": {
+          "normalization": "f64_bits_with_negative_zero_normalized_and_masked_cell_sentinel"
+        },
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": "nir",
+        "status": "computed",
+        "target_id": null,
+        "unit": null,
+        "value": 0,
+        "view_id": "native"
+      },
+      {
+        "denominators": {
+          "n_affected_development_observations": 10,
+          "n_affected_retained_test_observations": 8,
+          "n_development_observations": 10,
+          "n_retained_test_observations": 8
+        },
+        "metric_id": "integrity.cross_partition_exact_duplicate_pairs",
+        "parameters": {
+          "normalization": "f64_bits_with_negative_zero_normalized_and_masked_cell_sentinel",
+          "test_access": "X_only_integrity_no_fit_no_Y"
+        },
+        "population_id": "development_real_vs_retained_test_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": "nir",
+        "status": "computed",
+        "target_id": null,
+        "unit": null,
+        "value": 10,
+        "view_id": "native"
+      },
+      {
+        "denominators": {
+          "n_development_observations": 10,
+          "n_excluded_ambiguous_repeat_observations": 0,
+          "n_excluded_incomplete_observations": 0,
+          "n_excluded_multicontext_observations": 0
+        },
+        "metric_id": "structure.eligible_samples",
+        "parameters": {
+          "aggregation": "equal_sample_mean_within_physical_instrument_campaign"
+        },
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": "nir",
+        "status": "computed",
+        "target_id": null,
+        "unit": null,
+        "value": 8,
+        "view_id": "native"
+      },
+      {
+        "denominators": {
+          "n_aggregated_samples": 8
+        },
+        "metric_id": "structure.pca_eigenvalues",
+        "parameters": {
+          "backend_version": "1.3.6+abi.2.19.0",
+          "n_components": 3
+        },
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": "nir",
+        "status": "computed",
+        "target_id": null,
+        "unit": null,
+        "value": [
+          36.000000000000014,
+          0.0,
+          0.0
+        ],
+        "view_id": "canonical:centered"
+      },
+      {
+        "denominators": {},
+        "metric_id": "structure.full_variance_moments",
+        "parameters": {
+          "provenance": "methods_full_centered_covariance_ddof_1"
+        },
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": "nir",
+        "status": "computed",
+        "target_id": null,
+        "unit": null,
+        "value": {
+          "sum_eigenvalues": 36.0,
+          "sum_squared_eigenvalues": 1296.0
+        },
+        "view_id": "canonical:centered"
+      },
+      {
+        "denominators": {
+          "n_components_retained": 3
+        },
+        "metric_id": "structure.explained_variance_retained",
+        "parameters": {},
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": "nir",
+        "status": "computed",
+        "target_id": null,
+        "unit": null,
+        "value": 1.0000000000000004,
+        "view_id": "canonical:centered"
+      },
+      {
+        "denominators": {
+          "n_aggregated_samples": 8
+        },
+        "metric_id": "structure.pca_scores",
+        "parameters": {
+          "score_columns": 3
+        },
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": "nir",
+        "status": "computed",
+        "target_id": null,
+        "unit": null,
+        "value": {
+          "aggregation_keys": [
+            "train-0|A|C1",
+            "train-1|A|C1",
+            "train-2|A|C1",
+            "train-3|A|C1",
+            "train-4|A|C1",
+            "train-5|A|C1",
+            "train-6|A|C1",
+            "train-7|A|C1"
+          ],
+          "sample_ids": [
+            "context:7b3a3c2f8e8fc05ac73630f26216fd99f1e1965188bb7b46667197bcf3e529bd",
+            "context:77c036214819c08c31282b3338e7f3f5aa6dd726840fd5bba42b694e287d59f3",
+            "context:724cc895ec42335109509f19ccfe89de766f3a10d09745b0adead3cdec118e07",
+            "context:f703771a048f053e4a928ec6b8068e68f5e7fef89b77d29219f0b54c7d00f6c0",
+            "context:e9abecbe861ed4f0f1e4f2b327066f3253f157cb0d7a79ba2def1ec48b0bb4f7",
+            "context:345b8ee341981b052c48797a52020298fc2298f143c803a3ac73655053669d50",
+            "context:9a0d46fc1fc951216478b197f3e01d4918812b33a35bf9af5ab32d2c75613057",
+            "context:9798f910a09b44558e56d603464af712285c36163666479aeb882f45fbb051dc"
+          ],
+          "scores": [
+            [
+              -8.573214099741124,
+              0.0,
+              0.0
+            ],
+            [
+              -6.123724356957946,
+              0.0,
+              0.0
+            ],
+            [
+              -3.6742346141747673,
+              0.0,
+              0.0
+            ],
+            [
+              -1.2247448713915892,
+              0.0,
+              0.0
+            ],
+            [
+              1.2247448713915892,
+              0.0,
+              0.0
+            ],
+            [
+              3.6742346141747673,
+              0.0,
+              0.0
+            ],
+            [
+              6.123724356957946,
+              0.0,
+              0.0
+            ],
+            [
+              8.573214099741124,
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        "view_id": "canonical:centered"
+      },
+      {
+        "denominators": {
+          "n_eligible_samples": 8
+        },
+        "metric_id": "local.global_contrast",
+        "parameters": {
+          "contrast_backend": "1.3.6+abi.2.19.0",
+          "contrast_definition": "1_minus_neighbor_squared_difference_over_2_sample_variance",
+          "fraction_rows_with_neighbors": 1.0,
+          "k": 3,
+          "neighbor_backend": "1.3.6+abi.2.19.0"
+        },
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": "nir",
+        "status": "computed",
+        "target_id": "concentration",
+        "unit": null,
+        "value": 0.7777777777777778,
+        "view_id": "canonical:centered"
+      },
+      {
+        "denominators": {},
+        "metric_id": "structure.effective_dimension",
+        "parameters": {
+          "moments_provenance": "methods_full_covariance_moments"
+        },
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": "nir",
+        "status": "computed",
+        "target_id": null,
+        "unit": null,
+        "value": 1.0,
+        "view_id": "canonical:centered"
+      },
+      {
+        "denominators": {
+          "n_observations": 10,
+          "n_physical_groups": 8
+        },
+        "metric_id": "measurement.repeatability_sd",
+        "parameters": {
+          "backend_version": "1.3.6+abi.2.19.0",
+          "band_status_0_icc_1_insufficient_2_unbalanced_3_zero_total": [
+            2,
+            2,
+            2
+          ],
+          "campaign": "C1",
+          "instrument": "A",
+          "n_groups_with_valid_observations_per_band": [
+            8,
+            8,
+            8
+          ],
+          "repeat_type": "rescan"
+        },
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": "nir",
+        "status": "computed",
+        "target_id": null,
+        "unit": "absorbance",
+        "value": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "view_id": "native"
+      },
+      {
+        "denominators": {},
+        "metric_id": "measurement.icc_1_1",
+        "parameters": {
+          "band_status_0_computed_1_insufficient_2_unbalanced_3_zero_total": [
+            2,
+            2,
+            2
+          ],
+          "n_groups_with_valid_observations_per_band": [
+            8,
+            8,
+            8
+          ]
+        },
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": "UNBALANCED_OR_UNDEFINED_ALL_BANDS",
+        "scope": "source_target",
+        "source_id": "nir",
+        "status": "unsupported",
+        "target_id": null,
+        "unit": null,
+        "value": null,
+        "view_id": "native"
+      },
+      {
+        "denominators": {
+          "n_development_real_samples": 8,
+          "n_excluded_censored": 0,
+          "n_excluded_composite": 0,
+          "n_excluded_retained_prediction_or_augmented": 0,
+          "n_inconsistent_samples": 0,
+          "n_reference_measurements": 8,
+          "n_unreferenced_development_samples": 0
+        },
+        "metric_id": "target.exact_eligible_samples",
+        "parameters": {},
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": null,
+        "status": "computed",
+        "target_id": "concentration",
+        "unit": null,
+        "value": 8,
+        "view_id": "native"
+      },
+      {
+        "denominators": {},
+        "metric_id": "target.continuous_distribution",
+        "parameters": {
+          "backend_version": "1.3.6+abi.2.19.0"
+        },
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": null,
+        "scope": "source_target",
+        "source_id": null,
+        "status": "computed",
+        "target_id": "concentration",
+        "unit": null,
+        "value": {
+          "count": 8,
+          "max": 4.0,
+          "mean": 0.5,
+          "median": 0.5,
+          "min": -3.0,
+          "q25": -1.25,
+          "q75": 2.25,
+          "sample_sd": 2.449489742783178
+        },
+        "view_id": "native"
+      },
+      {
+        "denominators": {},
+        "metric_id": "target.local_contradiction_test",
+        "parameters": {},
+        "population_id": "development_real",
+        "protocol_version": "0.1.0-alpha.1",
+        "reason_code": "PERMUTATION_PLAN_NOT_QUALIFIED",
+        "scope": "source_target",
+        "source_id": null,
+        "status": "unsupported",
+        "target_id": "concentration",
+        "unit": null,
+        "value": null,
+        "view_id": "native"
+      }
+    ],
+    "profile_status": "exploratory",
+    "protocol_bundle_version": "0.1.0-alpha.1",
+    "schema_version": 1,
+    "status": "partial",
+    "validation": {
+      "issues": [],
+      "valid": true
+    }
+  },
+  "unit_audit": {
+    "dependency_components": [
+      {
+        "component_id": "dependency:0168355ab222622ec6c69db793197f1ba62b19ad270bbbd08850addb93d9f2ec",
+        "has_test": true,
+        "has_train": false,
+        "links": [
+          {
+            "key": "test-3",
+            "kind": "group"
+          },
+          {
+            "key": "test-3",
+            "kind": "physical"
+          },
+          {
+            "key": "r-test-3",
+            "kind": "reference"
+          },
+          {
+            "key": "test-3",
+            "kind": "sample"
+          }
+        ],
+        "observation_ids": [
+          "o-test-3"
+        ]
+      },
+      {
+        "component_id": "dependency:1079752eaa43b007bef981a4a6c4930dbf2773f61a70a01ad46a6243e21e1ff0",
+        "has_test": true,
+        "has_train": false,
+        "links": [
+          {
+            "key": "test-7",
+            "kind": "group"
+          },
+          {
+            "key": "test-7",
+            "kind": "physical"
+          },
+          {
+            "key": "r-test-7",
+            "kind": "reference"
+          },
+          {
+            "key": "test-7",
+            "kind": "sample"
+          }
+        ],
+        "observation_ids": [
+          "o-test-7"
+        ]
+      },
+      {
+        "component_id": "dependency:11eedf2f0c7e75d2f639259720bd23a6864dc3fb796d2d5433cd7a5e58c9eea9",
+        "has_test": false,
+        "has_train": true,
+        "links": [
+          {
+            "key": "train-6",
+            "kind": "group"
+          },
+          {
+            "key": "train-6",
+            "kind": "physical"
+          },
+          {
+            "key": "r-train-6",
+            "kind": "reference"
+          },
+          {
+            "key": "train-6",
+            "kind": "sample"
+          }
+        ],
+        "observation_ids": [
+          "o-train-6"
+        ]
+      },
+      {
+        "component_id": "dependency:1d58bddd44e3c9e20a9153fbd1182262a3bc8b1e5a238c98329ee62f35b2d1cc",
+        "has_test": true,
+        "has_train": false,
+        "links": [
+          {
+            "key": "test-4",
+            "kind": "group"
+          },
+          {
+            "key": "test-4",
+            "kind": "physical"
+          },
+          {
+            "key": "r-test-4",
+            "kind": "reference"
+          },
+          {
+            "key": "test-4",
+            "kind": "sample"
+          }
+        ],
+        "observation_ids": [
+          "o-test-4"
+        ]
+      },
+      {
+        "component_id": "dependency:2a174c24a94134de23b8b3c353d649b542e5326d404d7868fafe8a1f6c3f77f1",
+        "has_test": true,
+        "has_train": false,
+        "links": [
+          {
+            "key": "test-1",
+            "kind": "group"
+          },
+          {
+            "key": "test-1",
+            "kind": "physical"
+          },
+          {
+            "key": "r-test-1",
+            "kind": "reference"
+          },
+          {
+            "key": "test-1",
+            "kind": "sample"
+          }
+        ],
+        "observation_ids": [
+          "o-test-1"
+        ]
+      },
+      {
+        "component_id": "dependency:5c313414d42b0a37f2e80a0d2081b887b40c1833dee99c29a5784a716eab13ee",
+        "has_test": false,
+        "has_train": true,
+        "links": [
+          {
+            "key": "train-0",
+            "kind": "group"
+          },
+          {
+            "key": "train-0",
+            "kind": "physical"
+          },
+          {
+            "key": "r-train-0",
+            "kind": "reference"
+          },
+          {
+            "key": "train-0",
+            "kind": "sample"
+          }
+        ],
+        "observation_ids": [
+          "o-train-0",
+          "o-train-0-repeat"
+        ]
+      },
+      {
+        "component_id": "dependency:6d1970e91eb9b8cae351b52f5e5dcac12e1c27bb42d8a76b58671b51bd7f2917",
+        "has_test": false,
+        "has_train": true,
+        "links": [
+          {
+            "key": "train-5",
+            "kind": "group"
+          },
+          {
+            "key": "train-5",
+            "kind": "physical"
+          },
+          {
+            "key": "r-train-5",
+            "kind": "reference"
+          },
+          {
+            "key": "train-5",
+            "kind": "sample"
+          }
+        ],
+        "observation_ids": [
+          "o-train-5"
+        ]
+      },
+      {
+        "component_id": "dependency:80ecdbc4d0e90edf451ffdeb29cf2b697b290df51d1adafe0d50e139282edfc3",
+        "has_test": true,
+        "has_train": false,
+        "links": [
+          {
+            "key": "test-0",
+            "kind": "group"
+          },
+          {
+            "key": "test-0",
+            "kind": "physical"
+          },
+          {
+            "key": "r-test-0",
+            "kind": "reference"
+          },
+          {
+            "key": "test-0",
+            "kind": "sample"
+          }
+        ],
+        "observation_ids": [
+          "o-test-0"
+        ]
+      },
+      {
+        "component_id": "dependency:897caa665066af05e1908f8067b70251e77837cb4d6ecf8dad0df89e9b42a26b",
+        "has_test": false,
+        "has_train": true,
+        "links": [
+          {
+            "key": "train-2",
+            "kind": "group"
+          },
+          {
+            "key": "train-2",
+            "kind": "physical"
+          },
+          {
+            "key": "r-train-2",
+            "kind": "reference"
+          },
+          {
+            "key": "train-2",
+            "kind": "sample"
+          }
+        ],
+        "observation_ids": [
+          "o-train-2"
+        ]
+      },
+      {
+        "component_id": "dependency:a983605986f5316e97b6b721e834a825482566b443aaad84e480a187cb16d32e",
+        "has_test": false,
+        "has_train": true,
+        "links": [
+          {
+            "key": "train-3",
+            "kind": "group"
+          },
+          {
+            "key": "train-3",
+            "kind": "physical"
+          },
+          {
+            "key": "r-train-3",
+            "kind": "reference"
+          },
+          {
+            "key": "train-3",
+            "kind": "sample"
+          }
+        ],
+        "observation_ids": [
+          "o-train-3"
+        ]
+      },
+      {
+        "component_id": "dependency:ab69d70b165987ccea47caa070c760e34d9b0184d7e049293a1051aeaa5b982b",
+        "has_test": true,
+        "has_train": false,
+        "links": [
+          {
+            "key": "test-6",
+            "kind": "group"
+          },
+          {
+            "key": "test-6",
+            "kind": "physical"
+          },
+          {
+            "key": "r-test-6",
+            "kind": "reference"
+          },
+          {
+            "key": "test-6",
+            "kind": "sample"
+          }
+        ],
+        "observation_ids": [
+          "o-test-6"
+        ]
+      },
+      {
+        "component_id": "dependency:b6e903e37ebaac7ba8cc2bb338c59f08db4b77745539a7e324a9d3396ee30ecc",
+        "has_test": false,
+        "has_train": true,
+        "links": [
+          {
+            "key": "train-7",
+            "kind": "group"
+          },
+          {
+            "key": "train-7",
+            "kind": "physical"
+          },
+          {
+            "key": "r-train-7",
+            "kind": "reference"
+          },
+          {
+            "key": "train-7",
+            "kind": "sample"
+          }
+        ],
+        "observation_ids": [
+          "o-train-7"
+        ]
+      },
+      {
+        "component_id": "dependency:c9d1b123d3be86d12aade1a356d7b02ea8de9e1a1242084d752078ad7dd15b29",
+        "has_test": false,
+        "has_train": true,
+        "links": [
+          {
+            "key": "train-4",
+            "kind": "group"
+          },
+          {
+            "key": "train-4",
+            "kind": "physical"
+          },
+          {
+            "key": "r-train-4",
+            "kind": "reference"
+          },
+          {
+            "key": "train-4",
+            "kind": "sample"
+          }
+        ],
+        "observation_ids": [
+          "o-train-4"
+        ]
+      },
+      {
+        "component_id": "dependency:e7559ed30611634ee2fb9ba019b8b8c67296da21893988c4effaea9d74716111",
+        "has_test": true,
+        "has_train": false,
+        "links": [
+          {
+            "key": "test-5",
+            "kind": "group"
+          },
+          {
+            "key": "test-5",
+            "kind": "physical"
+          },
+          {
+            "key": "r-test-5",
+            "kind": "reference"
+          },
+          {
+            "key": "test-5",
+            "kind": "sample"
+          }
+        ],
+        "observation_ids": [
+          "o-test-5"
+        ]
+      },
+      {
+        "component_id": "dependency:f3421f7039548478fddaf53d4463e9a50f08bf44cd77e6c1c2a49a0d7dd333d4",
+        "has_test": true,
+        "has_train": false,
+        "links": [
+          {
+            "key": "test-2",
+            "kind": "group"
+          },
+          {
+            "key": "test-2",
+            "kind": "physical"
+          },
+          {
+            "key": "r-test-2",
+            "kind": "reference"
+          },
+          {
+            "key": "test-2",
+            "kind": "sample"
+          }
+        ],
+        "observation_ids": [
+          "o-test-2"
+        ]
+      },
+      {
+        "component_id": "dependency:fc8800a68a0587a543bbf9f8f8c6238b885699317b5f470dcf207647ca06b806",
+        "has_test": false,
+        "has_train": true,
+        "links": [
+          {
+            "key": "train-1",
+            "kind": "group"
+          },
+          {
+            "key": "train-1",
+            "kind": "physical"
+          },
+          {
+            "key": "r-train-1",
+            "kind": "reference"
+          },
+          {
+            "key": "train-1",
+            "kind": "sample"
+          }
+        ],
+        "observation_ids": [
+          "o-train-1",
+          "o-train-1-repeat"
+        ]
+      }
+    ],
+    "excluded_native_observation_ids": null,
+    "independence_qualification": "declared_constraints_only_not_verified_real_world_independence",
+    "known_reference_ids_total": 16,
+    "protocol_version": "domains.units.v0.1",
+    "reference_issues": [],
+    "reference_precision": "unavailable_no_laboratory_tolerance_supplied",
+    "test": {
+      "acquisitions": 8,
+      "declared_independence_groups": 8,
+      "known_references": 8,
+      "missing_instrument_or_campaign_acquisitions": 0,
+      "missing_reference_acquisitions": 0,
+      "missing_reference_status_acquisitions": 0,
+      "missing_reference_unit_acquisitions": 8,
+      "physical_samples": 8,
+      "repeat_groups": 0,
+      "samples": 8,
+      "validation_groups": 8
+    },
+    "train": {
+      "acquisitions": 10,
+      "declared_independence_groups": 8,
+      "known_references": 8,
+      "missing_instrument_or_campaign_acquisitions": 0,
+      "missing_reference_acquisitions": 0,
+      "missing_reference_status_acquisitions": 0,
+      "missing_reference_unit_acquisitions": 10,
+      "physical_samples": 8,
+      "repeat_groups": 2,
+      "samples": 8,
+      "validation_groups": 8
+    },
+    "validation_groups_total": 16,
+    "xy_blocked": false
+  },
+  "representations": {
+    "cross_context": "linked_native_observations_retained_no_implicit_mean",
+    "mean_backend": "Methods public summary; no local numerical mean kernel",
+    "mean_execution": "available",
+    "native_observation_ids": [
+      "o-train-0",
+      "o-train-1",
+      "o-train-2",
+      "o-train-3",
+      "o-train-4",
+      "o-train-5",
+      "o-train-6",
+      "o-train-7",
+      "o-test-0",
+      "o-test-1",
+      "o-test-2",
+      "o-test-3",
+      "o-test-4",
+      "o-test-5",
+      "o-test-6",
+      "o-test-7",
+      "o-train-0-repeat",
+      "o-train-1-repeat"
+    ],
+    "policy": "technical_mean",
+    "sample_context_groups": [
+      {
+        "context": {
+          "campaign": "C1",
+          "instrument": "A",
+          "source": "nir"
+        },
+        "eligible": true,
+        "observation_ids": [
+          "o-test-0"
+        ],
+        "partition": "test",
+        "physical_sample_id": "test-0",
+        "reason": null,
+        "repeat_types": [
+          "rescan"
+        ],
+        "representation_observation_id": "o-test-0",
+        "sample_ids": [
+          "test-0"
+        ],
+        "weight": 1
+      },
+      {
+        "context": {
+          "campaign": "C1",
+          "instrument": "A",
+          "source": "nir"
+        },
+        "eligible": true,
+        "observation_ids": [
+          "o-test-1"
+        ],
+        "partition": "test",
+        "physical_sample_id": "test-1",
+        "reason": null,
+        "repeat_types": [
+          "rescan"
+        ],
+        "representation_observation_id": "o-test-1",
+        "sample_ids": [
+          "test-1"
+        ],
+        "weight": 1
+      },
+      {
+        "context": {
+          "campaign": "C1",
+          "instrument": "A",
+          "source": "nir"
+        },
+        "eligible": true,
+        "observation_ids": [
+          "o-test-2"
+        ],
+        "partition": "test",
+        "physical_sample_id": "test-2",
+        "reason": null,
+        "repeat_types": [
+          "rescan"
+        ],
+        "representation_observation_id": "o-test-2",
+        "sample_ids": [
+          "test-2"
+        ],
+        "weight": 1
+      },
+      {
+        "context": {
+          "campaign": "C1",
+          "instrument": "A",
+          "source": "nir"
+        },
+        "eligible": true,
+        "observation_ids": [
+          "o-test-3"
+        ],
+        "partition": "test",
+        "physical_sample_id": "test-3",
+        "reason": null,
+        "repeat_types": [
+          "rescan"
+        ],
+        "representation_observation_id": "o-test-3",
+        "sample_ids": [
+          "test-3"
+        ],
+        "weight": 1
+      },
+      {
+        "context": {
+          "campaign": "C1",
+          "instrument": "A",
+          "source": "nir"
+        },
+        "eligible": true,
+        "observation_ids": [
+          "o-test-4"
+        ],
+        "partition": "test",
+        "physical_sample_id": "test-4",
+        "reason": null,
+        "repeat_types": [
+          "rescan"
+        ],
+        "representation_observation_id": "o-test-4",
+        "sample_ids": [
+          "test-4"
+        ],
+        "weight": 1
+      },
+      {
+        "context": {
+          "campaign": "C1",
+          "instrument": "A",
+          "source": "nir"
+        },
+        "eligible": true,
+        "observation_ids": [
+          "o-test-5"
+        ],
+        "partition": "test",
+        "physical_sample_id": "test-5",
+        "reason": null,
+        "repeat_types": [
+          "rescan"
+        ],
+        "representation_observation_id": "o-test-5",
+        "sample_ids": [
+          "test-5"
+        ],
+        "weight": 1
+      },
+      {
+        "context": {
+          "campaign": "C1",
+          "instrument": "A",
+          "source": "nir"
+        },
+        "eligible": true,
+        "observation_ids": [
+          "o-test-6"
+        ],
+        "partition": "test",
+        "physical_sample_id": "test-6",
+        "reason": null,
+        "repeat_types": [
+          "rescan"
+        ],
+        "representation_observation_id": "o-test-6",
+        "sample_ids": [
+          "test-6"
+        ],
+        "weight": 1
+      },
+      {
+        "context": {
+          "campaign": "C1",
+          "instrument": "A",
+          "source": "nir"
+        },
+        "eligible": true,
+        "observation_ids": [
+          "o-test-7"
+        ],
+        "partition": "test",
+        "physical_sample_id": "test-7",
+        "reason": null,
+        "repeat_types": [
+          "rescan"
+        ],
+        "representation_observation_id": "o-test-7",
+        "sample_ids": [
+          "test-7"
+        ],
+        "weight": 1
+      },
+      {
+        "context": {
+          "campaign": "C1",
+          "instrument": "A",
+          "source": "nir"
+        },
+        "eligible": true,
+        "observation_ids": [
+          "o-train-0",
+          "o-train-0-repeat"
+        ],
+        "partition": "train",
+        "physical_sample_id": "train-0",
+        "reason": null,
+        "repeat_types": [
+          "rescan"
+        ],
+        "representation_observation_id": "mean:5c313414d42b0a37f2e80a0d2081b887b40c1833dee99c29a5784a716eab13ee",
+        "sample_ids": [
+          "train-0"
+        ],
+        "weight": 1
+      },
+      {
+        "context": {
+          "campaign": "C1",
+          "instrument": "A",
+          "source": "nir"
+        },
+        "eligible": true,
+        "observation_ids": [
+          "o-train-1",
+          "o-train-1-repeat"
+        ],
+        "partition": "train",
+        "physical_sample_id": "train-1",
+        "reason": null,
+        "repeat_types": [
+          "rescan"
+        ],
+        "representation_observation_id": "mean:fc8800a68a0587a543bbf9f8f8c6238b885699317b5f470dcf207647ca06b806",
+        "sample_ids": [
+          "train-1"
+        ],
+        "weight": 1
+      },
+      {
+        "context": {
+          "campaign": "C1",
+          "instrument": "A",
+          "source": "nir"
+        },
+        "eligible": true,
+        "observation_ids": [
+          "o-train-2"
+        ],
+        "partition": "train",
+        "physical_sample_id": "train-2",
+        "reason": null,
+        "repeat_types": [
+          "rescan"
+        ],
+        "representation_observation_id": "o-train-2",
+        "sample_ids": [
+          "train-2"
+        ],
+        "weight": 1
+      },
+      {
+        "context": {
+          "campaign": "C1",
+          "instrument": "A",
+          "source": "nir"
+        },
+        "eligible": true,
+        "observation_ids": [
+          "o-train-3"
+        ],
+        "partition": "train",
+        "physical_sample_id": "train-3",
+        "reason": null,
+        "repeat_types": [
+          "rescan"
+        ],
+        "representation_observation_id": "o-train-3",
+        "sample_ids": [
+          "train-3"
+        ],
+        "weight": 1
+      },
+      {
+        "context": {
+          "campaign": "C1",
+          "instrument": "A",
+          "source": "nir"
+        },
+        "eligible": true,
+        "observation_ids": [
+          "o-train-4"
+        ],
+        "partition": "train",
+        "physical_sample_id": "train-4",
+        "reason": null,
+        "repeat_types": [
+          "rescan"
+        ],
+        "representation_observation_id": "o-train-4",
+        "sample_ids": [
+          "train-4"
+        ],
+        "weight": 1
+      },
+      {
+        "context": {
+          "campaign": "C1",
+          "instrument": "A",
+          "source": "nir"
+        },
+        "eligible": true,
+        "observation_ids": [
+          "o-train-5"
+        ],
+        "partition": "train",
+        "physical_sample_id": "train-5",
+        "reason": null,
+        "repeat_types": [
+          "rescan"
+        ],
+        "representation_observation_id": "o-train-5",
+        "sample_ids": [
+          "train-5"
+        ],
+        "weight": 1
+      },
+      {
+        "context": {
+          "campaign": "C1",
+          "instrument": "A",
+          "source": "nir"
+        },
+        "eligible": true,
+        "observation_ids": [
+          "o-train-6"
+        ],
+        "partition": "train",
+        "physical_sample_id": "train-6",
+        "reason": null,
+        "repeat_types": [
+          "rescan"
+        ],
+        "representation_observation_id": "o-train-6",
+        "sample_ids": [
+          "train-6"
+        ],
+        "weight": 1
+      },
+      {
+        "context": {
+          "campaign": "C1",
+          "instrument": "A",
+          "source": "nir"
+        },
+        "eligible": true,
+        "observation_ids": [
+          "o-train-7"
+        ],
+        "partition": "train",
+        "physical_sample_id": "train-7",
+        "reason": null,
+        "repeat_types": [
+          "rescan"
+        ],
+        "representation_observation_id": "o-train-7",
+        "sample_ids": [
+          "train-7"
+        ],
+        "weight": 1
+      }
+    ],
+    "selected_population": {
+      "excluded_acquisitions": 0,
+      "test_observation_ids": [
+        "o-test-0",
+        "o-test-1",
+        "o-test-2",
+        "o-test-3",
+        "o-test-4",
+        "o-test-5",
+        "o-test-6",
+        "o-test-7"
+      ],
+      "train_observation_ids": [
+        "mean:5c313414d42b0a37f2e80a0d2081b887b40c1833dee99c29a5784a716eab13ee",
+        "mean:fc8800a68a0587a543bbf9f8f8c6238b885699317b5f470dcf207647ca06b806",
+        "o-train-2",
+        "o-train-3",
+        "o-train-4",
+        "o-train-5",
+        "o-train-6",
+        "o-train-7"
+      ]
+    },
+    "weighting": "one_vote_per_eligible_physical_sample"
+  },
+  "metrics": [
+    {
+      "metric_id": "reference.xy_eligibility",
+      "protocol_version": "domains.canonical.v0.2",
+      "context": {
+        "dataset_id": "synthetic-qualified_technical_repeats",
+        "content_version": "1.0.0",
+        "source_id": "nir",
+        "target_id": "concentration",
+        "split_id": "explicit-v1"
+      },
+      "population": {
+        "population_id": "train_vs_test",
+        "statistical_unit": "physical_sample",
+        "n_train_observations": 10,
+        "n_test_observations": 8,
+        "n_train_physical_samples": 8,
+        "n_test_physical_samples": 8,
+        "n_train_independent_units": 8,
+        "n_test_independent_units": 8,
+        "n_effective": null
+      },
+      "preprocessing_view": "canonical:technical_mean:center_train:pca",
+      "status": "computed",
+      "reason": null,
+      "value": {
+        "reference_identity_complete": true,
+        "status": "descriptive_only"
+      },
+      "unit": "",
+      "parameters": {
+        "pca_max_components": 3,
+        "pca_variance_fraction": 0.95,
+        "representation": "technical_mean",
+        "seed": 17
+      },
+      "uncertainty": null,
+      "provenance": {
+        "domains": "0.1.0-alpha.3",
+        "fixture_generator": "controlled-v1; deterministic; no RNG draws",
+        "methods": "1.3.6+abi.2.19.0",
+        "methods_abi": "2.19.0",
+        "methods_binary_sha256": "096bae41ffc5e4f6ec8d73b0ca43f0cec83f66dda806b2d43b2d893ba07db164",
+        "preflight": "0.1.0-alpha.1",
+        "sanitized_task_sha256": "c301c5469a72b11e3a0faae178ceffd82c6283298a4522c173657f7fad7a4d94"
+      },
+      "observation_ids": []
+    },
+    {
+      "metric_id": "structure.clustering",
+      "protocol_version": "domains.canonical.v0.2",
+      "context": {
+        "dataset_id": "synthetic-qualified_technical_repeats",
+        "content_version": "1.0.0",
+        "source_id": "nir",
+        "target_id": "concentration",
+        "split_id": "explicit-v1"
+      },
+      "population": {
+        "population_id": "train_vs_test",
+        "statistical_unit": "physical_sample",
+        "n_train_observations": 10,
+        "n_test_observations": 8,
+        "n_train_physical_samples": 8,
+        "n_test_physical_samples": 8,
+        "n_train_independent_units": 8,
+        "n_test_independent_units": 8,
+        "n_effective": null
+      },
+      "preprocessing_view": "canonical:technical_mean:center_train:pca",
+      "status": "unavailable",
+      "reason": "CLUSTER_PROTOCOL_DEFERRED",
+      "value": null,
+      "unit": "",
+      "parameters": {
+        "pca_max_components": 3,
+        "pca_variance_fraction": 0.95,
+        "representation": "technical_mean",
+        "seed": 17
+      },
+      "uncertainty": null,
+      "provenance": {
+        "domains": "0.1.0-alpha.3",
+        "fixture_generator": "controlled-v1; deterministic; no RNG draws",
+        "methods": "1.3.6+abi.2.19.0",
+        "methods_abi": "2.19.0",
+        "methods_binary_sha256": "096bae41ffc5e4f6ec8d73b0ca43f0cec83f66dda806b2d43b2d893ba07db164",
+        "preflight": "0.1.0-alpha.1",
+        "sanitized_task_sha256": "c301c5469a72b11e3a0faae178ceffd82c6283298a4522c173657f7fad7a4d94"
+      },
+      "observation_ids": []
+    },
+    {
+      "metric_id": "xy.nested_probe",
+      "protocol_version": "domains.canonical.v0.2",
+      "context": {
+        "dataset_id": "synthetic-qualified_technical_repeats",
+        "content_version": "1.0.0",
+        "source_id": "nir",
+        "target_id": "concentration",
+        "split_id": "explicit-v1"
+      },
+      "population": {
+        "population_id": "train_vs_test",
+        "statistical_unit": "physical_sample",
+        "n_train_observations": 10,
+        "n_test_observations": 8,
+        "n_train_physical_samples": 8,
+        "n_test_physical_samples": 8,
+        "n_train_independent_units": 8,
+        "n_test_independent_units": 8,
+        "n_effective": null
+      },
+      "preprocessing_view": "canonical:technical_mean:center_train:pca",
+      "status": "unavailable",
+      "reason": "NESTED_GROUP_VALIDATION_DEFERRED",
+      "value": null,
+      "unit": "",
+      "parameters": {
+        "pca_max_components": 3,
+        "pca_variance_fraction": 0.95,
+        "representation": "technical_mean",
+        "seed": 17
+      },
+      "uncertainty": null,
+      "provenance": {
+        "domains": "0.1.0-alpha.3",
+        "fixture_generator": "controlled-v1; deterministic; no RNG draws",
+        "methods": "1.3.6+abi.2.19.0",
+        "methods_abi": "2.19.0",
+        "methods_binary_sha256": "096bae41ffc5e4f6ec8d73b0ca43f0cec83f66dda806b2d43b2d893ba07db164",
+        "preflight": "0.1.0-alpha.1",
+        "sanitized_task_sha256": "c301c5469a72b11e3a0faae178ceffd82c6283298a4522c173657f7fad7a4d94"
+      },
+      "observation_ids": []
+    },
+    {
+      "metric_id": "explainability.conditional_effects",
+      "protocol_version": "domains.canonical.v0.2",
+      "context": {
+        "dataset_id": "synthetic-qualified_technical_repeats",
+        "content_version": "1.0.0",
+        "source_id": "nir",
+        "target_id": "concentration",
+        "split_id": "explicit-v1"
+      },
+      "population": {
+        "population_id": "train_vs_test",
+        "statistical_unit": "physical_sample",
+        "n_train_observations": 10,
+        "n_test_observations": 8,
+        "n_train_physical_samples": 8,
+        "n_test_physical_samples": 8,
+        "n_train_independent_units": 8,
+        "n_test_independent_units": 8,
+        "n_effective": null
+      },
+      "preprocessing_view": "canonical:technical_mean:center_train:pca",
+      "status": "unavailable",
+      "reason": "CONDITIONAL_FACTOR_PROTOCOL_DEFERRED",
+      "value": null,
+      "unit": "",
+      "parameters": {
+        "pca_max_components": 3,
+        "pca_variance_fraction": 0.95,
+        "representation": "technical_mean",
+        "seed": 17
+      },
+      "uncertainty": null,
+      "provenance": {
+        "domains": "0.1.0-alpha.3",
+        "fixture_generator": "controlled-v1; deterministic; no RNG draws",
+        "methods": "1.3.6+abi.2.19.0",
+        "methods_abi": "2.19.0",
+        "methods_binary_sha256": "096bae41ffc5e4f6ec8d73b0ca43f0cec83f66dda806b2d43b2d893ba07db164",
+        "preflight": "0.1.0-alpha.1",
+        "sanitized_task_sha256": "c301c5469a72b11e3a0faae178ceffd82c6283298a4522c173657f7fad7a4d94"
+      },
+      "observation_ids": []
+    },
+    {
+      "metric_id": "coverage.effective_dimension",
+      "protocol_version": "domains.canonical.v0.2",
+      "context": {
+        "dataset_id": "synthetic-qualified_technical_repeats",
+        "content_version": "1.0.0",
+        "source_id": "nir",
+        "target_id": "concentration",
+        "split_id": "explicit-v1"
+      },
+      "population": {
+        "population_id": "train_vs_test",
+        "statistical_unit": "physical_sample",
+        "n_train_observations": 8,
+        "n_test_observations": 8,
+        "n_train_physical_samples": 8,
+        "n_test_physical_samples": 8,
+        "n_train_independent_units": 8,
+        "n_test_independent_units": 8,
+        "n_effective": null
+      },
+      "preprocessing_view": "canonical:technical_mean:center_train:pca",
+      "status": "computed",
+      "reason": null,
+      "value": 1.0,
+      "unit": "dimensions",
+      "parameters": {
+        "pca_max_components": 3,
+        "pca_variance_fraction": 0.95,
+        "representation": "technical_mean",
+        "seed": 17
+      },
+      "uncertainty": null,
+      "provenance": {
+        "domains": "0.1.0-alpha.3",
+        "fixture_generator": "controlled-v1; deterministic; no RNG draws",
+        "methods": "1.3.6+abi.2.19.0",
+        "methods_abi": "2.19.0",
+        "methods_binary_sha256": "096bae41ffc5e4f6ec8d73b0ca43f0cec83f66dda806b2d43b2d893ba07db164",
+        "preflight": "0.1.0-alpha.1",
+        "sanitized_task_sha256": "c301c5469a72b11e3a0faae178ceffd82c6283298a4522c173657f7fad7a4d94"
+      },
+      "observation_ids": []
+    },
+    {
+      "metric_id": "domain.centroid_distance",
+      "protocol_version": "domains.canonical.v0.2",
+      "context": {
+        "dataset_id": "synthetic-qualified_technical_repeats",
+        "content_version": "1.0.0",
+        "source_id": "nir",
+        "target_id": "concentration",
+        "split_id": "explicit-v1"
+      },
+      "population": {
+        "population_id": "train_vs_test",
+        "statistical_unit": "physical_sample",
+        "n_train_observations": 8,
+        "n_test_observations": 8,
+        "n_train_physical_samples": 8,
+        "n_test_physical_samples": 8,
+        "n_train_independent_units": 8,
+        "n_test_independent_units": 8,
+        "n_effective": null
+      },
+      "preprocessing_view": "canonical:technical_mean:center_train:pca",
+      "status": "computed",
+      "reason": null,
+      "value": 0.0,
+      "unit": "absorbance",
+      "parameters": {
+        "pca_max_components": 3,
+        "pca_variance_fraction": 0.95,
+        "representation": "technical_mean",
+        "seed": 17
+      },
+      "uncertainty": null,
+      "provenance": {
+        "domains": "0.1.0-alpha.3",
+        "fixture_generator": "controlled-v1; deterministic; no RNG draws",
+        "methods": "1.3.6+abi.2.19.0",
+        "methods_abi": "2.19.0",
+        "methods_binary_sha256": "096bae41ffc5e4f6ec8d73b0ca43f0cec83f66dda806b2d43b2d893ba07db164",
+        "preflight": "0.1.0-alpha.1",
+        "sanitized_task_sha256": "c301c5469a72b11e3a0faae178ceffd82c6283298a4522c173657f7fad7a4d94"
+      },
+      "observation_ids": []
+    },
+    {
+      "metric_id": "domain.dispersion_ratio",
+      "protocol_version": "domains.canonical.v0.2",
+      "context": {
+        "dataset_id": "synthetic-qualified_technical_repeats",
+        "content_version": "1.0.0",
+        "source_id": "nir",
+        "target_id": "concentration",
+        "split_id": "explicit-v1"
+      },
+      "population": {
+        "population_id": "train_vs_test",
+        "statistical_unit": "physical_sample",
+        "n_train_observations": 8,
+        "n_test_observations": 8,
+        "n_train_physical_samples": 8,
+        "n_test_physical_samples": 8,
+        "n_train_independent_units": 8,
+        "n_test_independent_units": 8,
+        "n_effective": null
+      },
+      "preprocessing_view": "canonical:technical_mean:center_train:pca",
+      "status": "computed",
+      "reason": null,
+      "value": 1.0,
+      "unit": "variance ratio",
+      "parameters": {
+        "pca_max_components": 3,
+        "pca_variance_fraction": 0.95,
+        "representation": "technical_mean",
+        "seed": 17
+      },
+      "uncertainty": null,
+      "provenance": {
+        "domains": "0.1.0-alpha.3",
+        "fixture_generator": "controlled-v1; deterministic; no RNG draws",
+        "methods": "1.3.6+abi.2.19.0",
+        "methods_abi": "2.19.0",
+        "methods_binary_sha256": "096bae41ffc5e4f6ec8d73b0ca43f0cec83f66dda806b2d43b2d893ba07db164",
+        "preflight": "0.1.0-alpha.1",
+        "sanitized_task_sha256": "c301c5469a72b11e3a0faae178ceffd82c6283298a4522c173657f7fad7a4d94"
+      },
+      "observation_ids": []
+    },
+    {
+      "metric_id": "coverage.test_outside_fraction",
+      "protocol_version": "domains.canonical.v0.2",
+      "context": {
+        "dataset_id": "synthetic-qualified_technical_repeats",
+        "content_version": "1.0.0",
+        "source_id": "nir",
+        "target_id": "concentration",
+        "split_id": "explicit-v1"
+      },
+      "population": {
+        "population_id": "train_vs_test",
+        "statistical_unit": "physical_sample",
+        "n_train_observations": 8,
+        "n_test_observations": 8,
+        "n_train_physical_samples": 8,
+        "n_test_physical_samples": 8,
+        "n_train_independent_units": 8,
+        "n_test_independent_units": 8,
+        "n_effective": null
+      },
+      "preprocessing_view": "canonical:technical_mean:center_train:pca",
+      "status": "computed",
+      "reason": null,
+      "value": 0.0,
+      "unit": "fraction",
+      "parameters": {
+        "denominator": 8,
+        "pca_max_components": 3,
+        "pca_variance_fraction": 0.95,
+        "population_membership": "representations.sample_context_groups maps every representation row to native acquisition IDs",
+        "representation": "technical_mean",
+        "seed": 17,
+        "test_population": [
+          {
+            "independence_group": "test-0",
+            "physical_sample_id": "test-0",
+            "representation_observation_id": "o-test-0"
+          },
+          {
+            "independence_group": "test-1",
+            "physical_sample_id": "test-1",
+            "representation_observation_id": "o-test-1"
+          },
+          {
+            "independence_group": "test-2",
+            "physical_sample_id": "test-2",
+            "representation_observation_id": "o-test-2"
+          },
+          {
+            "independence_group": "test-3",
+            "physical_sample_id": "test-3",
+            "representation_observation_id": "o-test-3"
+          },
+          {
+            "independence_group": "test-4",
+            "physical_sample_id": "test-4",
+            "representation_observation_id": "o-test-4"
+          },
+          {
+            "independence_group": "test-5",
+            "physical_sample_id": "test-5",
+            "representation_observation_id": "o-test-5"
+          },
+          {
+            "independence_group": "test-6",
+            "physical_sample_id": "test-6",
+            "representation_observation_id": "o-test-6"
+          },
+          {
+            "independence_group": "test-7",
+            "physical_sample_id": "test-7",
+            "representation_observation_id": "o-test-7"
+          }
+        ]
+      },
+      "uncertainty": null,
+      "provenance": {
+        "domains": "0.1.0-alpha.3",
+        "fixture_generator": "controlled-v1; deterministic; no RNG draws",
+        "methods": "1.3.6+abi.2.19.0",
+        "methods_abi": "2.19.0",
+        "methods_binary_sha256": "096bae41ffc5e4f6ec8d73b0ca43f0cec83f66dda806b2d43b2d893ba07db164",
+        "preflight": "0.1.0-alpha.1",
+        "sanitized_task_sha256": "c301c5469a72b11e3a0faae178ceffd82c6283298a4522c173657f7fad7a4d94"
+      },
+      "observation_ids": []
+    },
+    {
+      "metric_id": "coverage.train_neighbor_distances",
+      "protocol_version": "domains.canonical.v0.2",
+      "context": {
+        "dataset_id": "synthetic-qualified_technical_repeats",
+        "content_version": "1.0.0",
+        "source_id": "nir",
+        "target_id": "concentration",
+        "split_id": "explicit-v1"
+      },
+      "population": {
+        "population_id": "train_vs_test",
+        "statistical_unit": "physical_sample",
+        "n_train_observations": 8,
+        "n_test_observations": 8,
+        "n_train_physical_samples": 8,
+        "n_test_physical_samples": 8,
+        "n_train_independent_units": 8,
+        "n_test_independent_units": 8,
+        "n_effective": null
+      },
+      "preprocessing_view": "canonical:technical_mean:center_train:pca",
+      "status": "computed",
+      "reason": null,
+      "value": [
+        2.449489742783178,
+        2.449489742783178,
+        2.449489742783178,
+        2.449489742783178,
+        2.449489742783178,
+        2.449489742783178,
+        2.449489742783178,
+        2.449489742783178
+      ],
+      "unit": "absorbance",
+      "parameters": {
+        "pca_max_components": 3,
+        "pca_variance_fraction": 0.95,
+        "representation": "technical_mean",
+        "seed": 17
+      },
+      "uncertainty": null,
+      "provenance": {
+        "domains": "0.1.0-alpha.3",
+        "fixture_generator": "controlled-v1; deterministic; no RNG draws",
+        "methods": "1.3.6+abi.2.19.0",
+        "methods_abi": "2.19.0",
+        "methods_binary_sha256": "096bae41ffc5e4f6ec8d73b0ca43f0cec83f66dda806b2d43b2d893ba07db164",
+        "preflight": "0.1.0-alpha.1",
+        "sanitized_task_sha256": "c301c5469a72b11e3a0faae178ceffd82c6283298a4522c173657f7fad7a4d94"
+      },
+      "observation_ids": [
+        "mean:5c313414d42b0a37f2e80a0d2081b887b40c1833dee99c29a5784a716eab13ee",
+        "mean:fc8800a68a0587a543bbf9f8f8c6238b885699317b5f470dcf207647ca06b806",
+        "o-train-2",
+        "o-train-3",
+        "o-train-4",
+        "o-train-5",
+        "o-train-6",
+        "o-train-7"
+      ]
+    },
+    {
+      "metric_id": "coverage.test_neighbor_distances",
+      "protocol_version": "domains.canonical.v0.2",
+      "context": {
+        "dataset_id": "synthetic-qualified_technical_repeats",
+        "content_version": "1.0.0",
+        "source_id": "nir",
+        "target_id": "concentration",
+        "split_id": "explicit-v1"
+      },
+      "population": {
+        "population_id": "train_vs_test",
+        "statistical_unit": "physical_sample",
+        "n_train_observations": 8,
+        "n_test_observations": 8,
+        "n_train_physical_samples": 8,
+        "n_test_physical_samples": 8,
+        "n_train_independent_units": 8,
+        "n_test_independent_units": 8,
+        "n_effective": null
+      },
+      "preprocessing_view": "canonical:technical_mean:center_train:pca",
+      "status": "computed",
+      "reason": null,
+      "value": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "unit": "absorbance",
+      "parameters": {
+        "pca_max_components": 3,
+        "pca_variance_fraction": 0.95,
+        "representation": "technical_mean",
+        "seed": 17
+      },
+      "uncertainty": null,
+      "provenance": {
+        "domains": "0.1.0-alpha.3",
+        "fixture_generator": "controlled-v1; deterministic; no RNG draws",
+        "methods": "1.3.6+abi.2.19.0",
+        "methods_abi": "2.19.0",
+        "methods_binary_sha256": "096bae41ffc5e4f6ec8d73b0ca43f0cec83f66dda806b2d43b2d893ba07db164",
+        "preflight": "0.1.0-alpha.1",
+        "sanitized_task_sha256": "c301c5469a72b11e3a0faae178ceffd82c6283298a4522c173657f7fad7a4d94"
+      },
+      "observation_ids": [
+        "o-test-0",
+        "o-test-1",
+        "o-test-2",
+        "o-test-3",
+        "o-test-4",
+        "o-test-5",
+        "o-test-6",
+        "o-test-7"
+      ]
+    },
+    {
+      "metric_id": "coverage.train_reconstruction_squared",
+      "protocol_version": "domains.canonical.v0.2",
+      "context": {
+        "dataset_id": "synthetic-qualified_technical_repeats",
+        "content_version": "1.0.0",
+        "source_id": "nir",
+        "target_id": "concentration",
+        "split_id": "explicit-v1"
+      },
+      "population": {
+        "population_id": "train_vs_test",
+        "statistical_unit": "physical_sample",
+        "n_train_observations": 8,
+        "n_test_observations": 8,
+        "n_train_physical_samples": 8,
+        "n_test_physical_samples": 8,
+        "n_train_independent_units": 8,
+        "n_test_independent_units": 8,
+        "n_effective": null
+      },
+      "preprocessing_view": "canonical:technical_mean:center_train:pca",
+      "status": "computed",
+      "reason": null,
+      "value": [
+        1.1832913578315177e-30,
+        1.1832913578315177e-30,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.1832913578315177e-30,
+        1.1832913578315177e-30
+      ],
+      "unit": "signal squared",
+      "parameters": {
+        "pca_max_components": 3,
+        "pca_variance_fraction": 0.95,
+        "representation": "technical_mean",
+        "seed": 17
+      },
+      "uncertainty": null,
+      "provenance": {
+        "domains": "0.1.0-alpha.3",
+        "fixture_generator": "controlled-v1; deterministic; no RNG draws",
+        "methods": "1.3.6+abi.2.19.0",
+        "methods_abi": "2.19.0",
+        "methods_binary_sha256": "096bae41ffc5e4f6ec8d73b0ca43f0cec83f66dda806b2d43b2d893ba07db164",
+        "preflight": "0.1.0-alpha.1",
+        "sanitized_task_sha256": "c301c5469a72b11e3a0faae178ceffd82c6283298a4522c173657f7fad7a4d94"
+      },
+      "observation_ids": [
+        "mean:5c313414d42b0a37f2e80a0d2081b887b40c1833dee99c29a5784a716eab13ee",
+        "mean:fc8800a68a0587a543bbf9f8f8c6238b885699317b5f470dcf207647ca06b806",
+        "o-train-2",
+        "o-train-3",
+        "o-train-4",
+        "o-train-5",
+        "o-train-6",
+        "o-train-7"
+      ]
+    },
+    {
+      "metric_id": "coverage.test_reconstruction_squared",
+      "protocol_version": "domains.canonical.v0.2",
+      "context": {
+        "dataset_id": "synthetic-qualified_technical_repeats",
+        "content_version": "1.0.0",
+        "source_id": "nir",
+        "target_id": "concentration",
+        "split_id": "explicit-v1"
+      },
+      "population": {
+        "population_id": "train_vs_test",
+        "statistical_unit": "physical_sample",
+        "n_train_observations": 8,
+        "n_test_observations": 8,
+        "n_train_physical_samples": 8,
+        "n_test_physical_samples": 8,
+        "n_train_independent_units": 8,
+        "n_test_independent_units": 8,
+        "n_effective": null
+      },
+      "preprocessing_view": "canonical:technical_mean:center_train:pca",
+      "status": "computed",
+      "reason": null,
+      "value": [
+        1.1832913578315177e-30,
+        1.1832913578315177e-30,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.1832913578315177e-30,
+        1.1832913578315177e-30
+      ],
+      "unit": "signal squared",
+      "parameters": {
+        "pca_max_components": 3,
+        "pca_variance_fraction": 0.95,
+        "representation": "technical_mean",
+        "seed": 17
+      },
+      "uncertainty": null,
+      "provenance": {
+        "domains": "0.1.0-alpha.3",
+        "fixture_generator": "controlled-v1; deterministic; no RNG draws",
+        "methods": "1.3.6+abi.2.19.0",
+        "methods_abi": "2.19.0",
+        "methods_binary_sha256": "096bae41ffc5e4f6ec8d73b0ca43f0cec83f66dda806b2d43b2d893ba07db164",
+        "preflight": "0.1.0-alpha.1",
+        "sanitized_task_sha256": "c301c5469a72b11e3a0faae178ceffd82c6283298a4522c173657f7fad7a4d94"
+      },
+      "observation_ids": [
+        "o-test-0",
+        "o-test-1",
+        "o-test-2",
+        "o-test-3",
+        "o-test-4",
+        "o-test-5",
+        "o-test-6",
+        "o-test-7"
+      ]
+    },
+    {
+      "metric_id": "target.test_shift",
+      "protocol_version": "domains.canonical.v0.2",
+      "context": {
+        "dataset_id": "synthetic-qualified_technical_repeats",
+        "content_version": "1.0.0",
+        "source_id": "nir",
+        "target_id": "concentration",
+        "split_id": "explicit-v1"
+      },
+      "population": {
+        "population_id": "train_vs_test",
+        "statistical_unit": "physical_sample",
+        "n_train_observations": 10,
+        "n_test_observations": 8,
+        "n_train_physical_samples": 8,
+        "n_test_physical_samples": 8,
+        "n_train_independent_units": 8,
+        "n_test_independent_units": 8,
+        "n_effective": null
+      },
+      "preprocessing_view": "canonical:technical_mean:center_train:pca",
+      "status": "unavailable",
+      "reason": "Y_TEST_FORBIDDEN_PRE_TRAINING",
+      "value": null,
+      "unit": "",
+      "parameters": {
+        "pca_max_components": 3,
+        "pca_variance_fraction": 0.95,
+        "representation": "technical_mean",
+        "seed": 17
+      },
+      "uncertainty": null,
+      "provenance": {
+        "domains": "0.1.0-alpha.3",
+        "fixture_generator": "controlled-v1; deterministic; no RNG draws",
+        "methods": "1.3.6+abi.2.19.0",
+        "methods_abi": "2.19.0",
+        "methods_binary_sha256": "096bae41ffc5e4f6ec8d73b0ca43f0cec83f66dda806b2d43b2d893ba07db164",
+        "preflight": "0.1.0-alpha.1",
+        "sanitized_task_sha256": "c301c5469a72b11e3a0faae178ceffd82c6283298a4522c173657f7fad7a4d94"
+      },
+      "observation_ids": []
+    }
+  ],
+  "findings": [
+    {
+      "rule_id": "preflight:identity.possible_cross_partition_duplicate.v1",
+      "severity": "high",
+      "observation": "10 exact spectral pairs span development and retained test in nir",
+      "confidence": "unknown",
+      "calibration_consequence": "Review measurement integrity and independence before calibration.",
+      "recommended_action": "Review physical identities and partition assignment before fitting",
+      "evidence": [
+        "preflight.findings"
+      ]
+    }
+  ],
+  "dimensions": {
+    "coverage": "computed, exploratory",
+    "generalization": "spectral comparison computed; predictive risk unvalidated",
+    "integrity": "computed (Preflight exploratory alpha)",
+    "measurement": "see Preflight availability per metric",
+    "structure": "unavailable",
+    "xy_relationship": "train target description in Preflight; predictability unavailable"
+  },
+  "limitations": [
+    "Exploratory descriptive audit; no calibrated statistical test or prediction-performance claim.",
+    "Coverage thresholds use train-only Tukey fences; these are heuristics, not failure probabilities.",
+    "No clustering, confounding inference, nested PLS/PCR probe, AOM, MMD, energy or C2ST protocol is implemented.",
+    "Technical means require declared homogeneous contexts; ambiguous and cross-context units are explicitly excluded from pooled geometry.",
+    "Counts of physical samples and groups are not an estimator of effective sample size.",
+    "Physical, group and reference IDs are supplied by the host; structural checks do not independently verify real-world identities or laboratory provenance."
+  ]
+}

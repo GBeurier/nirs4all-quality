@@ -1,0 +1,14 @@
+{
+  "dataset_id": "synthetic-intrinsic-conformance-v1",
+  "content_hash": "sha256:e473400f760d7a2921ebc08e0b826ef62f881a4dea710324143375c411534e20",
+  "producer": "nirs4all-preflight",
+  "source_id": "complete",
+  "population_id": "development_real",
+  "context_id": "intrinsic/native-observations",
+  "scope": "intrinsic",
+  "target_id": null,
+  "split_id": null,
+  "fit_population_id": null,
+  "evaluation_population_id": null,
+  "semantics": {}
+}

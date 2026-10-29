@@ -1,0 +1,35 @@
+[
+  {
+    "confidence_status": "unknown",
+    "context_id": "intrinsic/native/v1",
+    "evidence": [
+      {
+        "context_id": "intrinsic/native/v1",
+        "metric_id": "repeatability.pooled_sd",
+        "population_id": "development_real",
+        "protocol_version": "0.1.0",
+        "source_id": "nir",
+        "target_id": null,
+        "view_id": "native"
+      }
+    ],
+    "evidence_coverage": null,
+    "kind": "heuristic_signature",
+    "message": "Repeatability is unavailable without declared repeat groups.",
+    "original_finding": {
+      "action": "Declare physical repeat-group identities before evaluating repeatability.",
+      "confidence": "unknown",
+      "evidence": [
+        "repeatability.pooled_sd"
+      ],
+      "message": "Repeatability is unavailable without declared repeat groups.",
+      "rule_id": "repeatability.missing_groups.v1",
+      "severity": "info"
+    },
+    "recommended_action": "Declare physical repeat-group identities before evaluating repeatability.",
+    "rule_id": "repeatability.missing_groups.v1",
+    "severity": "info",
+    "signal_strength": null,
+    "unresolved_evidence": []
+  }
+]

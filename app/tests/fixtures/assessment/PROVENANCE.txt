@@ -1,0 +1,24 @@
+Owner-produced Assessment v1 / Findings v1 conformance fixtures.
+preflight-assessment-v1 and preflight-findings-v1 are actual n4pf extraction outputs from the owner hand-authored synthetic migration report/context, with no metrics recomputed in Quality.
+preflight-native-* are actual owner Preflight/native-provider output on the synthetic analytic fixture, retained from datasets-completion-native-proof-v3/test_real_preflight_count_and_current; includes the real domain_shift.design instrument/campaign identity collision. Both factors and all unknown/native fields must remain distinct. Native projected findings are actual n4pf extract-findings output on that exact report/context.
+Numeric values are not refreshed or recalculated by this consumer. String schema1 is the actual current owner wire; the explicit String1.0 spelling is a compatibility case requested for Assessment1.0. Integer1 remains the separate QualificationReport. No Domains numerical engine or producer publication is claimed by schema tests.
+
+Domains native report fixtures are exact public owner examples from
+https://github.com/dcornet/nirs4all-domains/tree/378dc4ca752c3ab3e60f2514da1bdfa062e9a7da
+examples/translation/report.json and examples/technical-repeats/report.json.
+They retain their original historical Methods1.3.6 / ABI2.19 and native
+Domains canonical.v0.2 provenance, not a claim of recomputation by Methods1310.
+The accompanying report.v1.schema.json is the owner's current schema at that
+same commit. The consumer supports explicitly inspected canonical.v0.2/v0.3.
+Copyright original authors/contributors, AGPL-3.0-or-later; license text retained
+alongside these tests. No Domains numerical engine is imported or implemented.
+
+Preflight0.1.1 source-bound intrinsic-v1 fixtures are frozen from owner commit
+881250d5fc26c3978cb0a3d9e25701a2deba05d2, with individual hashes in
+preflight-011/source-receipt.json. The 95 metrics are native observations over the
+explicitly synthetic canonical-input.json, not measurements from a real dataset.
+Native factor and migration-example `*-011-*` fixtures were extracted by the
+same owner's actual n4pf CLI, SHA256
+2e0f0a7b773c4df1405db24148416a1423717ccff9fe76a6571edfc83fe6311e.
+The CLI emitted each metric_context_id. Quality preserves these opaque identities;
+it does not recreate the producer's hash algorithm or its scientific computations.

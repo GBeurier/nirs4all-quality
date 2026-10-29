@@ -1,0 +1,780 @@
+{
+  "schema_version": 1,
+  "data_origin": "synthetic",
+  "engine_version": "0.1.1",
+  "protocol_bundle_version": "0.1.0",
+  "profile_status": "exploratory",
+  "status": "partial",
+  "validation": {
+    "valid": true,
+    "issues": []
+  },
+  "capabilities": [
+    {
+      "capability_id": "integrity",
+      "available": true,
+      "qualified": false,
+      "reason": "ALPHA_PROTOCOL_UNQUALIFIED"
+    },
+    {
+      "capability_id": "target.coverage",
+      "available": true,
+      "qualified": false,
+      "reason": "ALPHA_PROTOCOL_UNQUALIFIED"
+    },
+    {
+      "capability_id": "methods.pca",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.repeatability",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.summary",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.nearest_neighbors",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.local_contrast",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.hdbscan",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.adjusted_rand_index",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.cluster_jaccard",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.linear_sum_assignment",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.random_permutations",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.multivariate_normal",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.snv",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.noise_proxy",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.tolerance_pairs",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.association",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.holm_adjust",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.correlation",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.bh_adjust",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.association_exact",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.correlation_exact",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.permanova",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.permdisp",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.permanova_freedman_lane",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.energy_distance",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.pca_monitor",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.variance_components",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.group_means",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "methods.regression_scores",
+      "available": false,
+      "qualified": false,
+      "reason": "METHODS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "validation.nested_grouped_probe",
+      "available": false,
+      "qualified": false,
+      "reason": "VALIDATION_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "validation_probe",
+      "available": false,
+      "qualified": false,
+      "reason": "VALIDATION_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "validation_probe.classification",
+      "available": false,
+      "qualified": false,
+      "reason": "CLASSIFICATION_PROBE_NOT_QUALIFIED"
+    },
+    {
+      "capability_id": "metadata_association_tests",
+      "available": false,
+      "qualified": false,
+      "reason": "ASSOCIATION_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "noise_proxy",
+      "available": false,
+      "qualified": false,
+      "reason": "NOISE_PROXY_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "snv_sensitivity",
+      "available": false,
+      "qualified": false,
+      "reason": "SNV_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "quasi_duplicates",
+      "available": false,
+      "qualified": false,
+      "reason": "QUASI_DUPLICATE_TOLERANCE_NOT_DECLARED"
+    },
+    {
+      "capability_id": "confounding",
+      "available": false,
+      "qualified": false,
+      "reason": "PERMANOVA_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "domain_shift",
+      "available": false,
+      "qualified": false,
+      "reason": "DOMAIN_SHIFT_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "repeatability_uncertainty",
+      "available": false,
+      "qualified": false,
+      "reason": "VARIANCE_COMPONENTS_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "duplicate_reference_conflicts",
+      "available": false,
+      "qualified": false,
+      "reason": "REFERENCE_CONTRADICTION_TOLERANCE_NOT_DECLARED"
+    },
+    {
+      "capability_id": "clustering",
+      "available": false,
+      "qualified": false,
+      "reason": "HDBSCAN_PROVIDER_NOT_CONFIGURED"
+    },
+    {
+      "capability_id": "local.descriptive",
+      "available": false,
+      "qualified": false,
+      "reason": "KNN_PROVIDER_NOT_CONFIGURED"
+    }
+  ],
+  "metrics": [
+    {
+      "metric_id": "population.development_real_samples",
+      "protocol_version": "0.1.0",
+      "status": "computed",
+      "reason_code": null,
+      "scope": "source_target",
+      "source_id": null,
+      "target_id": null,
+      "view_id": "native",
+      "population_id": "development_real",
+      "value": 6,
+      "unit": null,
+      "denominators": {},
+      "parameters": {}
+    },
+    {
+      "metric_id": "population.retained_test_samples",
+      "protocol_version": "0.1.0",
+      "status": "computed",
+      "reason_code": null,
+      "scope": "source_target",
+      "source_id": null,
+      "target_id": null,
+      "view_id": "native",
+      "population_id": "development_real",
+      "value": 0,
+      "unit": null,
+      "denominators": {},
+      "parameters": {}
+    },
+    {
+      "metric_id": "population.augmented_samples_excluded",
+      "protocol_version": "0.1.0",
+      "status": "computed",
+      "reason_code": null,
+      "scope": "source_target",
+      "source_id": null,
+      "target_id": null,
+      "view_id": "native",
+      "population_id": "development_real",
+      "value": 0,
+      "unit": null,
+      "denominators": {},
+      "parameters": {}
+    },
+    {
+      "metric_id": "integrity.missing_cells",
+      "protocol_version": "0.1.0",
+      "status": "computed",
+      "reason_code": null,
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "native",
+      "population_id": "development_real",
+      "value": 3,
+      "unit": null,
+      "denominators": {
+        "n_cells": 24
+      },
+      "parameters": {}
+    },
+    {
+      "metric_id": "integrity.axis_order",
+      "protocol_version": "0.1.0",
+      "status": "computed",
+      "reason_code": null,
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "native",
+      "population_id": "development_real",
+      "value": "ascending",
+      "unit": "nm",
+      "denominators": {},
+      "parameters": {
+        "axis_transform": "none; source column order retained"
+      }
+    },
+    {
+      "metric_id": "integrity.development_observations",
+      "protocol_version": "0.1.0",
+      "status": "computed",
+      "reason_code": null,
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "native",
+      "population_id": "development_real",
+      "value": 6,
+      "unit": null,
+      "denominators": {
+        "n_observations_source": 6
+      },
+      "parameters": {}
+    },
+    {
+      "metric_id": "integrity.cross_physical_exact_duplicate_pairs",
+      "protocol_version": "0.1.0",
+      "status": "computed",
+      "reason_code": null,
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "native",
+      "population_id": "development_real",
+      "value": 0,
+      "unit": null,
+      "denominators": {
+        "n_development_observations": 6
+      },
+      "parameters": {
+        "normalization": "f64_bits_with_negative_zero_normalized_and_masked_cell_sentinel"
+      }
+    },
+    {
+      "metric_id": "integrity.cross_partition_exact_duplicate_pairs",
+      "protocol_version": "0.1.0",
+      "status": "computed",
+      "reason_code": null,
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "native",
+      "population_id": "development_real_vs_retained_test_real",
+      "value": 0,
+      "unit": null,
+      "denominators": {
+        "n_affected_development_observations": 0,
+        "n_affected_retained_test_observations": 0,
+        "n_development_observations": 6,
+        "n_retained_test_observations": 0
+      },
+      "parameters": {
+        "normalization": "f64_bits_with_negative_zero_normalized_and_masked_cell_sentinel",
+        "test_access": "X_only_integrity_no_fit_no_Y"
+      }
+    },
+    {
+      "metric_id": "integrity.quasi_duplicate_pairs",
+      "protocol_version": "0.1.0",
+      "status": "not_applicable",
+      "reason_code": "QUASI_DUPLICATE_TOLERANCE_NOT_DECLARED",
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "native",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {},
+      "parameters": {}
+    },
+    {
+      "metric_id": "integrity.cross_partition_quasi_duplicate_pairs",
+      "protocol_version": "0.1.0",
+      "status": "not_applicable",
+      "reason_code": "QUASI_DUPLICATE_TOLERANCE_NOT_DECLARED",
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "native",
+      "population_id": "development_real_vs_retained_test_real",
+      "value": null,
+      "unit": null,
+      "denominators": {},
+      "parameters": {}
+    },
+    {
+      "metric_id": "structure.eligible_samples",
+      "protocol_version": "0.1.0",
+      "status": "computed",
+      "reason_code": null,
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "native",
+      "population_id": "development_real",
+      "value": 3,
+      "unit": null,
+      "denominators": {
+        "n_development_observations": 6,
+        "n_excluded_ambiguous_repeat_observations": 0,
+        "n_excluded_incomplete_observations": 3,
+        "n_excluded_multicontext_observations": 0
+      },
+      "parameters": {
+        "aggregation": "equal_sample_mean_within_physical_instrument_campaign"
+      }
+    },
+    {
+      "metric_id": "structure.pca",
+      "protocol_version": "0.1.0",
+      "status": "unsupported",
+      "reason_code": "METHODS_PROVIDER_NOT_CONFIGURED",
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "native",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {},
+      "parameters": {}
+    },
+    {
+      "metric_id": "clustering.partition",
+      "protocol_version": "0.1.0",
+      "status": "unsupported",
+      "reason_code": "METHODS_PROVIDER_NOT_CONFIGURED",
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "canonical:centered",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {},
+      "parameters": {}
+    },
+    {
+      "metric_id": "clustering.subsample_stability",
+      "protocol_version": "0.1.0",
+      "status": "unsupported",
+      "reason_code": "METHODS_PROVIDER_NOT_CONFIGURED",
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "canonical:centered",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {},
+      "parameters": {}
+    },
+    {
+      "metric_id": "clustering.subsample_stability_constant_parameters",
+      "protocol_version": "0.1.0",
+      "status": "unsupported",
+      "reason_code": "METHODS_PROVIDER_NOT_CONFIGURED",
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "canonical:centered",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {},
+      "parameters": {}
+    },
+    {
+      "metric_id": "clustering.cluster_appearance_frequency",
+      "protocol_version": "0.1.0",
+      "status": "unsupported",
+      "reason_code": "METHODS_PROVIDER_NOT_CONFIGURED",
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "canonical:centered",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {},
+      "parameters": {}
+    },
+    {
+      "metric_id": "clustering.cluster_appearance_frequency_constant_parameters",
+      "protocol_version": "0.1.0",
+      "status": "unsupported",
+      "reason_code": "METHODS_PROVIDER_NOT_CONFIGURED",
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "canonical:centered",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {},
+      "parameters": {}
+    },
+    {
+      "metric_id": "clustering.gaussian_null_model",
+      "protocol_version": "0.1.0",
+      "status": "unsupported",
+      "reason_code": "METHODS_PROVIDER_NOT_CONFIGURED",
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "canonical:centered",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {},
+      "parameters": {}
+    },
+    {
+      "metric_id": "clustering.partition_assessment",
+      "protocol_version": "0.1.0",
+      "status": "unsupported",
+      "reason_code": "METHODS_PROVIDER_NOT_CONFIGURED",
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "canonical:centered",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {},
+      "parameters": {}
+    },
+    {
+      "metric_id": "confounding.design",
+      "protocol_version": "0.1.0",
+      "status": "unsupported",
+      "reason_code": "METHODS_PROVIDER_NOT_CONFIGURED",
+      "scope": "source",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "canonical:centered",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {},
+      "parameters": {
+        "numerical_domain": {
+          "centring_rounding": "about n x f64 epsilon times the range of each coordinate",
+          "f_resolution": "an F is undefined only for an exactly zero residual SS; otherwise it is published with residual_ss_resolution_ratio (Methods error estimate of the residual SS divided by it, a conservative first-order estimate) and numerically_unresolved = true when that ratio is >= 1",
+          "invariance": "scale_2k_translation_and_constant_columns_inside_domain",
+          "outside_domain": "unsupported_NUMERICAL_DOMAIN_EXCEEDED",
+          "sums_of_squares": "explicit residuals; published as value x 2^binary_exponent, exponent 0 when every positive value is a normal double",
+          "supported_domain": {
+            "checked_arrays": "unit coordinate matrix (canonical PCA scores averaged per unit), one array",
+            "max_over_min_nonzero_abs_per_array": "2^32",
+            "nonzero_abs_max": "2^256",
+            "nonzero_abs_min": "2^-256",
+            "zeros": "allowed"
+          }
+        },
+        "protocol": "confounding.v1"
+      }
+    },
+    {
+      "metric_id": "confounding.variance_partition",
+      "protocol_version": "0.1.0",
+      "status": "unsupported",
+      "reason_code": "METHODS_PROVIDER_NOT_CONFIGURED",
+      "scope": "source",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "canonical:centered",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {},
+      "parameters": {
+        "numerical_domain": {
+          "centring_rounding": "about n x f64 epsilon times the range of each coordinate",
+          "f_resolution": "an F is undefined only for an exactly zero residual SS; otherwise it is published with residual_ss_resolution_ratio (Methods error estimate of the residual SS divided by it, a conservative first-order estimate) and numerically_unresolved = true when that ratio is >= 1",
+          "invariance": "scale_2k_translation_and_constant_columns_inside_domain",
+          "outside_domain": "unsupported_NUMERICAL_DOMAIN_EXCEEDED",
+          "sums_of_squares": "explicit residuals; published as value x 2^binary_exponent, exponent 0 when every positive value is a normal double",
+          "supported_domain": {
+            "checked_arrays": "unit coordinate matrix (canonical PCA scores averaged per unit), one array",
+            "max_over_min_nonzero_abs_per_array": "2^32",
+            "nonzero_abs_max": "2^256",
+            "nonzero_abs_min": "2^-256",
+            "zeros": "allowed"
+          }
+        },
+        "protocol": "confounding.v1"
+      }
+    },
+    {
+      "metric_id": "structure.balanced_repeat_sensitivity",
+      "protocol_version": "0.1.0",
+      "status": "unsupported",
+      "reason_code": "CANONICAL_PCA_UNAVAILABLE",
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "canonical:centered",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {},
+      "parameters": {
+        "protocol": "balanced_repeat_sensitivity.v1"
+      }
+    },
+    {
+      "metric_id": "structure.snv_sensitivity",
+      "protocol_version": "0.1.0",
+      "status": "unsupported",
+      "reason_code": "CANONICAL_PCA_UNAVAILABLE",
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "canonical:snv_centered",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {},
+      "parameters": {}
+    },
+    {
+      "metric_id": "measurement.repeatability_sd",
+      "protocol_version": "0.1.0",
+      "status": "not_applicable",
+      "reason_code": "REPETITION_TYPE_NOT_DECLARED",
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "native",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {},
+      "parameters": {}
+    },
+    {
+      "metric_id": "measurement.noise_proxy",
+      "protocol_version": "0.1.0",
+      "status": "insufficient_data",
+      "reason_code": "FEWER_BANDS_THAN_WINDOW",
+      "scope": "source_target",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "native",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {},
+      "parameters": {}
+    },
+    {
+      "metric_id": "domain_shift.design",
+      "protocol_version": "0.1.0",
+      "status": "not_applicable",
+      "reason_code": "FACTOR_NOT_DECLARED",
+      "scope": "source_factor",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "canonical:centered",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {
+        "n_development_aggregated_samples": 3,
+        "n_development_units": 3,
+        "n_excluded_ambiguous_repeat_observations": 0,
+        "n_excluded_incomplete_observations": 3,
+        "n_excluded_multicontext_observations": 0,
+        "n_units_analyzed": 0,
+        "n_units_level_varies": 0,
+        "n_units_missing_level": 3
+      },
+      "parameters": {
+        "estimand": "distribution_of_independence_unit_mean_spectra",
+        "factor": "instrument",
+        "numerical_domain": "finite values, every nonzero |x| in [2^-256, 2^256], max/min nonzero |x| <= 2^32",
+        "protocol": "domain_shift.v2"
+      }
+    },
+    {
+      "metric_id": "domain_shift.design",
+      "protocol_version": "0.1.0",
+      "status": "not_applicable",
+      "reason_code": "FACTOR_NOT_DECLARED",
+      "scope": "source_factor",
+      "source_id": "X",
+      "target_id": null,
+      "view_id": "canonical:centered",
+      "population_id": "development_real",
+      "value": null,
+      "unit": null,
+      "denominators": {
+        "n_development_aggregated_samples": 3,
+        "n_development_units": 3,
+        "n_excluded_ambiguous_repeat_observations": 0,
+        "n_excluded_incomplete_observations": 3,
+        "n_excluded_multicontext_observations": 0,
+        "n_units_analyzed": 0,
+        "n_units_level_varies": 0,
+        "n_units_missing_level": 3
+      },
+      "parameters": {
+        "estimand": "distribution_of_independence_unit_mean_spectra",
+        "factor": "campaign",
+        "numerical_domain": "finite values, every nonzero |x| in [2^-256, 2^256], max/min nonzero |x| <= 2^32",
+        "protocol": "domain_shift.v2"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "rule_id": "independence.unknown.v1",
+      "severity": "warning",
+      "confidence": "unknown",
+      "evidence": [],
+      "message": "Independent unit is unknown; inferential X-Y checks cannot be identified",
+      "action": "Declare and verify a physical or grouped independence unit"
+    }
+  ],
+  "limitations": [
+    "Alpha protocols have not passed cross-language scientific qualification",
+    "No calibrated thresholds are available; the grouped validation probe is exploratory"
+  ]
+}

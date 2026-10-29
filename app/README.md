@@ -80,7 +80,7 @@ samples; routine or candidate rows are projected without refitting the reference
 The cold-start HPLC view explicitly uses the pool as its descriptive reference.
 Hotelling T² and Q values and alpha=0.05 control limits come from the native
 `HotellingT2` and `QResiduals` procedures. Unsupported populations are displayed
-as unavailable, never as a clean diagnostic. Quality requires the fixed owner Methods **1.3.9 or later within major 1**,
+as unavailable, never as a clean diagnostic. Quality requires the fixed owner Methods **1.3.10 or later within major 1**,
 with **ABI 2.20 or later within major 2**. Build admission and browser startup
 query the loaded WASM version/ABI; the old 1.3.4 staging is refused. The
 `methods-cohort.json` build receipt identifies the actual WASM/loader hashes.
@@ -97,14 +97,19 @@ Missing RMSEP gives an unavailable band. These bands do not populate the shared
 UI's calibrated conformal interval field and do not authorize a green release.
 Y-reference density is descriptive, not conformal calibration.
 
-Health and Predict optionally import an existing Preflight `QualificationReport`
-with `schema_version: 1`, or an explicitly selected Domains report conforming to
-that same contract. This display mode bypasses local scientific recomputation;
-it preserves the original report, engine/protocol provenance, metric identity
-(source/target/view/population/context/protocol), availability, evidence and
-limitations. Imported data is not silently applied to a fitted model: users must
-check its source and population identities. Additional versioned report fields
-are preserved. The adapter has no runtime dependency on unpublished packages.
+Health and Predict import the owner's actual Preflight Assessment string-schema `"1"`
+and separate projected Findings JSON, alongside legacy integer-schema1 native reports.
+The native Domains canonical.v0.2/v0.3 Report has its own adapter: its task/fit hashes,
+train/evaluation observations and content version retain their original meanings.
+There is no Domains numerical engine in this application. See
+[the wire and comparison contract](../docs/SHARED_ASSESSMENT.md).
+
+Imports retain raw reports, native parameters/denominators, availability and evidence.
+An independent expected context manifest can bind a Preflight Assessment to declared
+data/source/populations. Reports remain external until that check; this check does
+not authenticate a producer or authorize a model reliability verdict. Comparisons
+require identical contexts, reference/evaluation populations and metric parameters.
+Missing references, unavailable values and unresolved evidence remain explicit N/A.
 
 Local verification (Node 24):
 
@@ -115,27 +120,36 @@ export NIRS4ALL_WASM_ROOT=/absolute/path/nirs4all-web/web-app/src/engine/wasm
 # Optional local owner build (not a published cohort):
 # export NIRS4ALL_METHODS_WASM_ROOT=/absolute/path/nirs4all-methods/bindings/js/dist
 npm run typecheck
+npm run test:assessment
+npm run test:methods-cohort
 npm run test:science
 npm run test:model-import
 npm run build
 # Serve dist/ locally, then run both real-browser checks:
 SMOKE_URL=http://localhost:4499 npm run smoke
 SMOKE_URL=http://localhost:4499 node scripts/science-browser.mjs
+SMOKE_URL=http://localhost:4499 npm run test:assessment-browser
 ```
 
 ## Methods delivery floor
 
-The optional npm peer range records `@nirs4all/methods >=1.3.9 <2` in the
+The optional npm peer range records `@nirs4all/methods >=1.3.10 <2` in the
 manifest and lock. Optional resolution permits the existing explicit staging
 delivery; it does not waive the runtime requirement. Vite and scientific tests
 check the actual staged WASM rather than an npm package label. Both Methods
 aliases resolve to the same verified artifact.
 
-Methods1.3.9 is currently an unpublished local candidate. For local
-qualification, set `NIRS4ALL_WASM_ROOT` to the complete compatible WASM stage
-and `NIRS4ALL_METHODS_WASM_ROOT` to that candidate's `bindings/js/dist`. The
-owner candidate must be published and staged before a public Quality build
-can satisfy this delivery floor. Local builds mark publication as unclaimed.
+Methods1.3.10 and Core0.4.6 are published owner packages. The qualified browser
+stage uses the downloaded Methods1.3.10, DAG0.3.43 and Data0.2.14 npm artifacts.
+Formats0.2.13, IO0.2.11 and Datasets0.3.14 are built with `wasm-pack --target web`
+from their exact published source tags. Their public npm artifacts target Node;
+a web-target build must not be relabelled as those downloaded npm bytes.
+Use the owner's IO `scripts/stage_wasm_package.mjs` from its clean source checkout
+to include its authored public-dataset facade and audited legal/SBOM surface.
+Set `NIRS4ALL_WASM_ROOT` to that complete stage and
+`NIRS4ALL_METHODS_WASM_ROOT` to its Methods `dist` copy. Actual runtime admission
+still runs on every build; `methods-cohort.json` records the measured artifact
+hashes without asserting publication of the assembled application.
 
 `npm run test:methods-cohort` checks admission of compatible versions and
 refusal of the old ABI, missing identities and unqualified major versions.
