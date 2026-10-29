@@ -1,9 +1,9 @@
 {
   "name": "quali-nirs4all",
   "private": true,
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
-  "description": "quali-nirs4all \u2014 a guided WASM studio for NIRS analysis labs (sample triage, HPLC selection, calibration, prediction reliability). Thin shell over the nirs4all WASM stack; reuses nirs4all-web's staged engine and nirs4all-ui.",
+  "description": "quali-nirs4all — a guided WASM studio for NIRS analysis labs (sample triage, HPLC selection, calibration, prediction reliability). Thin shell over the nirs4all WASM stack; reuses nirs4all-web's staged engine and nirs4all-ui.",
   "license": "(CECILL-2.1 OR AGPL-3.0-or-later)",
   "scripts": {
     "dev": "vite",
@@ -13,7 +13,9 @@
     "typecheck": "tsc --noEmit",
     "smoke": "node scripts/wasm-smoke.mjs",
     "test:model-import": "node scripts/model-import-contract.mjs",
-    "deploy": "bash scripts/deploy-pages.sh"
+    "deploy": "bash scripts/deploy-pages.sh",
+    "test:science": "node scripts/science-contract.mjs",
+    "test:methods-cohort": "node --test scripts/methods-cohort-contract.mjs"
   },
   "dependencies": {
     "lucide-react": "0.487.0",
@@ -29,11 +31,20 @@
     "@types/react": "18.3.18",
     "@types/react-dom": "18.3.5",
     "@vitejs/plugin-react": "4.7.0",
+    "esbuild": "0.25.12",
     "playwright-core": "1.49.1",
     "png-to-ico": "^2.1.8",
     "tailwindcss": "4.1.12",
     "typescript": "5.6.3",
     "vite": "6.4.3",
     "vite-plugin-singlefile": "2.1.0"
+  },
+  "peerDependencies": {
+    "@nirs4all/methods": ">=1.3.9 <2"
+  },
+  "peerDependenciesMeta": {
+    "@nirs4all/methods": {
+      "optional": true
+    }
   }
 }

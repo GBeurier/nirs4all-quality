@@ -71,3 +71,73 @@ src/
   ui/          host-provided icons for the nirs4all-ui/lab components
   styles/      theme (mirrors the nirs4all teal palette) + tailwind v4
 ```
+
+## Scientific diagnostics and assessment reports
+
+PCA plots and applicability references use the public libn4m `FlexiblePCA`
+fit/transform API. A calibration reference is fitted only on referenced training
+samples; routine or candidate rows are projected without refitting the reference.
+The cold-start HPLC view explicitly uses the pool as its descriptive reference.
+Hotelling T² and Q values and alpha=0.05 control limits come from the native
+`HotellingT2` and `QResiduals` procedures. Unsupported populations are displayed
+as unavailable, never as a clean diagnostic. Quality requires the fixed owner Methods **1.3.9 or later within major 1**,
+with **ABI 2.20 or later within major 2**. Build admission and browser startup
+query the loaded WASM version/ABI; the old 1.3.4 staging is refused. The
+`methods-cohort.json` build receipt identifies the actual WASM/loader hashes.
+
+Routine spectra are aligned with the native `Resampler` on physical wavelength
+coordinates. Units must be explicit (`nm`, `um`/`µm`, `cm-1`), axes strictly
+monotonic, and the source must cover the calibration range. Missing observations,
+unknown/index units, duplicates and extrapolation are refused. The interpolation
+coordinate is wavelength in nm after unit conversion.
+
+Prediction bands are explicitly `heuristic_uncertainty_band`, with
+`status=not_calibrated`, no nominal coverage, and the stated RMSEP/distance rule.
+Missing RMSEP gives an unavailable band. These bands do not populate the shared
+UI's calibrated conformal interval field and do not authorize a green release.
+Y-reference density is descriptive, not conformal calibration.
+
+Health and Predict optionally import an existing Preflight `QualificationReport`
+with `schema_version: 1`, or an explicitly selected Domains report conforming to
+that same contract. This display mode bypasses local scientific recomputation;
+it preserves the original report, engine/protocol provenance, metric identity
+(source/target/view/population/context/protocol), availability, evidence and
+limitations. Imported data is not silently applied to a fitted model: users must
+check its source and population identities. Additional versioned report fields
+are preserved. The adapter has no runtime dependency on unpublished packages.
+
+Local verification (Node 24):
+
+```bash
+npm ci
+# Optional for isolated worktrees: point to the existing staged WASM directory.
+export NIRS4ALL_WASM_ROOT=/absolute/path/nirs4all-web/web-app/src/engine/wasm
+# Optional local owner build (not a published cohort):
+# export NIRS4ALL_METHODS_WASM_ROOT=/absolute/path/nirs4all-methods/bindings/js/dist
+npm run typecheck
+npm run test:science
+npm run test:model-import
+npm run build
+# Serve dist/ locally, then run both real-browser checks:
+SMOKE_URL=http://localhost:4499 npm run smoke
+SMOKE_URL=http://localhost:4499 node scripts/science-browser.mjs
+```
+
+## Methods delivery floor
+
+The optional npm peer range records `@nirs4all/methods >=1.3.9 <2` in the
+manifest and lock. Optional resolution permits the existing explicit staging
+delivery; it does not waive the runtime requirement. Vite and scientific tests
+check the actual staged WASM rather than an npm package label. Both Methods
+aliases resolve to the same verified artifact.
+
+Methods1.3.9 is currently an unpublished local candidate. For local
+qualification, set `NIRS4ALL_WASM_ROOT` to the complete compatible WASM stage
+and `NIRS4ALL_METHODS_WASM_ROOT` to that candidate's `bindings/js/dist`. The
+owner candidate must be published and staged before a public Quality build
+can satisfy this delivery floor. Local builds mark publication as unclaimed.
+
+`npm run test:methods-cohort` checks admission of compatible versions and
+refusal of the old ABI, missing identities and unqualified major versions.
+The 19 real-WASM scientific tests require wide T²/Q availability in every
+qualified run.

@@ -1,10 +1,11 @@
-// Drift analysis for the maintenance screen. Honest, in-browser: a joint PCA of
-// the calibration set + a new routine batch, then a per-new-sample novelty score
+// Drift analysis for the maintenance screen. Honest, in-browser: a calibration-only PCA fit
+// and a new routine batch projected into its frozen reference, then a per-new-sample novelty score
 // (distance to the calibration cloud in PC units). Points beyond the threshold
 // are "out of the model's domain" → the drift signal that drives the maintenance
 // recommendation. Deterministic.
 import { meanSpectrum, type SpectraDataset } from '@/domain/spectra';
-import { computePca } from './pca';
+import { referenceProjection } from './pca';
+export { resampleTo } from './spectralAxis';
 
 export interface Mat { X: Float64Array; n: number; p: number; }
 
@@ -19,25 +20,8 @@ export function calibrationMatrix(spectra: SpectraDataset, ids?: Set<string>): M
   const samples = ids ? spectra.samples.filter((s) => ids.has(s.sampleId)) : spectra.samples;
   const n = samples.length;
   const X = new Float64Array(n * p);
-  samples.forEach((s, i) => { const m = meanSpectrum(s); for (let j = 0; j < p; j++) X[i * p + j] = m[j] ?? 0; });
+  samples.forEach((s, i) => { const m = meanSpectrum(s); for (let j = 0; j < p; j++) X[i * p + j] = m[j] ?? NaN; });
   return { X, n, p };
-}
-
-/** Linear (index-based) resample of a spectrum to a target length — so an
- *  uploaded batch on a different-length grid is aligned to the calibration axis
- *  instead of being truncated / padded with a repeated last value. */
-export function resampleTo(values: ArrayLike<number>, targetLen: number): Float64Array {
-  const src = Float64Array.from(values);
-  const out = new Float64Array(targetLen);
-  if (src.length === 0 || targetLen === 0) return out;
-  if (src.length === targetLen) { out.set(src); return out; }
-  for (let i = 0; i < targetLen; i++) {
-    const t = targetLen === 1 ? 0 : (i * (src.length - 1)) / (targetLen - 1);
-    const lo = Math.floor(t);
-    const hi = Math.min(src.length - 1, lo + 1);
-    out[i] = (src[lo] ?? 0) + ((src[hi] ?? 0) - (src[lo] ?? 0)) * (t - lo);
-  }
-  return out;
 }
 
 /** A synthetic "new routine batch" with drift — ~1/3 of samples carry a baseline
@@ -79,19 +63,10 @@ export interface DriftAnalysis {
 const THRESHOLD = 2.5; // PC-space std units beyond which a new sample is out-of-domain
 
 export function analyzeDrift(cal: Mat, nb: Mat): DriftAnalysis {
-  const p = cal.p;
-  const n = cal.n + nb.n;
-  const X = new Float64Array(n * p);
-  X.set(cal.X, 0);
-  X.set(nb.X, cal.n * p);
-  // maxSamples = full count so every calibration + new-batch point gets a real
-  // score (no sub-sampling fallback aliasing unsampled rows to row 0).
-  const pca = computePca(X, n, p, 2, n);
-  const pos = new Map(pca.usedIdx.map((r, i) => [r, i]));
-  const scoreOf = (row: number): number[] => pca.scores[pos.get(row) ?? 0] ?? [0, 0];
-
-  const cal2 = Array.from({ length: cal.n }, (_, i) => scoreOf(i));
-  const new2 = Array.from({ length: nb.n }, (_, i) => scoreOf(cal.n + i));
+  if (cal.p !== nb.p) throw new Error('Calibration and routine feature counts differ.');
+  const projected = referenceProjection({ data: cal.X, rows: cal.n, cols: cal.p }, { data: nb.X, rows: nb.n, cols: nb.p });
+  const cal2 = projected.calibrationScores;
+  const new2 = projected.evaluationScores;
 
   const c = [0, 0];
   cal2.forEach((s) => { c[0]! += s[0] ?? 0; c[1]! += s[1] ?? 0; });
@@ -114,7 +89,7 @@ export function analyzeDrift(cal: Mat, nb: Mat): DriftAnalysis {
   return {
     calPts: cal2.map((s) => ({ x: s[0] ?? 0, y: s[1] ?? 0 })),
     newPts, share, outN, verdict,
-    ev: (k: number) => ((pca.explained[k] ?? 0) * 100).toFixed(1),
+    ev: (k: number) => ((projected.explained[k] ?? 0) * 100).toFixed(1),
     threshold: THRESHOLD,
   };
 }

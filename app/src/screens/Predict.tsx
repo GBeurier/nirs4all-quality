@@ -18,7 +18,7 @@ import { resampleTo } from '@/lib/drift';
 import { downloadText, slug, toCsv } from '@/lib/export';
 import { histogram } from '@/lib/histogram';
 import { parseModelBundle } from '@/lib/modelIo';
-import { buildRoutinePredictions, type AlertLevel, type PredictionAlerts, type ReliabilityModel } from '@/lib/reliability';
+import { buildRoutinePredictions, buildReliabilityView, type RoutinePrediction, type AlertLevel, type PredictionAlerts, type ReliabilityModel } from '@/lib/reliability';
 import { buildTrainingDataset } from '@/lib/trainingData';
 import { useLang, useTr } from '@/i18n';
 import { useLab, useProjectSpectra, type StoredModel } from '@/store/store';
@@ -26,6 +26,8 @@ import { decisionIcons } from '@/ui/icons';
 import { Dropzone } from '@/ui/Dropzone';
 import { Explain } from '@/ui/Explain';
 import { EXPLAIN } from '@/ui/explanations';
+import { SharedAssessmentPanel } from '@/ui/SharedAssessmentPanel';
+import type { SharedAssessment } from '@/lib/sharedAssessment';
 
 const CHART_COLOR: Record<DecisionColor, string> = {
   reliable: 'var(--success)',
@@ -37,7 +39,7 @@ const ORDER: DecisionColor[] = ['reliable', 'caution', 'out_of_domain', 'informa
 const H = 260;
 const f2 = (v: number) => (Number.isFinite(v) ? v.toFixed(2) : '—');
 
-interface Pred { sampleId: string; predicted: number; input: DecisionInput; view: DecisionView; interval: string; alerts: PredictionAlerts; yNovelty: number; }
+interface Pred { sampleId: string; predicted: number; input: DecisionInput; view: DecisionView; interval: string; uncertainty: RoutinePrediction['uncertainty']; alerts: PredictionAlerts; yNovelty: number; }
 
 // §3 Écran 5 — predict & decide. REAL predictions: the project's routine
 // (un-referenced) spectra are run through the deployed model (from Calibrate, or
@@ -45,6 +47,7 @@ interface Pred { sampleId: string; predicted: number; input: DecisionInput; view
 // its real applicability-domain signals (§4bis).
 export function Predict({ projectId }: { projectId: string }) {
   const { state, dispatch } = useLab();
+  const [assessment, setAssessment] = useState<SharedAssessment | null>(null);
   const tr = useTr();
   const { lang } = useLang();
   const project = state.projects.find((p) => p.id === projectId);
@@ -80,10 +83,9 @@ export function Predict({ projectId }: { projectId: string }) {
     try {
       const a = analyzeFiles(await readRawFiles(files));
       const asm = assembleDataset('routine', a, a.leading);
-      const p = spectra.axis.length;
       const routine: SampleSpectra[] = asm.spectra.samples.map((s) => ({
         sampleId: s.sampleId,
-        reps: s.reps.map((r) => ({ repId: r.repId, values: resampleTo(r.values, p) })),
+        reps: s.reps.map((r) => ({ repId: r.repId, values: resampleTo(r.values, asm.spectra.axis, spectra.axis, asm.spectra.axisUnit, spectra.axisUnit) })),
       }));
       setLoaded(routine);
       setLoadedName(tr(`${files[0]?.name} · ${routine.length} échantillons chargés`, `${files[0]?.name} · ${routine.length} samples loaded`));
@@ -96,6 +98,7 @@ export function Predict({ projectId }: { projectId: string }) {
     let cancelled = false;
     (async () => {
       setError(null);
+      if (assessment) { setRel(null); return; }
       if (!spectra || spectra.axis.length === 0) { setRel(null); return; }
       const refIds = new Set(samples.filter((s) => s.reference?.value != null).map((s) => s.id));
       const routineIds = new Set(samples.filter((s) => !s.reference && s.status !== 'excluded').map((s) => s.id));
@@ -136,7 +139,7 @@ export function Predict({ projectId }: { projectId: string }) {
       const calY = cal.map((s) => refVal.get(s.sampleId) ?? Number.NaN);
       const r = buildRoutinePredictions({
         cal, routine, predicted: Array.from(out.values), axisLen: p,
-        yMin: sm.yRange[0], yMax: sm.yRange[1], rmsep: sm.metrics.rmse ?? 1, calY,
+        yMin: sm.yRange[0], yMax: sm.yRange[1], rmsep: sm.metrics.rmse ?? NaN, calY,
       });
       setUsedModel(sm);
       setRel(r);
@@ -145,12 +148,12 @@ export function Predict({ projectId }: { projectId: string }) {
     // deps are the data inputs; tr/project/dispatch are stable enough and left
     // out on purpose to avoid re-predicting on every render
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stored, spectra, samples, projectId, loaded]);
+  }, [assessment, stored, spectra, samples, projectId, loaded]);
 
   const batch: Pred[] = useMemo(() => (rel?.preds ?? []).map((p) => ({
-    sampleId: p.sampleId, predicted: p.predicted, input: p.input, interval: p.interval,
+    sampleId: p.sampleId, predicted: p.predicted, input: p.input, interval: p.interval, uncertainty: p.uncertainty,
     alerts: p.alerts, yNovelty: p.yNovelty,
-    view: buildDecisionView(p.input, null, lang),
+    view: buildReliabilityView(p.input, lang),
   })), [rel, lang]);
 
   const counts = useMemo(() => {
@@ -177,14 +180,15 @@ export function Predict({ projectId }: { projectId: string }) {
           <button className="ml-auto btn-outline" onClick={() => downloadText(
             `${slug(project?.name ?? 'projet')}-predictions.csv`,
             toCsv(batch.map((p) => ({
-              sample_id: p.sampleId, predicted: Number.isFinite(p.predicted) ? p.predicted.toFixed(3) : '', interval: p.interval,
+              sample_id: p.sampleId, predicted: Number.isFinite(p.predicted) ? p.predicted.toFixed(3) : '', interval: p.interval, uncertainty_kind: p.uncertainty.kind, uncertainty_status: p.uncertainty.status, nominal_coverage: '',
               reliability: p.view.color, reason: p.view.reason, applicability: f2(p.input.applicabilityScore ?? NaN),
-              extrapolation_outY: p.alerts.outY, conformal_yDensity: p.alerts.yDens, spectral_outX: p.alerts.outX,
-            })), ['sample_id', 'predicted', 'interval', 'reliability', 'reason', 'applicability', 'extrapolation_outY', 'conformal_yDensity', 'spectral_outX']))}>
+              extrapolation_outY: p.alerts.outY, reference_yDensity: p.alerts.yDens, spectral_outX: p.alerts.outX,
+            })), ['sample_id', 'predicted', 'interval', 'uncertainty_kind', 'uncertainty_status', 'nominal_coverage', 'reliability', 'reason', 'applicability', 'extrapolation_outY', 'reference_yDensity', 'spectral_outX']))}>
             {tr('Exporter le lot (CSV)', 'Export batch (CSV)')}
           </button>
         )}
       </div>
+      <SharedAssessmentPanel assessment={assessment} onChange={setAssessment} />
       <div className="mb-4">
         <Dropzone onFiles={onLoadFiles} multiple compact accept=".csv,.txt,.tsv"
           title={tr('Charger de nouveaux spectres à prédire', 'Load new spectra to predict')}
@@ -198,6 +202,8 @@ export function Predict({ projectId }: { projectId: string }) {
       </div>
     </>
   );
+
+  if (assessment) return <div className="mx-auto max-w-4xl"><SharedAssessmentPanel assessment={assessment} onChange={setAssessment} /></div>;
 
   if (building) {
     return (
@@ -299,12 +305,12 @@ export function Predict({ projectId }: { projectId: string }) {
               <XAxis type="number" dataKey="ad" tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} stroke="var(--border)"
                 label={{ value: tr('distance au domaine', 'distance to domain'), position: 'insideBottom', offset: -8, fontSize: 11, fill: 'var(--muted-foreground)' }} />
               <YAxis type="number" dataKey="width" tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} stroke="var(--border)" width={40}
-                label={{ value: tr('intervalle', 'interval'), angle: -90, position: 'insideLeft', fontSize: 11, fill: 'var(--muted-foreground)' }} />
+                label={{ value: tr('bande heuristique', 'heuristic band'), angle: -90, position: 'insideLeft', fontSize: 11, fill: 'var(--muted-foreground)' }} />
               <ZAxis range={[40, 40]} />
               <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ borderRadius: 10, border: '1px solid var(--border)', fontSize: 11 }} formatter={(v: number) => f2(v)} />
               <ReferenceLine x={1} stroke="var(--warning)" strokeDasharray="4 3" label={{ value: tr('bordure', 'border'), position: 'top', fontSize: 9, fill: 'var(--warning)' }} />
               <ReferenceLine x={2} stroke="var(--destructive)" strokeDasharray="4 3" label={{ value: tr('hors-domaine', 'out-of-domain'), position: 'top', fontSize: 9, fill: 'var(--destructive)' }} />
-              <Scatter data={batch.map((p) => ({ ad: p.input.applicabilityScore, width: p.input.intervalWidth, color: CHART_COLOR[p.view.color] }))} isAnimationActive={false}>
+              <Scatter data={batch.map((p) => ({ ad: p.input.applicabilityScore, width: p.uncertainty.halfWidth === null ? null : p.uncertainty.halfWidth * 2, color: CHART_COLOR[p.view.color] }))} isAnimationActive={false}>
                 {batch.map((p, i) => <Cell key={i} fill={CHART_COLOR[p.view.color]} fillOpacity={0.75} />)}
               </Scatter>
             </ScatterChart>
@@ -312,7 +318,8 @@ export function Predict({ projectId }: { projectId: string }) {
         </div>
       </div>
 
-      {/* per-prediction alert table (out-Y extrapolation · Y-density conformal · out-X spectral) */}
+      <p role="note" className="mb-3 text-sm text-muted-foreground">{tr('Les bandes sont heuristiques (RMSEP et distance PCA), sans couverture nominale évaluée. Une bande indisponible ne signifie pas une absence de risque.', 'Bands are heuristic (RMSEP and PCA distance), without evaluated nominal coverage. An unavailable band does not mean absence of risk.')}</p>
+      {/* per-prediction alert table (out-Y extrapolation · descriptive Y reference density · out-X spectral) */}
       <div className="mb-4 card p-0 overflow-hidden">
         <div className="flex items-center gap-2 border-b border-border px-4 py-2.5 text-sm font-medium">
           {tr('Alertes par échantillon', 'Per-sample alerts')} <Explain content={EXPLAIN.predictionAlerts} />
@@ -324,9 +331,9 @@ export function Predict({ projectId }: { projectId: string }) {
               <tr className="border-b border-border text-left text-xs text-muted-foreground">
                 <th className="px-4 py-2 font-medium">{tr('Échantillon', 'Sample')}</th>
                 <th className="px-2 py-2 text-right font-medium">{tr('Prédit', 'Predicted')}</th>
-                <th className="px-2 py-2 text-right font-medium">{tr('Interv.', 'Interval')}</th>
+                <th className="px-2 py-2 text-right font-medium">{tr('Bande heuristique', 'Heuristic band')}</th>
                 <th className="px-2 py-2 text-center font-medium" title={tr('valeur hors de la gamme apprise', 'value outside the learned range')}>{tr('Extrap. (hors Y)', 'Extrap. (out-Y)')}</th>
-                <th className="px-2 py-2 text-center font-medium" title={tr('peu de références au niveau prédit', 'few references at the predicted level')}>{tr('Conformal (densité Y)', 'Conformal (Y-density)')}</th>
+                <th className="px-2 py-2 text-center font-medium" title={tr('peu de références au niveau prédit', 'few references at the predicted level')}>{tr('Densité des références Y', 'Y reference density')}</th>
                 <th className="px-4 py-2 text-center font-medium" title={tr('spectre éloigné du domaine de calibration', 'spectrum far from the calibration domain')}>{tr('Dist. spectrale (hors X)', 'Spectral dist. (out-X)')}</th>
               </tr>
             </thead>
@@ -385,6 +392,7 @@ function Empty({ text }: { text: string }) {
 }
 
 const ALERT_STYLE: Record<AlertLevel, { bg: string; fg: string; dot: string }> = {
+  unknown: { bg: 'var(--muted)', fg: 'var(--muted-foreground)', dot: 'var(--muted-foreground)' },
   ok: { bg: 'var(--success-muted, rgba(16,185,129,0.12))', fg: 'var(--success)', dot: 'var(--success)' },
   warn: { bg: 'rgba(217,119,6,0.12)', fg: 'var(--warning)', dot: 'var(--warning)' },
   bad: { bg: 'rgba(220,38,38,0.12)', fg: 'var(--destructive)', dot: 'var(--destructive)' },
@@ -393,7 +401,7 @@ const ALERT_STYLE: Record<AlertLevel, { bg: string; fg: string; dot: string }> =
 // A compact alert pill: green dot when clear, amber/red with a label when it fires.
 function AlertCell({ level, okLabel, warnLabel, badLabel }: { level: AlertLevel; okLabel: string; warnLabel: string; badLabel: string }) {
   const s = ALERT_STYLE[level];
-  const label = level === 'ok' ? okLabel : level === 'warn' ? warnLabel : badLabel;
+  const label = level === 'unknown' ? 'N/A' : level === 'ok' ? okLabel : level === 'warn' ? warnLabel : badLabel;
   return (
     <span className="inline-flex items-center justify-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium"
       style={{ background: level === 'ok' ? 'transparent' : s.bg, color: level === 'ok' ? 'var(--muted-foreground)' : s.fg }}>
@@ -430,7 +438,7 @@ function DetailToggle({ p }: { p: Pred }) {
     [tr('Catégorie', 'Category'), tr(CATEGORY_LABEL[view.category]?.fr ?? view.category, CATEGORY_LABEL[view.category]?.en ?? view.category)],
     [tr('Confiance', 'Confidence'), view.confidence],
     [tr('Distance au domaine', 'Distance to domain'), `${f2(input.applicabilityScore ?? NaN)} σ ${tr('(bordure ≥ 1 · hors-domaine ≥ 2)', '(border ≥ 1 · out-of-domain ≥ 2)')}`],
-    [tr('Intervalle estimé', 'Estimated interval'), p.interval],
+    [tr('Bande heuristique sans couverture garantie', 'Heuristic band without coverage guarantee'), p.interval],
     [tr('Densité locale', 'Local density'), `${f2(input.localDensity ?? NaN)} ${tr('(rare si ≤ 0.15)', '(rare if ≤ 0.15)')}`],
     [tr('Extrapolation', 'Extrapolation'), input.extrapolation ? tr('oui', 'yes') : tr('non', 'no')],
     [tr('Modifiable par', 'Overridable by'), view.overridableBy === 'none' ? '—' : tr('responsable méthode', 'method owner')],
