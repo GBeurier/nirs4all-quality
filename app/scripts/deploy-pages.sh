@@ -13,14 +13,17 @@ npm run build
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
-cp -r dist/. "$TMP/"
-touch "$TMP/.nojekyll"   # let GitHub Pages serve Vite's assets/ verbatim
-echo "quali.nirs4all.org" > "$TMP/CNAME"   # custom domain (must persist across force-pushes)
+git clone --quiet --single-branch --branch gh-pages --depth 1 "$REPO_URL" "$TMP/pages"
+git -C "$TMP/pages" rm -r -q -- .
+cp -r dist/. "$TMP/pages/"
+touch "$TMP/pages/.nojekyll"
+echo "quali.nirs4all.org" > "$TMP/pages/CNAME"
 
-cd "$TMP"
-git init -b gh-pages -q
-git -c user.name="Gregory Beurier" -c user.email="beurier@cirad.fr" add -A
-git -c user.name="Gregory Beurier" -c user.email="beurier@cirad.fr" commit -q -m "Deploy quali-nirs4all to GitHub Pages"
-git push -f "$REPO_URL" gh-pages
+cd "$TMP/pages"
+git add -A
+if ! git diff --cached --quiet; then
+  git -c user.name="dunkean" -c user.email="14640805+dunkean@users.noreply.github.com" commit -q -m "chore(pages): deploy qualified Quality application"
+  git push origin gh-pages
+fi
 
 echo "Deployed → https://quali.nirs4all.org/"

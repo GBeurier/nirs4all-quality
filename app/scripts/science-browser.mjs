@@ -24,9 +24,9 @@ try {
  await page.getByText('Limites de contrôle natives').waitFor();
  await page.getByText('Valeurs T²/Q par échantillon',{exact:true}).click();
  assert.ok(await page.getByRole('table').count()>0);
- const upload = page.getByLabel('Rapport JSON');
+ const upload = page.getByLabel('Évaluation / rapport JSON');
  await upload.setInputFiles({name:'assessment.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(report))});
- await page.getByText('Shared QC reference unavailable',{exact:false}).waitFor();
+ await page.locator('li.mb-2').filter({hasText:'Shared QC reference unavailable'}).waitFor();
  assert.match(await page.textContent('body'),/insufficient_data/);
  assert.equal(await page.getByText('Limites de contrôle natives').count(),0,'imported report replaces local computation view');
  await page.getByRole('button',{name:'Revenir au dépistage local'}).click();
