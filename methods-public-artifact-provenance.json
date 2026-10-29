@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "verified_at_utc": "2026-10-29T19:45:55.067705+00:00",
+  "package": "@nirs4all/methods",
+  "version": "1.3.10",
+  "origin": "verified_public_npm_artifact",
+  "registry_metadata_url": "https://registry.npmjs.org/@nirs4all%2fmethods/1.3.10",
+  "tarball_url": "https://registry.npmjs.org/@nirs4all/methods/-/methods-1.3.10.tgz",
+  "tarball_integrity": "sha512-/Srvydqfi3mdBIMh/cD2CdJuLm0K9kUl9KbB9dVkdVxEzS5X5/zV8p99bTIY0dRi7XNkOFM9kRKp/ovX4rpAyA==",
+  "tarball_sha256": "f06f52ba9fa6cfdb9dfa0fb3e9bc2977eeadd0ac728f72323e96ea0cab20dd2f",
+  "gitHead": "38ac1f3ac8e18ebb315263cbe68220ac44f9dc6c",
+  "wasm_sha256": "2f88cca83aca2ac27dd0c0ac08c586fd3093f804b446019739f5a4453b2fbd20",
+  "loader_sha256": "256aca1d6d03d210a053d08de99a01a1a63fd19aba3512cc402b8ac13c1e3023",
+  "comparison": "Public tarball SRI verified; its actual WASM/loader hashes equal the qualified staged/deployed artifact hashes.",
+  "build_receipt_role": "methods-cohort.json is the immutable build-admission transport receipt. Its local_source_override selects an explicit staging path; publication_claimed=false states that this build check performed no registry lookup. It does not assert registry absence.",
+  "unchanged": "All JavaScript/WASM, numerical source tag005, version005, wasm-cohort.json and qualified archive52239d5e are unchanged. Formats213/IO211/Datasets314 remain local web-target builds of their exact published source tags, not public npm byte claims."
+}
