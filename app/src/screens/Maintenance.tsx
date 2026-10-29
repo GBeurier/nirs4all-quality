@@ -1,3 +1,4 @@
+import { meanSpectrum } from '@/domain/spectra';
 import { resolveSafety, summarizeWorklist, WorklistTable, type WorklistItemInput } from 'nirs4all-ui/lab';
 import { Activity, FlaskConical, RefreshCw } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -7,7 +8,7 @@ import {
 
 import { analyzeDrift, calibrationMatrix, makeDriftBatch, resampleTo, type DriftVerdict, type Mat } from '@/lib/drift';
 import { predictWithModel } from '@/engine/predict';
-import { analyzeFiles, readRawFiles } from '@/lib/dataset';
+import { analyzeFiles, assembleDataset, readRawFiles } from '@/lib/dataset';
 import { downloadText, slug, toCsv } from '@/lib/export';
 import { useLang, useTr } from '@/i18n';
 import { useLab, useProjectSpectra } from '@/store/store';
@@ -23,8 +24,7 @@ const VERDICT: Record<DriftVerdict, { fr: string; en: string; tone: string; pill
 };
 
 // §3 Écran 6 — maintenance planner. Add a new routine batch (drop spectra or
-// simulate one), re-run the domain analysis to ISOLATE drift (joint PCA of the
-// calibration set + the new batch), and get a recommendation: keep monitoring,
+// simulate one), project it into a frozen calibration-only PCA reference, and get a recommendation: keep monitoring,
 // resample (HPLC) the drifted samples, or retrain / transfer instrument.
 export function Maintenance({ projectId }: { projectId: string }) {
   const { state } = useLab();
@@ -39,7 +39,7 @@ export function Maintenance({ projectId }: { projectId: string }) {
   const cal = useMemo(() => {
     if (!spectra) return null;
     const refIds = new Set(samples.filter((s) => s.reference?.value != null).map((s) => s.id));
-    return calibrationMatrix(spectra, refIds.size >= 3 ? refIds : undefined);
+    return refIds.size >= 3 ? calibrationMatrix(spectra, refIds) : null;
   }, [spectra, samples]);
   const [batch, setBatch] = useState<Mat | null>(null);
   const [note, setNote] = useState<string>('');
@@ -79,14 +79,14 @@ export function Maintenance({ projectId }: { projectId: string }) {
     if (!cal || files.length === 0) return;
     try {
       const a = analyzeFiles(await readRawFiles(files));
+      if (!spectra) return;
+      const assembled = assembleDataset('maintenance', a, a.leading);
       const p = cal.p;
-      const n = a.xGrid.rows.length;
+      const n = assembled.spectra.samples.length;
       const X = new Float64Array(n * p);
-      // extract each spectrum's feature block and resample to the calibration axis
-      a.xGrid.rows.forEach((row, i) => {
-        const feat = row.slice(a.featureStart).map((c) => Number(String(c).replace(',', '.')));
-        const rs = resampleTo(feat.map((v) => (Number.isFinite(v) ? v : 0)), p);
-        for (let j = 0; j < p; j++) X[i * p + j] = rs[j] ?? 0;
+      assembled.spectra.samples.forEach((sample, i) => {
+        const values = resampleTo(meanSpectrum(sample), assembled.spectra.axis, spectra.axis, assembled.spectra.axisUnit, spectra.axisUnit);
+        X.set(values, i * p);
       });
       setBatch({ X, n, p });
       setNote(tr(`${files[0]?.name} · ${n} spectres ajoutés au suivi.`, `${files[0]?.name} · ${n} spectra added to monitoring.`));

@@ -236,11 +236,11 @@ function TargetTab({ y }: { y: number[] }) {
 
 // -------------------------------------------------------------------- PCA tab
 function PcaTab({ spectra, yBySample }: { spectra: SpectraDataset; yBySample: Record<string, number | undefined> }) {
-  const { pts, ev } = useMemo(() => {
+  const { pts, ev, reason } = useMemo(() => {
     const nF = spectra.axis.length;
     const n = spectra.samples.length;
     const X = new Float64Array(n * nF);
-    spectra.samples.forEach((s, i) => { const m = meanSpectrum(s); for (let j = 0; j < nF; j++) X[i * nF + j] = m[j] ?? 0; });
+    spectra.samples.forEach((s, i) => { const m = meanSpectrum(s); for (let j = 0; j < nF; j++) X[i * nF + j] = m[j] ?? NaN; });
     const pca = computePca(X, n, nF, 2);
     const ys = spectra.samples.map((s) => yBySample[s.sampleId]).filter((v): v is number => typeof v === 'number');
     const lo = ys.length ? Math.min(...ys) : 0;
@@ -253,12 +253,13 @@ function PcaTab({ spectra, yBySample }: { spectra: SpectraDataset; yBySample: Re
       return { x: sc[0] ?? 0, y: sc[1] ?? 0, color: continuousColor(t), id: sample?.sampleId ?? String(row) };
     });
     const ev = (i: number) => `${((pca.explained[i] ?? 0) * 100).toFixed(1)} %`;
-    return { pts, ev };
+    return { pts, ev, reason: pca.reason };
   }, [spectra, yBySample]);
 
   return (
     <>
       <div className="mb-2 flex items-center gap-2 text-sm font-medium">PCA — carte des échantillons (couleur = référence) <Explain content={EXPLAIN.pca} /></div>
+      {reason && <p role="status">PCA unavailable: {reason}</p>}
       <ResponsiveContainer width="100%" height={H}>
         <ScatterChart margin={{ top: 8, right: 16, bottom: 18, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
