@@ -1,0 +1,351 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Report",
+  "type": "object",
+  "properties": {
+    "context": {
+      "$ref": "#/$defs/Context"
+    },
+    "data_origin": {
+      "type": "string"
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "engine_version": {
+      "type": "string"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Finding"
+      }
+    },
+    "fit": true,
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Metric"
+      }
+    },
+    "policy": {
+      "$ref": "#/$defs/Policy"
+    },
+    "preflight": true,
+    "protocol_version": {
+      "type": "string"
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "representations": true,
+    "schema_version": {
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 0
+    },
+    "status": {
+      "type": "string"
+    },
+    "test_target_accessed": {
+      "type": "boolean"
+    },
+    "unit_audit": true
+  },
+  "required": [
+    "schema_version",
+    "engine_version",
+    "protocol_version",
+    "context",
+    "data_origin",
+    "status",
+    "test_target_accessed",
+    "policy",
+    "provenance",
+    "unit_audit",
+    "representations",
+    "metrics",
+    "findings",
+    "dimensions",
+    "limitations"
+  ],
+  "$defs": {
+    "AuditMode": {
+      "type": "string",
+      "enum": [
+        "pre_training",
+        "post_evaluation"
+      ]
+    },
+    "Context": {
+      "type": "object",
+      "properties": {
+        "content_version": {
+          "type": "string"
+        },
+        "dataset_id": {
+          "type": "string"
+        },
+        "source_id": {
+          "type": "string"
+        },
+        "split_id": {
+          "type": "string"
+        },
+        "target_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "dataset_id",
+        "content_version",
+        "source_id",
+        "split_id"
+      ]
+    },
+    "Finding": {
+      "type": "object",
+      "properties": {
+        "calibration_consequence": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "observation": {
+          "type": "string"
+        },
+        "recommended_action": {
+          "type": "string"
+        },
+        "rule_id": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule_id",
+        "severity",
+        "observation",
+        "confidence",
+        "calibration_consequence",
+        "recommended_action",
+        "evidence"
+      ]
+    },
+    "Metric": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "$ref": "#/$defs/Context"
+        },
+        "metric_id": {
+          "type": "string"
+        },
+        "observation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "parameters": true,
+        "population": {
+          "$ref": "#/$defs/Population"
+        },
+        "preprocessing_view": {
+          "type": "string"
+        },
+        "protocol_version": {
+          "type": "string"
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "$ref": "#/$defs/Status"
+        },
+        "uncertainty": true,
+        "unit": {
+          "type": "string"
+        },
+        "value": true
+      },
+      "required": [
+        "metric_id",
+        "protocol_version",
+        "context",
+        "population",
+        "preprocessing_view",
+        "status",
+        "value",
+        "unit",
+        "parameters",
+        "provenance",
+        "observation_ids"
+      ]
+    },
+    "PcaBackend": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "flexible"
+      ]
+    },
+    "Policy": {
+      "type": "object",
+      "properties": {
+        "audit_mode": {
+          "$ref": "#/$defs/AuditMode",
+          "default": "pre_training"
+        },
+        "bootstrap_draws": {
+          "type": "integer",
+          "format": "uint",
+          "default": 0,
+          "minimum": 0
+        },
+        "independence_unit": {
+          "type": "string"
+        },
+        "pca_backend": {
+          "$ref": "#/$defs/PcaBackend",
+          "default": "auto"
+        },
+        "pca_max_components": {
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "pca_variance_fraction": {
+          "type": "number",
+          "format": "double"
+        },
+        "representation": {
+          "$ref": "#/$defs/Representation",
+          "default": "native"
+        },
+        "seed": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "independence_unit",
+        "seed",
+        "pca_max_components",
+        "pca_variance_fraction"
+      ]
+    },
+    "Population": {
+      "type": "object",
+      "properties": {
+        "n_effective": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "n_test_independent_units": {
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "n_test_observations": {
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "n_test_physical_samples": {
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "n_train_independent_units": {
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "n_train_observations": {
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "n_train_physical_samples": {
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "population_id": {
+          "type": "string"
+        },
+        "statistical_unit": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "population_id",
+        "statistical_unit",
+        "n_train_observations",
+        "n_test_observations",
+        "n_train_physical_samples",
+        "n_test_physical_samples",
+        "n_train_independent_units",
+        "n_test_independent_units"
+      ]
+    },
+    "Representation": {
+      "type": "string",
+      "enum": [
+        "native",
+        "grouped_native",
+        "technical_mean"
+      ]
+    },
+    "Status": {
+      "type": "string",
+      "enum": [
+        "computed",
+        "unavailable",
+        "insufficient_data",
+        "not_identifiable",
+        "error"
+      ]
+    }
+  }
+}
