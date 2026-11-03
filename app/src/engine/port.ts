@@ -16,6 +16,8 @@
 // the sibling checkout and gives the Python target a single shape to satisfy.
 // It must stay structurally compatible — see the compat check in ./wasmEngine.ts.
 
+import type { Evaluation } from './evaluation.js';
+
 export type TaskType = 'regression' | 'binary' | 'multiclass';
 export type Partition = 'train' | 'test' | 'predict';
 
@@ -33,6 +35,8 @@ export interface MaterializedDataset {
   classes?: string[];
   /** stable per-sample identity — joins keyed by this, never by row order */
   sampleIds: string[];
+  /** Original sample identity when multiple rows represent repeated measurements. */
+  groupIds?: string[];
   partitions: Partition[];
 }
 
@@ -98,12 +102,23 @@ export interface RunResult {
   /** which engine produced this ('dag-ml-wasm' | 'nirs4all-core-wasm' | 'python' | 'stub') */
   engine: string;
   scoreMetric: keyof Metrics;
+  /** Missing only for older saved results or engines without evaluation context. */
+  evaluation?: Evaluation;
+  /** Backend refusals and runtime failures, including candidates scored by fallback. */
+  candidateIssues?: CandidateIssue[];
   model: FittedModel;
   createdAt: string;
   /** per-hyperparameter sweep scores (RMSE vs components / alpha / operator), if swept */
   variants?: { x: number; rmse: number; selected: boolean; label?: string }[];
   /** what the sweep's x axis means (PLS components, Ridge alpha, AOM operator…) */
   variantAxis?: { fr: string; en: string; categorical?: boolean; logX?: boolean };
+}
+
+export interface CandidateIssue {
+  label: string;
+  backend: 'wasm' | 'js';
+  status: 'refused' | 'failed';
+  reason: string;
 }
 
 export interface RunProgress {

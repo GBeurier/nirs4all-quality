@@ -10,6 +10,8 @@ import type { LabEngine, MaterializedDataset, PipelineDSL, PipelineStep, RunResu
 import { runJsVariant, runPlsScreenSteps, type JsRidgeScreenSpec, type RidgeChain } from './jsEngine.js';
 import { OPERATOR_LABEL, type Operator } from './jsNumerics.js';
 import { regressionMetrics } from './metrics.js';
+import { validateCalibrationDataset } from './evaluation.js';
+import { candidateIssue } from './preprocessing.js';
 
 export type VariantGroup = 'cart' | 'aom';
 export type VariantTier = 'fast' | 'thorough';
@@ -32,7 +34,7 @@ const snv = (): PipelineStep => ({ id: 'snv', type: 'StandardNormalVariate', par
 const msc = (): PipelineStep => ({ id: 'msc', type: 'MultiplicativeScatterCorrection', params: {} });
 const detrend = (degree = 1): PipelineStep => ({ id: `dt${degree}`, type: 'Detrend', params: { degree } });
 const sg = (deriv: number, window = 15, poly = 2): PipelineStep =>
-  ({ id: `sg${deriv}_${window}_${poly}`, type: 'SavitzkyGolay', params: { window_length: window, polyorder: poly, deriv } });
+  ({ id: `sg${deriv}_${window}_${poly}`, type: 'SavitzkyGolay', params: { window_length: window, polyorder: poly, deriv, mode: 'nearest' } });
 
 type StepOpt = { label: string; steps: PipelineStep[] };
 function cartSteps(stages: StepOpt[][]): StepOpt[] {
@@ -65,7 +67,7 @@ const RIDGE_CART: RidgeChain[] = cartOps([
 const AOM_PLS_FAST: StepOpt[] = [
   { label: 'brut', steps: [] }, { label: 'liss.', steps: [sg(0)] }, { label: 'd1', steps: [sg(1)] }, { label: 'd2', steps: [sg(2, 17)] },
 ];
-// Extended AOM-PLS bank — a real ~19-combo screen grounded in nirs4all-aom's
+// Extended AOM-PLS bank — an 18-candidate screen grounded in nirs4all-aom's
 // `default_bank()` SG family (windows 11/15/21/31, poly 2/3, deriv 0/1/2) +
 // scatter {SNV, MSC, detrend} + the composed scatter×derivative chains the
 // examples advertise (SNV+d1, MSC+d1, detrend+d1). Every window/deriv now yields
@@ -76,7 +78,6 @@ const AOM_PLS_SLOW: StepOpt[] = [
   { label: 'SNV', steps: [snv()] },
   { label: 'MSC', steps: [msc()] },
   { label: 'detrend¹', steps: [detrend(1)] },
-  { label: 'detrend²', steps: [detrend(2)] },
   { label: 'liss.·w11', steps: [sg(0, 11)] },
   { label: 'liss.·w21', steps: [sg(0, 21)] },
   { label: 'd1·w11', steps: [sg(1, 11)] },
@@ -145,13 +146,15 @@ function plsDsl(name: string, steps: PipelineStep[], maxComp: number): PipelineD
   return { name, steps, model: { id: 'm', type: 'PLS', params: { n_components: maxComp } } };
 }
 
-/** Run one variant, returning its RunResult (or null if it failed to fit). */
-export async function runVariant(ds: MaterializedDataset, v: CalibVariant, wasm: LabEngine): Promise<RunResult | null> {
+/** Run one variant; failures are propagated for the host to display. */
+export async function runVariant(ds: MaterializedDataset, v: CalibVariant, wasm: LabEngine): Promise<RunResult> {
   const spec = v.spec;
   const cap = (want: number) => Math.max(1, Math.min(want, Math.floor(ds.nSamples * 0.55), ds.nFeatures));
   try {
+    validateCalibrationDataset(ds);
     if (spec.kind === 'wasm_pls_screen') {
       let best: RunResult | null = null;
+      const candidateIssues: NonNullable<RunResult['candidateIssues']> = [];
       const variants: NonNullable<RunResult['variants']> = [];
       for (let k = 0; k < spec.screen.length; k++) {
         const s = spec.screen[k]!;
@@ -160,18 +163,23 @@ export async function runVariant(ds: MaterializedDataset, v: CalibVariant, wasm:
           const rmse = res.refit.metrics.rmse ?? Number.POSITIVE_INFINITY;
           variants.push({ x: k, rmse, selected: false, label: s.label });
           if (!best || (best.refit.metrics.rmse ?? Infinity) > rmse) best = res;
-        } catch { /* combo failed to fit on the WASM path — the JS fallback below covers it */ }
+        } catch (err) {
+          candidateIssues.push(candidateIssue(s.label, 'wasm', err));
+        }
       }
       if (!best) {
         // the libn4m WASM PLS path is unavailable/incompatible → in-browser PLS,
         // screening the REAL preprocessing steps (window-aware Savitzky-Golay/MSC)
         const res = runPlsScreenSteps(ds, spec.screen, cap(spec.maxComp), v.label.fr);
-        return { ...res, engine: v.group === 'aom' ? `${res.engine} · AOM` : `${res.engine} · cart` };
+        return { ...res, candidateIssues: [...candidateIssues, ...(res.candidateIssues ?? [])], engine: v.group === 'aom' ? `${res.engine} · AOM` : `${res.engine} · cart` };
       }
       const bestRmse = best.refit.metrics.rmse ?? Infinity;
       variants.forEach((z) => { z.selected = z.rmse === bestRmse; });
       return {
         ...best,
+        // This outer screen selects preprocessing using the same scored rows.
+        ...(best.evaluation ? { evaluation: { ...best.evaluation, scope: best.evaluation.scope === 'training' ? 'training' as const : 'selection_validation' as const, independent_test: false } } : {}),
+        candidateIssues,
         id: `${v.id}-${ds.nSamples}`,
         pipelineName: v.label.fr,
         engine: v.group === 'aom' ? `${best.engine} · AOM` : `${best.engine} · cart`,
@@ -182,8 +190,8 @@ export async function runVariant(ds: MaterializedDataset, v: CalibVariant, wasm:
     // js_ridge_screen
     return runJsVariant(ds, spec, v.label.fr);
   } catch (err) {
-    console.warn(`[quali-nirs4all] variante ${v.id} échouée`, err);
-    return null;
+    console.warn(`[quali-nirs4all] variant ${v.id} failed`, err);
+    throw err;
   }
 }
 
@@ -193,14 +201,14 @@ export function variantScore(r: RunResult): number {
 }
 
 /** A display-only pipeline description (composition strip in TrainingResults). */
-export function describeVariant(v: CalibVariant, selectedLabel?: string): { name: string; steps: PipelineStep[]; model: PipelineStep } {
+export function describeVariant(v: CalibVariant, selectedLabel?: string, scoredCount?: number): { name: string; steps: PipelineStep[]; model: PipelineStep } {
   const s = v.spec;
-  const total = s.kind === 'wasm_pls_screen' ? s.screen.length : s.chains.length;
+  const total = scoredCount ?? (s.kind === 'wasm_pls_screen' ? s.screen.length : s.chains.length);
   // when a combo was selected, show the CHOSEN preprocessing prominently as the step
   // (design §8: display the preprocessing AOM/PLS/Ridge actually picked), with the
   // screen size as its parameter; otherwise show the screen itself.
   const step: PipelineStep = selectedLabel
-    ? { id: 'preproc', type: `préproc. retenu : ${selectedLabel}`, params: { 'sur': `${total} testés` } }
+    ? { id: 'preproc', type: `Selected preprocessing: ${selectedLabel}`, params: { scored_candidates: total } }
     : { id: 'screen', type: s.kind === 'wasm_pls_screen' ? `cartésien (${total} combos)` : `screen (${total} chaînes)`, params: {} };
   const model: PipelineStep = { id: 'm', type: s.kind === 'wasm_pls_screen' ? 'PLS' : 'Ridge', params: {} };
   return { name: v.label.fr, steps: [step], model };

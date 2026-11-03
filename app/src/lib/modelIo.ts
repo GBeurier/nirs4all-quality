@@ -6,11 +6,18 @@
 // that an imported state has the portable shape this engine consumes.
 import type { FittedModel } from '@/engine';
 import type { StoredModel } from '@/store/store';
+import type { Evaluation } from '@/engine/evaluation';
 
 const OK_FORMATS = ['quali-nirs4all/n4a', 'nirs4all-core/n4a', 'nirs4all-web/n4a'];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isEvaluation(value: unknown): value is Evaluation {
+  return isRecord(value) && typeof value['independent_test'] === 'boolean'
+    && (value['scope'] === 'training' || value['scope'] === 'selection_validation' || value['scope'] === 'independent_test')
+    && (value['scope'] === 'independent_test' ? value['independent_test'] : !value['independent_test']);
 }
 
 function finiteVector(value: unknown, length: number): boolean {
@@ -36,7 +43,14 @@ function isOwnPortableModel(bundle: Record<string, unknown>, model: unknown): bo
   if (!isRecord(result) || !exactKeys(result, ['preprocessing', 'model'])
       || !Array.isArray(result['preprocessing'])) return false;
   for (const step of result['preprocessing']) {
-    if (!isRecord(step) || !exactKeys(step, ['type', 'params'])) return false;
+    if (!isRecord(step)) return false;
+    const stepKeys = ['type', 'params'];
+    // Current Core includes an empty state vector even for stateless SNV/SG.
+    if (Object.prototype.hasOwnProperty.call(step, 'state')) {
+      if (!finiteVector(step['state'], 0)) return false;
+      stepKeys.push('state');
+    }
+    if (!exactKeys(step, stepKeys)) return false;
     if (step['type'] === 'StandardNormalVariate') {
       if (!finiteVector(step['params'], 0)) return false;
     } else if (step['type'] === 'SavitzkyGolay') {
@@ -50,8 +64,15 @@ function isOwnPortableModel(bundle: Record<string, unknown>, model: unknown): bo
     } else return false;
   }
   const pls = result['model'];
-  if (!isRecord(pls) || pls['type'] !== 'PLSRegression'
-      || !exactKeys(pls, ['type', 'n_components', 'coefficients', 'xMean', 'yMean', 'intercept', 'n_features', 'n_targets'])
+  if (!isRecord(pls)) return false;
+  const modelKeys = ['type', 'n_components', 'coefficients', 'xMean', 'yMean', 'intercept', 'n_features', 'n_targets'];
+  // Core 0.4.5 adds an explicit empty parameter vector for baseline PLS.
+  if (Object.prototype.hasOwnProperty.call(pls, 'params')) {
+    if (!finiteVector(pls['params'], 0)) return false;
+    modelKeys.push('params');
+  }
+  if (pls['type'] !== 'PLSRegression'
+      || !exactKeys(pls, modelKeys)
       || pls['n_features'] !== features || pls['n_targets'] !== 1) return false;
   const components = pls['n_components'];
   if (typeof components !== 'number' || !Number.isSafeInteger(components)
@@ -92,6 +113,8 @@ export function parseModelBundle(text: string): { model: StoredModel } | { error
     engine: String(obj['engine'] ?? backend),
     pipelineName: String(obj['pipeline'] ?? 'modèle importé'),
     metrics,
+    ...(isEvaluation(obj['evaluation']) ? { evaluation: obj['evaluation'] } : {}),
+    evaluationDeclaredOnly: true,
     yRange,
     nFeatures,
     createdAt: String(obj['createdAt'] ?? new Date().toISOString()),

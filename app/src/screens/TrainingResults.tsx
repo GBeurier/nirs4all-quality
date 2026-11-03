@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 
 import type { PipelineDSL, RunResult } from '@/engine';
+import { evaluationLabel, evaluationNote } from '@/engine/evaluation';
 import { useTr } from '@/i18n';
 
 const fmt = (v: number | undefined | null): string =>
@@ -69,8 +70,13 @@ export function TrainingResults({ dsl, result }: { dsl: PipelineDSL; result: Run
       </div>
 
       {/* metrics */}
+      <p className="mb-2 text-xs text-muted-foreground">{evaluationLabel(result.evaluation)}. {evaluationNote(result.evaluation)}</p>
+      {!!result.candidateIssues?.length && <details className="mb-2 text-xs">
+        <summary>{result.candidateIssues.length} backend refusals or failures</summary>
+        <ul>{result.candidateIssues.map((candidate, i) => <li key={i}>{candidate.label} ({candidate.backend}, {candidate.status}): {candidate.reason}</li>)}</ul>
+      </details>}
       <div className="mb-3 flex flex-wrap gap-2 text-xs">
-        {([['RMSEP', m.rmse], ['R²', m.r2], ['RPD', m.rpd], ['RPIQ', m.rpiq], ['bias', m.bias], ['n', m.n]] as const).map(([k, v]) => (
+        {([['RMSE', m.rmse], ['R²', m.r2], ['RPD', m.rpd], ['RPIQ', m.rpiq], ['bias', m.bias], ['n', m.n]] as const).map(([k, v]) => (
           <span key={k} className="inline-flex items-baseline gap-1 rounded-md bg-muted px-2 py-1">
             <span className="text-muted-foreground">{k}</span>
             <span className="font-mono font-medium">{fmt(v)}</span>
@@ -147,7 +153,7 @@ export function TrainingResults({ dsl, result }: { dsl: PipelineDSL; result: Run
         </ResponsiveContainer>
       )}
       <p className="mt-2 text-xs text-muted-foreground">
-        {tab === 'parity' && tr('Chaque point = un échantillon du test gelé. La diagonale est la prédiction parfaite ; plus les points serrent la diagonale, meilleur est le modèle.', 'Each point = a frozen-test sample. The diagonal is the perfect prediction; the tighter the points hug it, the better the model.')}
+        {tab === 'parity' && 'Each point is a scored sample. The diagonal marks perfect predictions. The evaluation scope above states how these samples were used.'}
         {tab === 'residuals' && (
           <>
             {tr('Résidu = prédit − observé. Ils doivent être répartis autour de 0 sans tendance.', 'Residual = predicted − observed. They should scatter around 0 with no trend.')}
@@ -160,8 +166,24 @@ export function TrainingResults({ dsl, result }: { dsl: PipelineDSL; result: Run
             )}
           </>
         )}
-        {tab === 'sweep' && tr('RMSE selon le réglage balayé (composantes, α, ou opérateur de préprocessing). Le point surligné est le choix retenu — le meilleur compromis sur le test gelé.', 'RMSE across the swept setting (components, α, or preprocessing operator). The highlighted point is the chosen one — the best trade-off on the frozen test.')}
+        {tab === 'sweep' && 'RMSE across candidate settings. The highlighted setting was selected using these scores; they are not an independent test.'}
       </p>
+      <details className="mt-2 text-xs">
+        <summary>View scored samples</summary>
+        <table className="w-full text-left">
+          <caption>{evaluationLabel(result.evaluation)} predictions</caption>
+          <thead><tr><th scope="col">Sample</th><th scope="col">Observed</th><th scope="col">Predicted</th><th scope="col">Residual</th></tr></thead>
+          <tbody>{rows.map((r) => <tr key={r.sampleId}><th scope="row">{r.sampleId}</th><td>{fmt(r.actual)}</td><td>{fmt(r.predicted)}</td><td>{fmt(r.residual)}</td></tr>)}</tbody>
+        </table>
+      </details>
+      {result.variants && result.variants.length > 1 && <details className="mt-2 text-xs">
+        <summary>View selection scores</summary>
+        <table className="w-full text-left">
+          <caption>Settings compared using selection RMSE</caption>
+          <thead><tr><th scope="col">Setting</th><th scope="col">RMSE</th><th scope="col">Selected</th></tr></thead>
+          <tbody>{result.variants.map((v) => <tr key={v.x}><th scope="row">{v.label ?? v.x}</th><td>{fmt(v.rmse)}</td><td>{v.selected ? 'Yes' : 'No'}</td></tr>)}</tbody>
+        </table>
+      </details>}
     </div>
   );
 }

@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "smoke": "node scripts/wasm-smoke.mjs",
     "test:model-import": "node scripts/model-import-contract.mjs",
+    "test:science": "node --test scripts/scientific-contract.test.mjs",
     "deploy": "bash scripts/deploy-pages.sh"
   },
   "dependencies": {

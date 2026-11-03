@@ -284,18 +284,17 @@ export const EXPLAIN = {
   reliabilityMix: {
     fr: {
       title: 'Répartition des fiabilités',
-      what: 'Sur le lot prédit, part de chaque feu : 🟢 fiable, 🟠 prudence, 🔴 hors-domaine, 🔵 informatif.',
+      what: 'Domain, reference-density and extrapolation alerts describe potential problems. They do not establish independent prediction accuracy.',
       why: 'Vue d’ensemble de la confiance du lot : beaucoup de 🔴/🟠 = le lot s’éloigne de ce que le modèle connaît (dérive, nouveau type).',
-      takeaway: 'Un lot sain est majoritairement 🟢 ; surveillez la montée des 🔴.',
+      takeaway: 'Without independent evaluation, predictions remain unqualified for routine use even when all descriptive alerts are clear.',
     },
     en: {
       title: 'Reliability breakdown',
-      what: 'Across the predicted batch, the share of each light: 🟢 reliable, 🟠 caution, 🔴 out-of-domain, 🔵 informative.',
+      what: 'Domain, reference-density and extrapolation alerts describe potential problems. They do not establish independent prediction accuracy.',
       why: 'A batch-level view of confidence: many 🔴/🟠 = the batch drifts from what the model knows (drift, new type).',
-      takeaway: 'A healthy batch is mostly 🟢; watch a rising share of 🔴.',
+      takeaway: 'Without independent evaluation, predictions remain unqualified for routine use even when all descriptive alerts are clear.',
     },
-  },
-  maintenanceModelSpace: {
+  },  maintenanceModelSpace: {
     fr: {
       title: 'Renvoi HPLC dans l’espace du modèle',
       what: 'On fait prédire le nouveau lot par le modèle de calibration déployé, puis on classe les échantillons à renvoyer en chimie humide selon deux signaux du modèle : spectre hors-domaine (X, la PLS/Ridge ne « reconnaît » pas ce spectre) et prédiction hors de la gamme apprise (Y, extrapolation).',
@@ -344,22 +343,21 @@ export const EXPLAIN = {
   predictionAlerts: {
     fr: {
       title: 'Alertes par échantillon',
-      what: 'Trois garde-fous indépendants sur chaque prédiction : Extrapolation (hors Y) = la valeur prédite sort de la gamme des références apprises ; Conformal (densité Y) = peu de références au niveau prédit, l’intervalle est donc peu fiable ; Distance spectrale (hors X) = le spectre est loin du nuage de calibration.',
+      what: 'Domain, reference-density and extrapolation alerts describe potential problems. They do not establish independent prediction accuracy.',
       why: 'Une prédiction peut être fausse pour des raisons différentes : hors gamme en Y, dans un « trou » de références, ou avec un spectre inconnu en X. Les séparer dit quoi faire (re-mesurer, envoyer en chimie, enrichir).',
       details: 'Hors Y : prédiction < min ou > max des références (bordure = 5 % des bords). Densité Y : part de références à ± 0,5 σ_y du prédit (peu couvert < 10 %, quasi isolé < 3 %). Hors X : distance au domaine en σ (bordure ≥ 2, hors-domaine ≥ 3). Seuils configurables par méthode validée.',
-      takeaway: 'Un point vert sur les trois colonnes est sûr ; une alerte rouge oriente vers un contrôle chimie.',
-      methods: ['extrapolation Y', 'densité conformal (Y)', 'domaine d’applicabilité (T²/Q)'],
+      takeaway: 'Without independent evaluation, predictions remain unqualified for routine use even when all descriptive alerts are clear.',
+      methods: ['Y extrapolation', 'reference density', 'spectral distance'],
     },
     en: {
       title: 'Per-sample alerts',
-      what: 'Three independent guards on each prediction: Extrapolation (out-Y) = the predicted value leaves the learned reference range; Conformal (Y-density) = few references at the predicted level, so the interval is unreliable; Spectral distance (out-X) = the spectrum is far from the calibration cloud.',
+      what: 'Domain, reference-density and extrapolation alerts describe potential problems. They do not establish independent prediction accuracy.',
       why: 'A prediction can be wrong for different reasons: out of Y range, in a reference "gap", or with an unknown X spectrum. Separating them tells you what to do (re-measure, send to chemistry, enrich).',
       details: 'Out-Y: prediction < min or > max of references (edge = 5 % margins). Y-density: share of references within ± 0.5 σ_y of the prediction (sparse < 10 %, near-isolated < 3 %). Out-X: distance to domain in σ (edge ≥ 2, out-of-domain ≥ 3). Thresholds configurable per validated method.',
-      takeaway: 'A green dot across all three columns is safe; a red alert points to a chemistry check.',
-      methods: ['Y extrapolation', 'conformal density (Y)', 'applicability domain (T²/Q)'],
+      takeaway: 'Without independent evaluation, predictions remain unqualified for routine use even when all descriptive alerts are clear.',
+      methods: ['Y extrapolation', 'reference density', 'spectral distance'],
     },
-  },
-  predictionHistogram: {
+  },  predictionHistogram: {
     fr: {
       title: 'Distribution des valeurs prédites',
       what: 'Histogramme des valeurs prédites du lot, avec la gamme apprise (min–max des références) surlignée.',
@@ -396,7 +394,7 @@ export const EXPLAIN = {
   calibrationChooser: {
     fr: {
       title: 'Choisir & comparer les pipelines',
-      what: 'Vous cochez plusieurs pipelines (préprocessing + modèle) ; chacun est entraîné et évalué sur le même test gelé, puis classé.',
+      what: 'Pipelines are ranked using selection validation scores. The scored rows are reused to choose settings and pipelines.',
       why: 'Il n’existe pas un « meilleur » préprocessing universel : ça dépend de vos spectres. Comparer plusieurs recettes évite de se contenter d’un PLS brut sous-optimal.',
       details: 'Les PLS tournent sur le vrai moteur libn4m (WASM) ; Ridge et AOM-Ridge sur un solveur numérique honnête embarqué. Chaque pipeline balaie son réglage (composantes, α, ou opérateur) et garde le meilleur.',
       takeaway: 'Cochez une petite matrice, lancez, et laissez le classement désigner le gagnant.',
@@ -404,7 +402,7 @@ export const EXPLAIN = {
     },
     en: {
       title: 'Choose & compare pipelines',
-      what: 'You tick several pipelines (preprocessing + model); each is trained and scored on the same frozen test, then ranked.',
+      what: 'Pipelines are ranked using selection validation scores. The scored rows are reused to choose settings and pipelines.',
       why: 'There is no universal "best" preprocessing — it depends on your spectra. Comparing recipes avoids settling for a sub-optimal raw PLS.',
       details: 'PLS runs on the real libn4m engine (WASM); Ridge and AOM-Ridge on an honest embedded numeric solver. Each pipeline sweeps its setting (components, α, or operator) and keeps the best.',
       takeaway: 'Tick a small matrix, run, and let the leaderboard name the winner.',
@@ -415,7 +413,7 @@ export const EXPLAIN = {
     fr: {
       title: 'Cartésien — la matrice de préprocessing',
       what: 'On combine une étape de diffusion {aucune, SNV} et une étape de dérivée {aucune, lissage, 1re, 2de} : le produit cartésien donne toutes les combinaisons, chacune testée avec le modèle (PLS ou Ridge).',
-      why: 'Le meilleur préprocessing dépend des spectres. Plutôt que de le deviner, on essaie la grille entière et on garde la meilleure case sur le test gelé.',
+      why: 'Selection scores help compare candidates. Independent prediction error must be measured on a separate cohort after selection.',
       details: 'PLS tourne sur le vrai moteur libn4m (WASM) ; Ridge sur un solveur closed-form honnête (XᵀX + αI)⁻¹Xᵀy exécuté dans le navigateur. L’onglet « RMSE vs réglage » montre la RMSE de chaque combinaison.',
       takeaway: 'La case gagnante = la combinaison préprocessing la mieux adaptée à vos données.',
       methods: ['produit cartésien', 'PLS (WASM) / Ridge (closed-form)'],
@@ -423,7 +421,7 @@ export const EXPLAIN = {
     en: {
       title: 'Cartesian — the preprocessing matrix',
       what: 'We combine a scatter stage {none, SNV} and a derivative stage {none, smooth, 1st, 2nd}: the Cartesian product yields every combination, each tested with the model (PLS or Ridge).',
-      why: 'The best preprocessing depends on the spectra. Instead of guessing, we try the whole grid and keep the best cell on the frozen test.',
+      why: 'Selection scores help compare candidates. Independent prediction error must be measured on a separate cohort after selection.',
       details: 'PLS runs on the real libn4m engine (WASM); Ridge on an honest closed-form solver (XᵀX + αI)⁻¹Xᵀy run in the browser. The "RMSE vs setting" tab shows each combination’s RMSE.',
       takeaway: 'The winning cell = the preprocessing combination best suited to your data.',
       methods: ['Cartesian product', 'PLS (WASM) / Ridge (closed-form)'],
@@ -436,7 +434,7 @@ export const EXPLAIN = {
       why: 'Cela automatise le choix du préprocessing — souvent le levier le plus important — au lieu de le deviner. AOM-PLS pilote un PLS ; AOM-Ridge un Ridge.',
       details: 'Version compacte du principe AOM (screening d’opérateurs stricts-linéaires + sélection). La version complète (banc étendu, sélection par covariance) vit dans le moteur natif nirs4all-methods/aom.',
       takeaway: 'Un bon point de départ « je ne sais pas quel préprocessing choisir ».',
-      methods: ['screen d’opérateurs', 'sélection sur test'],
+      methods: ['operator screen', 'selection validation'],
     },
     en: {
       title: 'AOM — automatic preprocessing selection',
@@ -444,22 +442,22 @@ export const EXPLAIN = {
       why: 'It automates the preprocessing choice — often the biggest lever — instead of guessing it. AOM-PLS drives a PLS; AOM-Ridge a Ridge.',
       details: 'A compact form of the AOM idea (strict-linear operator screening + selection). The full version (extended bank, covariance selection) lives in the native nirs4all-methods/aom engine.',
       takeaway: 'A good "I don’t know which preprocessing to pick" starting point.',
-      methods: ['operator screen', 'select on test'],
+      methods: ['operator screen', 'selection validation'],
     },
   },
   leaderboard: {
     fr: {
       title: 'Classement des pipelines',
-      what: 'Chaque pipeline coché est évalué sur un jeu de test gelé (jamais vu à l’entraînement) et classé par RMSE croissant.',
-      why: 'Le test gelé donne une estimation honnête de l’erreur en routine — pas l’erreur optimiste sur les données d’entraînement.',
+      what: 'Pipelines are ranked using selection validation scores. The scored rows are reused to choose settings and pipelines.',
+      why: 'Selection scores help compare candidates. Independent prediction error must be measured on a separate cohort after selection.',
       details: 'RMSE = erreur typique (plus bas = mieux). R² = variation expliquée. RPD / RPIQ = étalement des références ÷ erreur (plus haut = mieux ; RPD > 2 ≈ criblage, > 3 ≈ quantification). Cliquez une ligne pour voir ses graphiques.',
       takeaway: 'Le 🏆 est le meilleur compromis ; regardez aussi RPD/RPIQ, pas seulement la RMSE.',
       methods: ['RMSE', 'R²', 'RPD', 'RPIQ'],
     },
     en: {
       title: 'Pipeline leaderboard',
-      what: 'Each ticked pipeline is scored on a frozen test set (never seen in training) and ranked by increasing RMSE.',
-      why: 'The frozen test gives an honest estimate of routine error — not the optimistic error on training data.',
+      what: 'Pipelines are ranked using selection validation scores. The scored rows are reused to choose settings and pipelines.',
+      why: 'Selection scores help compare candidates. Independent prediction error must be measured on a separate cohort after selection.',
       details: 'RMSE = typical error (lower = better). R² = variation explained. RPD / RPIQ = reference spread ÷ error (higher = better; RPD > 2 ≈ screening, > 3 ≈ quantification). Click a row to see its charts.',
       takeaway: 'The 🏆 is the best trade-off; also read RPD/RPIQ, not just RMSE.',
       methods: ['RMSE', 'R²', 'RPD', 'RPIQ'],
@@ -470,17 +468,17 @@ export const EXPLAIN = {
       title: 'Bulletin du modèle',
       what: 'On construit le modèle et on le note : « assez bon pour du criblage ou de la quantification ? » selon des seuils (RPD/RPIQ) configurables par méthode.',
       why: 'Traduire des métriques statistiques en une décision d’usage concrète pour le labo.',
-      details: 'RMSEP = erreur typique de prédiction. R² = part de variation expliquée. RPD/RPIQ = rapport de l’étalement des références à l’erreur : plus c’est haut, mieux c’est. Le détail montre la composition du pipeline et les résultats d’entraînement (observé vs prédit, résidus).',
-      takeaway: 'La couleur du bulletin dit l’usage autorisé ; les chiffres disent pourquoi.',
-      methods: ['RMSEP', 'R²', 'RPD', 'RPIQ', 'bias'],
+      details: 'RMSE summarizes errors on the scored rows. Its interpretation depends on the evaluation scope displayed with the results. RPD and RPIQ describe reference spread relative to that error.',
+      takeaway: 'A selection score alone does not qualify routine use.',
+      methods: ['RMSE', 'R²', 'RPD', 'RPIQ', 'bias'],
     },
     en: {
       title: 'Model report card',
       what: 'We build the model and grade it: "good enough for screening or quantification?" against per-method thresholds (RPD/RPIQ).',
       why: 'Turning statistical metrics into a concrete usage decision for the lab.',
-      details: 'RMSEP = typical prediction error. R² = share of variation explained. RPD/RPIQ = ratio of reference spread to error: higher is better. The detail shows the pipeline composition and training results (observed vs predicted, residuals).',
-      takeaway: 'The card color states the authorized use; the numbers say why.',
-      methods: ['RMSEP', 'R²', 'RPD', 'RPIQ', 'bias'],
+      details: 'RMSE summarizes errors on the scored rows. Its interpretation depends on the evaluation scope displayed with the results. RPD and RPIQ describe reference spread relative to that error.',
+      takeaway: 'A selection score alone does not qualify routine use.',
+      methods: ['RMSE', 'R²', 'RPD', 'RPIQ', 'bias'],
     },
   },
   maintenanceDrift: {
@@ -522,19 +520,18 @@ export const EXPLAIN = {
   reliability: {
     fr: {
       title: 'Fiabilité d’une prédiction',
-      what: 'Chaque prédiction reçoit un feu : 🟢 fiable, 🟠 prudence, 🔴 hors-domaine, 🔵 informatif à mesurer.',
+      what: 'Domain, reference-density and extrapolation alerts describe potential problems. They do not establish independent prediction accuracy.',
       why: 'Un modèle NIRS n’est fiable que sur des échantillons ressemblant à ceux appris. La couleur relie un diagnostic (domaine, incertitude) à une action autorisée.',
-      details: 'On combine la distance au domaine connu (T²/Q) et la largeur de l’intervalle. La « fiabilité » forte (intervalle conforme validé) arrive avec le conformal natif.',
-      takeaway: 'Ne rendez jamais un 🔴 ; un 🔵 vaut la peine d’être mesuré.',
+      details: 'Displayed bands are heuristics derived from score RMSE and spectral distance. Statistical coverage has not been calibrated.',
+      takeaway: 'Without independent evaluation, predictions remain unqualified for routine use even when all descriptive alerts are clear.',
       methods: ['domaine d’applicabilité (T²/Q/kNN)', '→ conformal (à venir)'],
     },
     en: {
       title: 'Prediction reliability',
-      what: 'Each prediction gets a light: 🟢 reliable, 🟠 caution, 🔴 out-of-domain, 🔵 informative to measure.',
+      what: 'Domain, reference-density and extrapolation alerts describe potential problems. They do not establish independent prediction accuracy.',
       why: 'A NIRS model is only reliable on samples resembling those it learned. The color links a diagnostic (domain, uncertainty) to an authorized action.',
-      details: 'We combine distance to the known domain (T²/Q) with interval width. Strong "reliability" (validated conformal interval) arrives with the native conformal engine.',
-      takeaway: 'Never release a 🔴; a 🔵 is worth measuring.',
+      details: 'Displayed bands are heuristics derived from score RMSE and spectral distance. Statistical coverage has not been calibrated.',
+      takeaway: 'Without independent evaluation, predictions remain unqualified for routine use even when all descriptive alerts are clear.',
       methods: ['applicability domain (T²/Q/kNN)', '→ conformal (coming)'],
     },
-  },
-} satisfies Record<string, E>;
+  },} satisfies Record<string, E>;

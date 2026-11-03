@@ -26,12 +26,24 @@ function check(bundle, accepted, name) {
   cases += 1;
 }
 check(own, true, 'own portable PLS');
+const currentCore = structuredClone(own);
+currentCore.model.state.result.model.params = [];
+check(currentCore, true, 'Core 0.4.5 explicit empty PLS parameters');
 const snv = structuredClone(own);
 snv.model.state.result.preprocessing = [{ type: 'StandardNormalVariate', params: [] }];
 check(snv, true, 'own SNV portable PLS');
+const currentSnv = structuredClone(snv);
+currentSnv.model.state.result.preprocessing[0].state = [];
+check(currentSnv, true, 'Core 0.4.5 empty SNV state');
 const sg = structuredClone(own);
 sg.model.state.result.preprocessing = [{ type: 'SavitzkyGolay', params: [3, 2, 1, 4, 0] }];
 check(sg, true, 'own SG portable PLS');
+const currentSg = structuredClone(sg);
+currentSg.model.state.result.preprocessing[0].state = [];
+check(currentSg, true, 'Core 0.4.5 empty SG state');
+const learnedSg = structuredClone(currentSg);
+learnedSg.model.state.result.preprocessing[0].state = [1];
+check(learnedSg, false, 'unsupported learned SG state');
 const intercept = structuredClone(own);
 intercept.model.state.result.model.intercept = [2];
 check(intercept, true, 'finite intercept');
@@ -56,6 +68,7 @@ const mutations = [
   ['wrong target mean', (b) => { b.model.state.result.model.yMean = []; }],
   ['wrong intercept', (b) => { b.model.state.result.model.intercept = [0, 1]; }],
   ['wrong model kind', (b) => { b.model.state.result.model.type = 'Ridge'; }],
+  ['unsupported PLS parameters', (b) => { b.model.state.result.model.params = [1]; }],
   ['fractional components', (b) => { b.model.state.result.model.n_components = 1.5; }],
   ['excess components', (b) => { b.model.state.result.model.n_components = 4; }],
 ];

@@ -1,8 +1,8 @@
-import { ModelReportCard } from 'nirs4all-ui/lab';
+import { buildModelReportView, ModelReportCard } from 'nirs4all-ui/lab';
 import { Loader2, Play, Trophy } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-import { createEngine, type LabEngine, type RunResult } from '@/engine';
+import { createEngine, evaluationLabel, evaluationNote, type LabEngine, type RunResult } from '@/engine';
 import { CALIB_VARIANTS, describeVariant, runVariant, variantScore, type CalibVariant, type VariantGroup } from '@/engine/variants';
 import { downloadJson, downloadText, slug, toCsv } from '@/lib/export';
 import { buildTrainingDataset } from '@/lib/trainingData';
@@ -11,6 +11,7 @@ import { useLab, useProjectSpectra, type StoredModel } from '@/store/store';
 import { Explain } from '@/ui/Explain';
 import { EXPLAIN } from '@/ui/explanations';
 import { TrainingResults } from '@/screens/TrainingResults';
+import { validateCalibrationDataset } from '@/engine/evaluation';
 
 interface Scored { variant: CalibVariant; result: RunResult; }
 
@@ -47,6 +48,7 @@ export function Calibrate({ projectId }: { projectId: string }) {
   const [selectedId, setSelectedId] = useState<string | null>(() => storedCalib?.selectedId ?? null);
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState('');
+  const [failures, setFailures] = useState<{ label: string; reason: string }[]>([]);
 
   const persistCalib = (results: Scored[], sel: string | null) =>
     dispatch({ kind: 'set_calibration', projectId, calibration: { results: results.map((s) => ({ variantId: s.variant.id, result: s.result })), selectedId: sel } });
@@ -54,7 +56,11 @@ export function Calibrate({ projectId }: { projectId: string }) {
   // The REAL training dataset (mean spectrum per labelled sample + its reference)
   // — shared with Predict so parity/metrics/predictions reflect the actual data.
   const ds = useMemo(() => buildTrainingDataset(spectra, samples, project?.method.target || 'y', repMode), [spectra, samples, project, repMode]);
-  const trainable = ds.nSamples >= 8 && ds.nFeatures > 0;
+  const calibrationError = useMemo(() => {
+    try { validateCalibrationDataset(ds); return null; }
+    catch (err) { return err instanceof Error ? err.message : String(err); }
+  }, [ds]);
+  const trainable = calibrationError === null;
   const yRange = useMemo((): [number, number] => {
     const ys = Array.from(ds.y);
     return ys.length ? [Math.min(...ys), Math.max(...ys)] : [0, 1];
@@ -65,6 +71,7 @@ export function Calibrate({ projectId }: { projectId: string }) {
     const m: StoredModel = {
       model: s.result.model, engine: s.result.engine, pipelineName: tr(s.variant.label.fr, s.variant.label.en),
       metrics: s.result.refit.metrics, yRange, nFeatures: ds.nFeatures, createdAt: s.result.createdAt,
+      ...(s.result.evaluation ? { evaluation: s.result.evaluation } : {}),
     };
     dispatch({ kind: 'set_model', projectId, model: m });
   };
@@ -73,21 +80,30 @@ export function Calibrate({ projectId }: { projectId: string }) {
   async function launch() {
     const chosen = CALIB_VARIANTS.filter((v) => checked.has(v.id));
     if (chosen.length === 0) return;
-    setRunning(true); setScored(null); setSelectedId(null);
-    const wasm: LabEngine = await createEngine();
-    const out: Scored[] = [];
-    for (let i = 0; i < chosen.length; i++) {
-      const v = chosen[i]!;
-      setProgress(tr(`Calibration ${i + 1}/${chosen.length} : ${v.label.fr}…`, `Calibrating ${i + 1}/${chosen.length}: ${v.label.en}…`));
-      const result = await runVariant(ds, v, wasm);
-      if (result) out.push({ variant: v, result });
+    setRunning(true); setScored(null); setSelectedId(null); setFailures([]);
+    try {
+      const wasm: LabEngine = await createEngine();
+      const out: Scored[] = [];
+      for (let i = 0; i < chosen.length; i++) {
+        const v = chosen[i]!;
+        setProgress(tr(`Calibration ${i + 1}/${chosen.length} : ${v.label.fr}…`, `Calibrating ${i + 1}/${chosen.length}: ${v.label.en}…`));
+        try {
+          const result = await runVariant(ds, v, wasm);
+          out.push({ variant: v, result });
+        } catch (err) {
+          setFailures((prev) => [...prev, { label: v.label.en, reason: err instanceof Error ? err.message : String(err) }]);
+        }
+      }
+      out.sort((a, b) => variantScore(a.result) - variantScore(b.result));
+      setScored(out);
+      setSelectedId(out[0]?.variant.id ?? null);
+      if (out[0]) deploy(out[0]); // the best pipeline becomes the project's active model
+      persistCalib(out, out[0]?.variant.id ?? null); // survive navigation away and back
+    } catch (err) {
+      setFailures((prev) => [...prev, { label: 'Calibration', reason: err instanceof Error ? err.message : String(err) }]);
+    } finally {
+      setRunning(false); setProgress('');
     }
-    out.sort((a, b) => variantScore(a.result) - variantScore(b.result));
-    setScored(out);
-    setSelectedId(out[0]?.variant.id ?? null);
-    if (out[0]) deploy(out[0]); // the best pipeline becomes the project's active model
-    persistCalib(out, out[0]?.variant.id ?? null); // survive navigation away and back
-    setRunning(false); setProgress('');
   }
 
   const toggle = (id: string) => setChecked((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
@@ -101,8 +117,7 @@ export function Calibrate({ projectId }: { projectId: string }) {
         <Explain content={EXPLAIN.calibrationChooser} />
       </div>
       <p className="mb-4 text-sm text-muted-foreground">
-        {tr(`${labelled.length} échantillons avec référence. Cochez les pipelines à comparer, puis lancez — chacun est évalué sur un test gelé.`,
-          `${labelled.length} samples with a reference. Tick the pipelines to compare, then run — each is scored on a frozen test.`)}
+        {`${labelled.length} samples with a reference. Select pipelines to compare using selection validation. Independent prediction error is not measured by this screen. Backend refusals and failures are listed in result details.`}
       </p>
 
       {/* variant chooser (checkbox matrix) */}
@@ -134,9 +149,13 @@ export function Calibrate({ projectId }: { projectId: string }) {
           {running ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />} {running ? tr('Calibration…', 'Calibrating…') : tr(`Lancer la calibration (${checked.size})`, `Run calibration (${checked.size})`)}
         </button>
         {running && <span className="text-xs text-muted-foreground">{progress}</span>}
-        {!trainable && <span className="text-xs text-warning">{tr('Il faut au moins 8 échantillons avec cible et des spectres.', 'Need at least 8 samples with a target and spectra.')}</span>}
+        {calibrationError && <span className="text-xs text-warning">{calibrationError}</span>}
       </div>
 
+      {failures.length > 0 && <div role="alert" className="mb-4 card p-3 text-sm">
+        <p>Some pipelines could not be scored:</p>
+        <ul>{failures.map((failure, i) => <li key={i}>{failure.label}: {failure.reason}</li>)}</ul>
+      </div>}
       {scored && scored.length > 0 && best && (
         <>
           {/* leaderboard */}
@@ -144,7 +163,7 @@ export function Calibrate({ projectId }: { projectId: string }) {
             <div className="flex items-center gap-2 border-b border-border px-3 py-2 text-sm font-medium">
               <Trophy size={15} className="text-primary" /> {tr('Classement des pipelines', 'Pipeline leaderboard')}
               <Explain content={EXPLAIN.leaderboard} />
-              <span className="ml-auto text-xs font-normal text-muted-foreground">{tr('trié par RMSE (test gelé)', 'sorted by RMSE (frozen test)')}</span>
+              <span className="ml-auto text-xs font-normal text-muted-foreground">Sorted by selection RMSE</span>
             </div>
             <table className="w-full text-sm">
               <thead className="text-left text-xs text-muted-foreground">
@@ -168,6 +187,7 @@ export function Calibrate({ projectId }: { projectId: string }) {
                       <td className="px-3 py-2">
                         <span className="font-medium">{tr(s.variant.label.fr, s.variant.label.en)}</span>
                         <span className="ml-2 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">{s.result.engine}</span>
+                        <span className="block text-xs text-muted-foreground">{evaluationLabel(s.result.evaluation)}</span>
                       </td>
                       <td className="px-3 py-2 text-right font-mono font-medium">{fmt(m.rmse)}</td>
                       <td className="px-3 py-2 text-right font-mono">{fmt(m.r2)}</td>
@@ -186,14 +206,15 @@ export function Calibrate({ projectId }: { projectId: string }) {
           <div className="mt-4 flex flex-wrap gap-2">
             <button className="btn-outline" onClick={() => selected && downloadText(
               `${slug(project?.name ?? 'projet')}-${slug(selected.variant.label.en)}-predictions.csv`,
-              toCsv(selected.result.refit.predictions.map((r) => ({ sample_id: r.sampleId, observed: r.actual, predicted: r.predicted, residual: r.residual })),
-                ['sample_id', 'observed', 'predicted', 'residual']))}>
+              toCsv(selected.result.refit.predictions.map((r) => ({ sample_id: r.sampleId, observed: r.actual, predicted: r.predicted, residual: r.residual,
+                evaluation_scope: selected.result.evaluation?.scope ?? 'unknown', independent_test: selected.result.evaluation?.independent_test ?? false })),
+                ['sample_id', 'observed', 'predicted', 'residual', 'evaluation_scope', 'independent_test']))}>
               {tr('Exporter les prédictions (CSV)', 'Export predictions (CSV)')}
             </button>
             <button className="btn-outline" onClick={() => selected && downloadJson(`${slug(project?.name ?? 'projet')}.n4a.json`, {
               format: 'quali-nirs4all/n4a', version: 1, createdAt: selected.result.createdAt, engine: selected.result.engine,
-              method: project?.method, pipeline: selected.variant.label.en, leaderboard: scored.map((s) => ({ pipeline: s.variant.label.en, engine: s.result.engine, metrics: s.result.refit.metrics })),
-              metrics: selected.result.refit.metrics, model: selected.result.model,
+              method: project?.method, pipeline: selected.variant.label.en, leaderboard: scored.map((s) => ({ pipeline: s.variant.label.en, engine: s.result.engine, metrics: s.result.refit.metrics, evaluation: s.result.evaluation, candidateIssues: s.result.candidateIssues })),
+              metrics: selected.result.refit.metrics, evaluation: selected.result.evaluation, candidateIssues: selected.result.candidateIssues, failedPipelines: failures, model: selected.result.model,
               nFeatures: selected.result.model.nFeatures, yRange,
             })}>
               {tr('Exporter le modèle (.n4a)', 'Export model (.n4a)')}
@@ -207,20 +228,34 @@ export function Calibrate({ projectId }: { projectId: string }) {
 
 function VariantDetail({ scored, bestId, lang, tr }: { scored: Scored; bestId: string; lang: 'fr' | 'en'; tr: (fr: string, en: string) => string }) {
   const m = scored.result.refit.metrics;
+  const independent = scored.result.evaluation?.scope === 'independent_test' && scored.result.evaluation.independent_test;
+  const report = buildModelReportView(m, undefined, 'en');
+  const reportView = {
+    ...report,
+    gradeLabel: independent ? report.gradeLabel : evaluationLabel(scored.result.evaluation),
+    verdict: independent ? report.verdict : 'Independent validation is required before qualifying routine use.',
+    metrics: report.metrics.map((metric) => ({
+      ...metric,
+      label: metric.key === 'rmse' ? 'RMSE' : metric.label,
+      reading: metric.key === 'rmse' ? evaluationLabel(scored.result.evaluation) : independent ? metric.reading : '',
+    })),
+  };
   const isBest = scored.variant.id === bestId;
   // pipeline-composition strip: the chosen setting (best n_components / α / operator)
   const sel = scored.result.variants?.find((z) => z.selected);
   const selLabel = sel ? (sel.label ?? String(sel.x)) : undefined;
-  const dsl = describeVariant(scored.variant, selLabel);
+  const dsl = describeVariant(scored.variant, selLabel, scored.result.variants?.length ?? 1);
   return (
     <>
       <div className="mb-3 flex items-center gap-2 text-sm">
         <span className="font-medium">{tr('Modèle retenu', 'Selected model')} : {tr(scored.variant.label.fr, scored.variant.label.en)}</span>
         {isBest && <span className="n4-pill n4-pill--green">🏆 {tr('meilleur', 'best')}</span>}
       </div>
+      <p className="mb-3 text-xs text-muted-foreground">{evaluationLabel(scored.result.evaluation)}. {evaluationNote(scored.result.evaluation)}</p>
       <ModelReportCard
         locale={lang}
-        metrics={{ rmse: m.rmse ?? null, r2: m.r2 ?? null, rpd: m.rpd ?? null, rpiq: m.rpiq ?? null, bias: m.bias ?? null, n: m.n ?? null }}
+        view={reportView}
+        applyTone={independent}
         title={<span className="font-medium">{tr('Bulletin du modèle', 'Model report card')}</span>}
         className="mb-4 rounded-xl border border-border bg-card p-4"
         headerClassName="mb-3 flex flex-col gap-1"

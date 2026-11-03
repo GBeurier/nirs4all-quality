@@ -18,13 +18,13 @@ export function buildTrainingDataset(
   const p = spectra?.axis.length ?? 0;
 
   // build the row set: one mean vector per sample, or one per raw replicate
-  const vecs: { id: string; v: Float64Array; y: number }[] = [];
+  const vecs: { id: string; groupId: string; v: Float64Array; y: number }[] = [];
   for (const s of rows) {
     const yv = yById.get(s.sampleId) ?? 0;
     if (repMode === 'raw' && s.reps.length > 0) {
-      s.reps.forEach((r, k) => vecs.push({ id: `${s.sampleId}#${k + 1}`, v: r.values, y: yv }));
+      s.reps.forEach((r, k) => vecs.push({ id: `${s.sampleId}#${k + 1}`, groupId: s.sampleId, v: r.values, y: yv }));
     } else {
-      vecs.push({ id: s.sampleId, v: meanSpectrum(s), y: yv });
+      vecs.push({ id: s.sampleId, groupId: s.sampleId, v: meanSpectrum(s), y: yv });
     }
   }
 
@@ -42,5 +42,6 @@ export function buildTrainingDataset(
     axis: spectra?.axis ?? [], axisUnit: spectra?.axisUnit ?? 'nm',
     y, targetName, taskType: 'regression',
     sampleIds, partitions: vecs.map((): 'train' => 'train'),
+    groupIds: vecs.map((row) => row.groupId),
   };
 }

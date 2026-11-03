@@ -3,9 +3,10 @@
 //   • applicabilityScore = distance to the calibration cloud (PC std-dev units)
 //   • localDensity       = share of calibration points nearby (rare ⇒ 🔵)
 //   • extrapolation      = predicted value outside the trained reference range
-//   • intervalWidth      = a heuristic ± band (model RMSEP widened by distance)
+//   • intervalWidth      = a heuristic ± band (score RMSE widened by distance)
 // The traffic-light colour then comes from buildDecisionView (pure view-model).
-import type { DecisionInput } from 'nirs4all-ui/lab';
+import { buildDecisionView, DECISION_DISPLAY, type DecisionInput, type DecisionView, type Locale } from 'nirs4all-ui/lab';
+import type { Evaluation } from '@/engine/evaluation';
 
 import { meanSpectrum, type SampleSpectra } from '@/domain/spectra';
 import { computePca } from './pca';
@@ -34,6 +35,24 @@ export interface ReliabilityModel {
   ev: (k: number) => string;
 }
 
+/** Domain heuristics cannot qualify routine use from a selection/training score. */
+export function buildQualifiedDecisionView(input: DecisionInput, evaluation: Evaluation | undefined, locale: Locale, declaredOnly = false): DecisionView {
+  const view = buildDecisionView(input, null, locale);
+  if (!declaredOnly && evaluation?.scope === 'independent_test' && evaluation.independent_test) return view;
+  const guarded: DecisionView = view.color === 'reliable' ? {
+    ...view, color: 'caution', icon: 'alert', category: 'uncertain_prediction',
+    colorClass: DECISION_DISPLAY.caution.colorClass, bgClass: DECISION_DISPLAY.caution.bgClass,
+  } : view;
+  return {
+    ...guarded,
+    label: view.color === 'reliable' ? 'Unqualified prediction' : `${view.label} · unqualified`,
+    reason: `${view.reason} Independent prediction error has not been established.`,
+    action: 'Independent validation is required before routine use.',
+    confidence: 'low',
+    overridableBy: 'none',
+  };
+}
+
 export function buildRoutinePredictions(params: {
   cal: SampleSpectra[];
   routine: SampleSpectra[];
@@ -41,10 +60,10 @@ export function buildRoutinePredictions(params: {
   axisLen: number;
   yMin: number;
   yMax: number;
-  rmsep: number;
+  scoreRmse: number;
   calY?: number[];            // calibration reference values (for the Y-density alert)
 }): ReliabilityModel {
-  const { cal, routine, predicted, axisLen: p, yMin, yMax, rmsep, calY = [] } = params;
+  const { cal, routine, predicted, axisLen: p, yMin, yMax, scoreRmse, calY = [] } = params;
   const nCal = cal.length;
   const nR = routine.length;
   if (nCal < 2 || nR === 0 || p === 0) return { preds: [], ev: () => '0.0' };
@@ -85,7 +104,7 @@ export function buildRoutinePredictions(params: {
     const localDensity = near / nCal;
     const yhat = predicted[i] ?? Number.NaN;
     const extrapolation = Number.isFinite(yhat) && (yhat < yMin || yhat > yMax);
-    const halfWidth = (rmsep > 0 ? rmsep : 1) * (1 + 0.5 * novelty);
+    const halfWidth = (scoreRmse > 0 ? scoreRmse : 1) * (1 + 0.5 * novelty);
     const input: DecisionInput = {
       applicabilityScore: novelty,
       localDensity,
@@ -102,7 +121,7 @@ export function buildRoutinePredictions(params: {
     const outX: AlertLevel = novelty > 3 ? 'bad' : novelty > 2 ? 'warn' : 'ok';
     const outY: AlertLevel = extrapolation ? 'bad' : (Number.isFinite(yhat) && (yhat < yMin + 0.05 * (yMax - yMin) || yhat > yMax - 0.05 * (yMax - yMin)) ? 'warn' : 'ok');
     const yDens: AlertLevel = (yLocalDensity < 0.03 || yNovelty > 3) ? 'bad' : (yLocalDensity < 0.10 || yNovelty > 1.5) ? 'warn' : 'ok';
-    return { sampleId: s.sampleId, predicted: yhat, input, interval: `± ${halfWidth.toFixed(2)}`, novelty, yNovelty, alerts: { outX, outY, yDens } };
+    return { sampleId: s.sampleId, predicted: yhat, input, interval: `Heuristic ± ${halfWidth.toFixed(2)}`, novelty, yNovelty, alerts: { outX, outY, yDens } };
   });
 
   return { preds, ev: (k) => ((pca.explained[k] ?? 0) * 100).toFixed(1) };

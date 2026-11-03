@@ -4,6 +4,7 @@
 // portable pipeline. Same PredictResult shape for the caller.
 import { applyChain, applySteps, plsPredictRow, ridgePredictRow, type Operator, type PlsModel, type PreprocStep, type RidgeModel, type StepState } from './jsNumerics.js';
 import type { FittedModel, PredictResult } from './port.js';
+import { validatePreprocessingStep } from './preprocessing.js';
 
 interface JsRidgeState { backendId: 'js-ridge'; ops: Operator[]; ridge: RidgeModel; }
 interface JsPlsState { backendId: 'js-pls'; ops?: Operator[]; steps?: PreprocStep[]; stepState?: StepState; pls: PlsModel; }
@@ -19,8 +20,9 @@ export async function predictWithModel(model: FittedModel, X: Float64Array, n: n
   }
   if (state?.backendId === 'js-pls') {
     const s = state as unknown as JsPlsState;
+    s.steps?.forEach((step) => validatePreprocessingStep(step, 'js'));
     const { data, p: q } = s.steps
-      ? applySteps(X, n, p, s.steps, s.stepState ? { state: s.stepState } : undefined)
+      ? applySteps(X, n, p, s.steps, { state: s.stepState ?? {} })
       : applyChain(X, n, p, s.ops ?? []);
     const values = new Float64Array(n);
     for (let i = 0; i < n; i++) values[i] = plsPredictRow(s.pls, data, i * q);

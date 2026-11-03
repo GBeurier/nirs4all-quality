@@ -7,6 +7,8 @@
 // by held-out RMSE, which is exactly the AOM idea (a compact form of it). PLS
 // itself stays on real libn4m WASM. Everything here is deterministic.
 
+import { validatePreprocessingStep } from './preprocessing.js';
+
 /** A strict-linear preprocessing operator (the compact AOM bank uses these). */
 export type Operator = 'identity' | 'snv' | 'diff1' | 'diff2' | 'detrend';
 
@@ -25,7 +27,7 @@ export function applyOperator(X: Float64Array, n: number, p: number, op: Operato
   if (op === 'identity') return { data: X.slice(), n, p };
   if (op === 'diff1' || op === 'diff2') {
     const k = op === 'diff1' ? 1 : 2;
-    if (p <= k) return { data: X.slice(), n, p }; // too few features to differentiate → identity
+    if (p <= k) throw new Error(`Insufficient features for ${op}.`);
     const q = p - k;
     const out = new Float64Array(n * q);
     for (let i = 0; i < n; i++) {
@@ -51,6 +53,7 @@ export function applyOperator(X: Float64Array, n: number, p: number, op: Operato
     }
     return { data: out, n, p };
   }
+  if (op !== 'detrend') throw new Error(`Unsupported preprocessing operator '${op}'.`);
   // detrend: subtract the least-squares line (index vs value) per row
   const out = new Float64Array(n * p);
   const xs = Array.from({ length: p }, (_, j) => j);
@@ -181,11 +184,16 @@ export interface StepState { mscRef?: Float64Array; }
 /** Apply a chain of real preprocessing steps (window-aware). `opts.state` supplies
  *  captured references at predict time; `opts.capture` collects them at fit time. */
 export function applySteps(X: Float64Array, n: number, p: number, steps: readonly PreprocStep[], opts?: { state?: StepState; capture?: StepState }): Matrix {
+  steps.forEach((step) => validatePreprocessingStep(step, 'preview'));
+  if (steps.filter((step) => step.type === 'MultiplicativeScatterCorrection').length > 1) {
+    throw new Error('JS preprocessing supports only one MSC step per chain.');
+  }
   let cur: Matrix = { data: X, n, p };
   for (const s of steps) {
     if (s.type === 'StandardNormalVariate') cur = applyOperator(cur.data, cur.n, cur.p, 'snv');
     else if (s.type === 'Detrend') cur = applyOperator(cur.data, cur.n, cur.p, 'detrend');
     else if (s.type === 'MultiplicativeScatterCorrection') {
+      if (opts?.state && !opts.state.mscRef) throw new Error('MSC prediction requires a fitted training reference.');
       const { data, ref } = applyMsc(cur.data, cur.n, cur.p, opts?.state?.mscRef);
       if (opts?.capture && !opts?.state?.mscRef) opts.capture.mscRef = ref;
       cur = { data, n: cur.n, p: cur.p };
@@ -206,7 +214,6 @@ export function applySteps(X: Float64Array, n: number, p: number, steps: readonl
       }
       cur = { data: out, n: cur.n, p: cur.p };
     }
-    // other step types (smoothing we don't model) fall through as identity
   }
   return cur;
 }

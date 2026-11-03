@@ -1,5 +1,5 @@
 import {
-  buildDecisionView, DecisionCard,
+  DecisionCard,
   type DecisionColor, type DecisionInput, type DecisionView,
 } from 'nirs4all-ui/lab';
 import { Loader2 } from 'lucide-react';
@@ -10,7 +10,7 @@ import {
 } from 'recharts';
 
 import { meanSpectrum, type SampleSpectra } from '@/domain/spectra';
-import { createEngine } from '@/engine';
+import { createEngine, evaluationLabel } from '@/engine';
 import { predictWithModel } from '@/engine/predict';
 import { CALIB_VARIANTS, runVariant } from '@/engine/variants';
 import { analyzeFiles, assembleDataset, readRawFiles } from '@/lib/dataset';
@@ -18,7 +18,7 @@ import { resampleTo } from '@/lib/drift';
 import { downloadText, slug, toCsv } from '@/lib/export';
 import { histogram } from '@/lib/histogram';
 import { parseModelBundle } from '@/lib/modelIo';
-import { buildRoutinePredictions, type AlertLevel, type PredictionAlerts, type ReliabilityModel } from '@/lib/reliability';
+import { buildQualifiedDecisionView, buildRoutinePredictions, type AlertLevel, type PredictionAlerts, type ReliabilityModel } from '@/lib/reliability';
 import { buildTrainingDataset } from '@/lib/trainingData';
 import { useLang, useTr } from '@/i18n';
 import { useLab, useProjectSpectra, type StoredModel } from '@/store/store';
@@ -114,11 +114,11 @@ export function Predict({ projectId }: { projectId: string }) {
         const res = await runVariant(ds, variant, wasm);
         if (cancelled) return;
         setBuilding(false);
-        if (!res) { setError(tr('Échec de la construction du modèle.', 'Model build failed.')); return; }
         const ys = Array.from(ds.y);
         sm = {
           model: res.model, engine: res.engine, pipelineName: variant.label.fr,
           metrics: res.refit.metrics, yRange: [Math.min(...ys), Math.max(...ys)], nFeatures: ds.nFeatures, createdAt: res.createdAt,
+          ...(res.evaluation ? { evaluation: res.evaluation } : {}),
         };
         dispatch({ kind: 'set_model', projectId, model: sm });
         return; // the re-run (stored now set) performs the prediction
@@ -136,7 +136,7 @@ export function Predict({ projectId }: { projectId: string }) {
       const calY = cal.map((s) => refVal.get(s.sampleId) ?? Number.NaN);
       const r = buildRoutinePredictions({
         cal, routine, predicted: Array.from(out.values), axisLen: p,
-        yMin: sm.yRange[0], yMax: sm.yRange[1], rmsep: sm.metrics.rmse ?? 1, calY,
+        yMin: sm.yRange[0], yMax: sm.yRange[1], scoreRmse: sm.metrics.rmse ?? 1, calY,
       });
       setUsedModel(sm);
       setRel(r);
@@ -150,8 +150,10 @@ export function Predict({ projectId }: { projectId: string }) {
   const batch: Pred[] = useMemo(() => (rel?.preds ?? []).map((p) => ({
     sampleId: p.sampleId, predicted: p.predicted, input: p.input, interval: p.interval,
     alerts: p.alerts, yNovelty: p.yNovelty,
-    view: buildDecisionView(p.input, null, lang),
-  })), [rel, lang]);
+    view: buildQualifiedDecisionView(p.input, usedModel?.evaluation, lang, usedModel?.evaluationDeclaredOnly),
+  })), [rel, usedModel, lang]);
+  const independentlyEvaluated = !usedModel?.evaluationDeclaredOnly && usedModel?.evaluation?.scope === 'independent_test' && usedModel.evaluation.independent_test;
+  const decisionOrder = independentlyEvaluated ? ORDER : ORDER.filter((c) => c !== 'reliable');
 
   const counts = useMemo(() => {
     const c: Record<DecisionColor, number> = { reliable: 0, caution: 0, out_of_domain: 0, informative: 0 };
@@ -180,7 +182,10 @@ export function Predict({ projectId }: { projectId: string }) {
               sample_id: p.sampleId, predicted: Number.isFinite(p.predicted) ? p.predicted.toFixed(3) : '', interval: p.interval,
               reliability: p.view.color, reason: p.view.reason, applicability: f2(p.input.applicabilityScore ?? NaN),
               extrapolation_outY: p.alerts.outY, conformal_yDensity: p.alerts.yDens, spectral_outX: p.alerts.outX,
-            })), ['sample_id', 'predicted', 'interval', 'reliability', 'reason', 'applicability', 'extrapolation_outY', 'conformal_yDensity', 'spectral_outX']))}>
+              evaluation_scope: usedModel?.evaluation?.scope ?? 'unknown', independent_test: usedModel?.evaluation?.independent_test ?? false,
+              interval_basis: 'heuristic_from_score_rmse',
+              evaluation_declared_only: usedModel?.evaluationDeclaredOnly ?? false,
+            })), ['sample_id', 'predicted', 'interval', 'reliability', 'reason', 'applicability', 'extrapolation_outY', 'conformal_yDensity', 'spectral_outX', 'evaluation_scope', 'independent_test', 'interval_basis', 'evaluation_declared_only']))}>
             {tr('Exporter le lot (CSV)', 'Export batch (CSV)')}
           </button>
         )}
@@ -236,8 +241,10 @@ export function Predict({ projectId }: { projectId: string }) {
       {header}
       <p className="mb-3 text-sm text-muted-foreground">
         {tr(`${batch.length} spectres de routine prédits.`, `${batch.length} routine spectra predicted.`)}
-        {usedModel && <span className="ml-1">{tr('Modèle', 'Model')} : <span className="font-medium">{usedModel.pipelineName}</span> · <span className="font-mono">{usedModel.engine}</span> · RMSEP {f2(usedModel.metrics.rmse ?? NaN)}</span>}
+        {usedModel && <span className="ml-1">{tr('Modèle', 'Model')} : <span className="font-medium">{usedModel.pipelineName}</span> · <span className="font-mono">{usedModel.engine}</span> · RMSE {f2(usedModel.metrics.rmse ?? NaN)} · {evaluationLabel(usedModel.evaluation)}</span>}
       </p>
+      <p className="mb-3 text-xs text-muted-foreground">Intervals are heuristic bands derived from {evaluationLabel(usedModel?.evaluation)} RMSE and spectral distance; statistical coverage has not been calibrated. {!independentlyEvaluated && 'These predictions are unqualified for routine use until independently validated.'}</p>
+      {usedModel?.evaluationDeclaredOnly && <p className="mb-3 text-xs text-muted-foreground">Imported evaluation is declared by the file and has not been independently verified.</p>}
 
       {/* reliability breakdown */}
       <div className="mb-4 card p-4">
@@ -245,13 +252,13 @@ export function Predict({ projectId }: { projectId: string }) {
           {tr('Répartition des fiabilités', 'Reliability breakdown')} <Explain content={EXPLAIN.reliabilityMix} />
         </div>
         <div className="flex h-3 w-full overflow-hidden rounded-full bg-muted">
-          {ORDER.map((c) => counts[c] > 0 ? (
+          {decisionOrder.map((c) => counts[c] > 0 ? (
             <div key={c} style={{ width: `${(counts[c] / batch.length) * 100}%`, background: CHART_COLOR[c] }} />
           ) : null)}
         </div>
         <div className="mt-2 flex flex-wrap gap-3 text-xs">
-          {ORDER.map((c) => {
-            const v = buildDecisionView(sampleInputFor(c), null, lang);
+          {decisionOrder.map((c) => {
+            const v = buildQualifiedDecisionView(sampleInputFor(c), usedModel?.evaluation, lang, usedModel?.evaluationDeclaredOnly);
             return (
               <span key={c} className="flex items-center gap-1.5">
                 <span style={{ color: CHART_COLOR[c] }} className="flex">{decisionIcons[v.icon]}</span>
@@ -324,9 +331,9 @@ export function Predict({ projectId }: { projectId: string }) {
               <tr className="border-b border-border text-left text-xs text-muted-foreground">
                 <th className="px-4 py-2 font-medium">{tr('Échantillon', 'Sample')}</th>
                 <th className="px-2 py-2 text-right font-medium">{tr('Prédit', 'Predicted')}</th>
-                <th className="px-2 py-2 text-right font-medium">{tr('Interv.', 'Interval')}</th>
+                <th className="px-2 py-2 text-right font-medium">Heuristic band</th>
                 <th className="px-2 py-2 text-center font-medium" title={tr('valeur hors de la gamme apprise', 'value outside the learned range')}>{tr('Extrap. (hors Y)', 'Extrap. (out-Y)')}</th>
-                <th className="px-2 py-2 text-center font-medium" title={tr('peu de références au niveau prédit', 'few references at the predicted level')}>{tr('Conformal (densité Y)', 'Conformal (Y-density)')}</th>
+                <th className="px-2 py-2 text-center font-medium" title="Few references at the predicted level">Reference density</th>
                 <th className="px-4 py-2 text-center font-medium" title={tr('spectre éloigné du domaine de calibration', 'spectrum far from the calibration domain')}>{tr('Dist. spectrale (hors X)', 'Spectral dist. (out-X)')}</th>
               </tr>
             </thead>
@@ -350,7 +357,7 @@ export function Predict({ projectId }: { projectId: string }) {
       <div className="mb-2 text-sm font-medium">
         {attention.length > 0
           ? tr(`Prédictions à examiner (${attention.length})`, `Predictions to review (${attention.length})`)
-          : tr('Toutes les prédictions sont fiables 🟢', 'All predictions are reliable 🟢')}
+          : independentlyEvaluated ? tr('Toutes les prédictions sont fiables 🟢', 'All predictions are reliable 🟢') : 'Predictions require independent validation'}
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {attention.map((p) => (

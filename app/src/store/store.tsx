@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useMemo, useReducer, useRef, useS
 
 import type { AuditEntry, Project, Sample, SampleStatus, User } from '@/domain/model';
 import { cropSpectra, type SpectraDataset } from '@/domain/spectra';
-import type { FittedModel, Metrics, RunResult } from '@/engine';
+import type { Evaluation, FittedModel, Metrics, RunResult } from '@/engine';
 import { newId, nowIso } from '@/lib/ids';
 import { loadState, saveState } from '@/lib/persist';
 
@@ -15,6 +15,9 @@ export interface StoredModel {
   engine: string;
   pipelineName: string;
   metrics: Metrics;
+  evaluation?: Evaluation;
+  /** Imported evaluation claims are retained as provenance, not verified qualification. */
+  evaluationDeclaredOnly?: boolean;
   /** training reference range (for extrapolation detection) */
   yRange: [number, number];
   nFeatures: number;

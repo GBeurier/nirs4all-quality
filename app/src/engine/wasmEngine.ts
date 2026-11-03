@@ -11,11 +11,11 @@ import {
   predictPortablePipeline,
   runPortablePipeline,
   type PortablePlsModel,
-  type PortablePreprocessingStep,
 } from 'nirs4all';
 
 import { regressionMetrics } from './metrics.js';
-import { validateDataset } from './port.js';
+import { evaluationLabel, validateCalibrationDataset, validateSelectionSplit, type Evaluation } from './evaluation.js';
+import { validatePreprocessingStep } from './preprocessing.js';
 import type {
   FittedModel,
   LabEngine,
@@ -31,23 +31,31 @@ import type {
 interface PortableFitState {
   backendId: 'nirs4all-core-wasm';
   result: {
-    preprocessing: PortablePreprocessingStep[];
+    preprocessing: Awaited<ReturnType<typeof runPortablePipeline>>['preprocessing'];
     model: PortablePlsModel;
   };
 }
 
 function numComponents(value: unknown): number {
-  const n = Number(value);
-  return Number.isFinite(n) && n >= 1 ? Math.trunc(n) : 10;
+  if (value === undefined) return 10;
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
+    throw new Error('PLS n_components must be a positive integer.');
+  }
+  return value;
 }
 
 /** Lower the app pipeline DSL to a portable class-path source (the nirs4all runtime contract). */
 function toPortableSource(dsl: PipelineDSL): Record<string, unknown> {
+  if (dsl.model && dsl.model.type !== 'PLS') throw new Error(`Unsupported WASM model '${dsl.model.type}'.`);
+  for (const key of Object.keys(dsl.model?.params ?? {})) {
+    if (key !== 'n_components') throw new Error(`Unsupported PLS parameter '${key}'.`);
+  }
   const pipeline: unknown[] = [
-    // an honest held-out test via Kennard-Stone (test_size per the catalog default)
+    // Selection validation via Kennard-Stone; reused to choose components.
     { class: 'nirs4all.operators.splitters.KennardStoneSplitter', params: { test_size: 0.25 } },
   ];
   for (const step of dsl.steps) {
+    validatePreprocessingStep(step, 'wasm');
     if (step.type === 'StandardNormalVariate') {
       pipeline.push({ class: 'nirs4all.operators.transforms.StandardNormalVariate', params: {} });
     } else if (step.type === 'SavitzkyGolay') {
@@ -69,7 +77,7 @@ export const wasmEngine: LabEngine = {
   name: 'nirs4all-core-wasm',
 
   async run(ds: MaterializedDataset, dsl: PipelineDSL, opts?: RunOptions): Promise<RunResult> {
-    validateDataset(ds);
+    validateCalibrationDataset(ds);
     opts?.onProgress?.({ phase: 'preprocess', pct: 5, message: 'pipeline portable nirs4all (libn4m WASM)' });
     const result = await runPortablePipeline(toPortableSource(dsl), {
       X: ds.X,
@@ -78,6 +86,11 @@ export const wasmEngine: LabEngine = {
       cols: ds.nFeatures,
     });
 
+    validateSelectionSplit(result.split.trainIndices, result.split.testIndices);
+    // Older Core runtimes predate the evaluation DTO. Their sweep still uses
+    // validation for selection; never infer a test from the split's name.
+    const evaluation = (result as typeof result & { evaluation?: Evaluation }).evaluation
+      ?? { scope: 'selection_validation' as const, independent_test: false };
     const scoreIdx = result.split.testIndices;
     const preds = result.selected.predictions;
     const rows: PredRow[] = scoreIdx.map((row, i) => {
@@ -87,7 +100,7 @@ export const wasmEngine: LabEngine = {
     });
     const refit: ScoreNode = {
       id: 'refit',
-      name: result.split.kind === 'all' ? 'Refit · train' : 'Refit · test',
+      name: evaluationLabel(evaluation),
       kind: 'refit',
       metrics: regressionMetrics(rows),
       predictions: rows,
@@ -112,6 +125,7 @@ export const wasmEngine: LabEngine = {
       seed: 0,
       engine: 'nirs4all-core-wasm',
       scoreMetric: 'rmse',
+      evaluation,
       model: { taskType: 'regression', nFeatures: ds.nFeatures, state },
       createdAt: new Date().toISOString(),
       ...(variants.length > 1 ? { variants, variantAxis: { fr: 'nb de composantes PLS', en: 'PLS components' } } : {}),
