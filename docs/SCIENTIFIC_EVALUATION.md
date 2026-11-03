@@ -9,7 +9,7 @@ does not qualify routine use.
 `RunResult.evaluation` accompanies scores through the leaderboard, active model,
 model JSON export/import and prediction display. Prediction CSV exports include
 `evaluation_scope` and `independent_test`. Core's evaluation object is retained
-when present, as in the pinned npm Core 0.4.5 runner. If an older runtime omits
+when present, as in the pinned npm Core 0.4.6 runner. If an older runtime omits
 the object, the adapter assigns `selection_validation` with `independent_test:
 false`. Older saved models
 without metadata display an unavailable evaluation scope; no independent test is

@@ -74,7 +74,7 @@ export const EXPLAIN = {
       why: 'Elle révèle la structure : groupes, gradients, points isolés. Un point loin des autres est candidat à vérification.',
       details: 'Attention : 2 axes « écrasent » l’information — c’est une aide visuelle, pas une preuve. Les % = part de variation expliquée par chaque axe.',
       takeaway: 'Utile pour repérer des familles d’échantillons et des points isolés.',
-      methods: ['PCA (Gram power-iteration)'],
+      methods: ['PCA native libn4m'],
     },
     en: {
       title: 'PCA map',
@@ -82,7 +82,7 @@ export const EXPLAIN = {
       why: 'It reveals structure: clusters, gradients, isolated points. A point far from the rest is a candidate to check.',
       details: 'Caution: 2 axes "flatten" the information — a visual aid, not proof. The % = share of variation each axis explains.',
       takeaway: 'Useful to spot sample families and isolated points.',
-      methods: ['PCA (Gram power-iteration)'],
+      methods: ['PCA native libn4m'],
     },
   },
   repetitions: {
@@ -139,14 +139,14 @@ export const EXPLAIN = {
       what: 'Chaque point est un échantillon projeté sur 2 axes PCA ; les spectres problématiques sont en rouge.',
       why: 'Les points rouges isolés du nuage confirment visuellement les atypies détectées (T²/Q, saturation) — une aide, pas une preuve (2 axes écrasent l’information).',
       takeaway: 'Un point rouge à l’écart = un spectre franchement différent des autres.',
-      methods: ['PCA (Gram power-iteration)'],
+      methods: ['PCA native libn4m'],
     },
     en: {
       title: 'PCA — problematic in red',
       what: 'Each point is a sample projected onto 2 PCA axes; problematic spectra are in red.',
       why: 'Red points away from the cloud visually confirm the detected atypicalities (T²/Q, saturation) — an aid, not proof (2 axes flatten the info).',
       takeaway: 'A red point off to the side = a spectrum clearly different from the rest.',
-      methods: ['PCA (Gram power-iteration)'],
+      methods: ['PCA native libn4m'],
     },
   },
   splitRecommendation: {
@@ -204,7 +204,7 @@ export const EXPLAIN = {
       why: 'Plus un échantillon est loin de ce que le modèle connaît, plus le mesurer en HPLC apporte d’information nouvelle. C’est le critère de sélection : on classe les candidats par score décroissant.',
       details: 'Score ≈ 0 σ : très proche du connu (peu informatif). 1–3 σ : informatif, il étend ou densifie la couverture. > 3 σ : très atypique → possible artefact, basculé en « à vérifier » (règle d’or). La barre colorée = score relatif au plus élevé du lot.',
       takeaway: 'Un score élevé = candidat informatif ; un score extrême (> 3 σ) = à vérifier d’abord.',
-      methods: ['PCA conjointe (candidats + calibration)', 'distance en σ au centroïde'],
+      methods: ['PCA calibration seule puis projection des candidats', 'distance en σ au centroïde'],
     },
     en: {
       title: 'Information score (distance to domain)',
@@ -212,7 +212,7 @@ export const EXPLAIN = {
       why: 'The further a sample is from what the model knows, the more new information measuring it by HPLC brings. That’s the selection criterion: candidates are ranked by decreasing score.',
       details: 'Score ≈ 0 σ: very close to the known (little info). 1–3 σ: informative, it extends or densifies coverage. > 3 σ: very atypical → possible artifact, flipped to "to check" (golden rule). The colored bar = score relative to the batch max.',
       takeaway: 'A high score = an informative candidate; an extreme score (> 3 σ) = check it first.',
-      methods: ['joint PCA (candidates + calibration)', 'σ distance to centroid'],
+      methods: ['calibration-only PCA + candidate projection', 'σ distance to centroid'],
     },
   },
   safetyFlag: {
@@ -252,7 +252,7 @@ export const EXPLAIN = {
       why: 'C’est le cœur pédagogique de la sélection : on voit que les candidats retenus « remplissent les coins vides » autour du nuage de calibration — ils étendent la couverture du modèle.',
       details: 'La sélection classe les candidats par distance au domaine connu ; augmenter le budget ajoute les points ambre du plus au moins informatif. 2 axes écrasent l’information (aide visuelle).',
       takeaway: 'Les points ambre aux bords/coins = les plus utiles à mesurer.',
-      methods: ['PCA conjointe', 'distance au domaine'],
+      methods: ['PCA ajustée sur la calibration', 'distance au domaine'],
     },
     en: {
       title: 'Enrichment map (PCA)',
@@ -260,7 +260,7 @@ export const EXPLAIN = {
       why: 'This is the pedagogical heart of selection: you see the selected candidates "fill the empty corners" around the calibration cloud — they extend the model’s coverage.',
       details: 'Selection ranks candidates by distance to the known domain; increasing the budget adds amber points from most to least informative. 2 axes flatten the information (a visual aid).',
       takeaway: 'Amber points at the edges/corners = the most useful to measure.',
-      methods: ['joint PCA', 'distance to domain'],
+      methods: ['calibration-only PCA', 'distance to domain'],
     },
   },
   budgetRecommendation: {
@@ -294,7 +294,8 @@ export const EXPLAIN = {
       why: 'A batch-level view of confidence: many 🔴/🟠 = the batch drifts from what the model knows (drift, new type).',
       takeaway: 'Without independent evaluation, predictions remain unqualified for routine use even when all descriptive alerts are clear.',
     },
-  },  maintenanceModelSpace: {
+  },
+  maintenanceModelSpace: {
     fr: {
       title: 'Renvoi HPLC dans l’espace du modèle',
       what: 'On fait prédire le nouveau lot par le modèle de calibration déployé, puis on classe les échantillons à renvoyer en chimie humide selon deux signaux du modèle : spectre hors-domaine (X, la PLS/Ridge ne « reconnaît » pas ce spectre) et prédiction hors de la gamme apprise (Y, extrapolation).',
@@ -357,7 +358,8 @@ export const EXPLAIN = {
       takeaway: 'Without independent evaluation, predictions remain unqualified for routine use even when all descriptive alerts are clear.',
       methods: ['Y extrapolation', 'reference density', 'spectral distance'],
     },
-  },  predictionHistogram: {
+  },
+  predictionHistogram: {
     fr: {
       title: 'Distribution des valeurs prédites',
       what: 'Histogramme des valeurs prédites du lot, avec la gamme apprise (min–max des références) surlignée.',
@@ -376,7 +378,7 @@ export const EXPLAIN = {
   domainMap: {
     fr: {
       title: 'Carte du domaine d’applicabilité',
-      what: 'Chaque prédiction est placée selon sa distance au domaine connu (axe X) et la largeur de son intervalle (axe Y), colorée par son feu.',
+      what: 'Chaque prédiction est placée selon sa distance au domaine connu (axe X) et la largeur de sa bande heuristique sans couverture garantie (axe Y), colorée par son feu.',
       why: 'C’est le « pourquoi » des couleurs : à droite des lignes, l’échantillon s’éloigne trop du domaine appris → prudence puis hors-domaine.',
       details: 'Ligne « bordure » = seuil 🟠 (score ≥ 1) ; ligne « hors-domaine » = seuil 🔴 (score ≥ 2). Ces seuils sont configurables par méthode validée.',
       takeaway: 'Plus un point est à droite, moins la prédiction est fiable.',
@@ -384,7 +386,7 @@ export const EXPLAIN = {
     },
     en: {
       title: 'Applicability-domain map',
-      what: 'Each prediction is placed by its distance to the known domain (X axis) and its interval width (Y axis), colored by its light.',
+      what: 'Each prediction is placed by its distance to the known domain (X axis) and its heuristic band width (no coverage guarantee) (Y axis), colored by its light.',
       why: 'This is the "why" of the colors: right of the lines, the sample drifts too far from the learned domain → caution then out-of-domain.',
       details: '"Border" line = 🟠 threshold (score ≥ 1); "out-of-domain" line = 🔴 threshold (score ≥ 2). These thresholds are configurable per validated method.',
       takeaway: 'The further right a point, the less reliable the prediction.',
@@ -486,35 +488,35 @@ export const EXPLAIN = {
       title: 'Surveiller la dérive du modèle',
       what: 'On compare un nouveau lot de spectres de routine à la population de calibration, et on mesure la part qui sort du domaine connu du modèle.',
       why: 'Avec le temps, les échantillons changent (saison, site, instrument). Un modèle NIRS ne reste fiable que sur ce qui ressemble à sa calibration ; détecter la dérive tôt évite de rendre de mauvais résultats.',
-      details: 'La « dérive » est isolée par une PCA conjointe (calibration + nouveau lot) : les nouveaux points loin du nuage de calibration sont hors-domaine. Selon leur proportion, on recommande de surveiller, ré-échantillonner (HPLC) ou ré-entraîner / transférer.',
+      details: 'La « dérive » est isolée par une PCA ajustée sur la calibration puis projection du nouveau lot : les nouveaux points loin du nuage de calibration sont hors-domaine. Selon leur proportion, on recommande de surveiller, ré-échantillonner (HPLC) ou ré-entraîner / transférer.',
       takeaway: 'Ajoutez régulièrement un lot ; agissez quand la part hors-domaine grimpe.',
-      methods: ['PCA conjointe', 'nouveauté (distance au domaine)'],
+      methods: ['PCA ajustée sur la calibration', 'nouveauté (distance au domaine)'],
     },
     en: {
       title: 'Monitor model drift',
       what: 'We compare a new batch of routine spectra to the calibration population and measure the share that leaves the model’s known domain.',
       why: 'Over time samples change (season, site, instrument). A NIRS model only stays reliable on what resembles its calibration; catching drift early prevents releasing bad results.',
-      details: 'Drift is isolated with a joint PCA (calibration + new batch): new points far from the calibration cloud are out of domain. Depending on their proportion, we recommend monitoring, resampling (HPLC), or retraining / transfer.',
+      details: 'Drift is isolated with a calibration-only PCA + new-batch projection: new points far from the calibration cloud are out of domain. Depending on their proportion, we recommend monitoring, resampling (HPLC), or retraining / transfer.',
       takeaway: 'Add a batch regularly; act when the out-of-domain share climbs.',
-      methods: ['joint PCA', 'novelty (distance to domain)'],
+      methods: ['calibration-only PCA', 'novelty (distance to domain)'],
     },
   },
   driftMap: {
     fr: {
       title: 'Carte de dérive (PCA)',
-      what: 'Une PCA conjointe place la calibration (gris) et le nouveau lot sur les 2 mêmes axes. Les nouveaux points en vert sont dans le domaine, en rouge ils en sortent (dérive).',
+      what: 'Une PCA ajustée sur la calibration place la calibration (gris) et le nouveau lot sur les 2 mêmes axes. Les nouveaux points en vert sont dans le domaine, en rouge ils en sortent (dérive).',
       why: 'Voir « où » tombe le nouveau lot par rapport à ce que le modèle connaît rend la dérive intuitive : un amas rouge à l’écart = un nouveau type ou un nouvel instrument.',
       details: 'Un nouveau point est jugé hors-domaine si sa distance au nuage de calibration dépasse 2,5 écarts-types (en unités de PC). Comme partout, 2 axes écrasent l’information — c’est une aide visuelle.',
       takeaway: 'Des points rouges groupés à l’écart = dérige structurée à traiter.',
-      methods: ['PCA conjointe', 'seuil de nouveauté 2.5σ'],
+      methods: ['PCA ajustée sur la calibration', 'seuil de nouveauté 2.5σ'],
     },
     en: {
       title: 'Drift map (PCA)',
-      what: 'A joint PCA places the calibration (grey) and the new batch on the same 2 axes. New points in teal are in domain, in red they leave it (drift).',
+      what: 'A calibration-only PCA places the calibration (grey) and the new batch on the same 2 axes. New points in teal are in domain, in red they leave it (drift).',
       why: 'Seeing "where" the new batch falls versus what the model knows makes drift intuitive: a red cluster off to the side = a new type or a new instrument.',
       details: 'A new point is out of domain if its distance to the calibration cloud exceeds 2.5 standard deviations (in PC units). As always, 2 axes flatten the information — it’s a visual aid.',
       takeaway: 'A clustered red group off to the side = structured drift to handle.',
-      methods: ['joint PCA', 'novelty threshold 2.5σ'],
+      methods: ['calibration-only PCA', 'novelty threshold 2.5σ'],
     },
   },
   reliability: {
@@ -534,4 +536,5 @@ export const EXPLAIN = {
       takeaway: 'Without independent evaluation, predictions remain unqualified for routine use even when all descriptive alerts are clear.',
       methods: ['applicability domain (T²/Q/kNN)', '→ conformal (coming)'],
     },
-  },} satisfies Record<string, E>;
+  },
+} satisfies Record<string, E>;
