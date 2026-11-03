@@ -3,22 +3,30 @@
 import assert from 'node:assert/strict';
 import { after, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { createServer } from 'vite';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { methodsRoot, qualifiedMethodsStage } from './methods-stage.mjs';
+
+await qualifiedMethodsStage();
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const server = await createServer({
   configFile: false, root, server: { middlewareMode: true },
   resolve: { alias: { '@': `${root}/src` } },
   optimizeDeps: { noDiscovery: true, include: [] },
+  ssr: { noExternal: ['@nirs4all/methods'] },
   plugins: [{
     name: 'core-test-boundary',
     enforce: 'pre',
     transform(source, id) {
       if (id.endsWith('/engine/wasmEngine.ts')) return source.replace("from 'nirs4all'", "from 'virtual:quali-test-core'");
     },
-    resolveId(id) { if (id === 'virtual:quali-test-core') return '\0core-test-boundary'; },
+    resolveId(id) {
+      if (id === 'virtual:quali-test-core') return '\0core-test-boundary';
+      if (id === '@nirs4all/methods') return { id: resolve(methodsRoot, 'index.js'), external: true };
+    },
     load(id) {
       if (id === '\0core-test-boundary') return `
         export const runPortablePipeline = (...args) => globalThis.__qualiCore.run(...args);
@@ -29,6 +37,8 @@ const server = await createServer({
 });
 after(async () => { delete globalThis.__qualiCore; await server.close(); });
 const load = (path) => server.ssrLoadModule(`/src/${path}`);
+const { initializeDiagnostics } = await load('engine/nativeDiagnostics.ts');
+await initializeDiagnostics();
 const { wasmEngine } = await load('engine/wasmEngine.ts');
 const { runPlsScreenSteps, runJsVariant } = await load('engine/jsEngine.ts');
 const { applySteps, kennardStoneTest, plsFit, plsPredictRow } = await load('engine/jsNumerics.ts');
@@ -161,6 +171,7 @@ test('routine decisions never qualify selection, training or unknown scores as r
     assert.match(view.label, /Unqualified/);
     assert.match(view.action, /Independent validation is required/);
   }
+  assert.notEqual(buildQualifiedDecisionView(input, { scope: 'independent_test', independent_test: true }, 'en').color, 'reliable', 'an independent score alone cannot calibrate heuristic coverage');
   const spectra = (i) => ({ sampleId: `s${i}`, reps: [{ values: Float64Array.of(i, i * i, i + 1) }] });
   const output = buildRoutinePredictions({ cal: [spectra(1), spectra(2), spectra(3)], routine: [spectra(2.1)], predicted: [2], axisLen: 3, yMin: 1, yMax: 3, scoreRmse: 0.1 });
   assert.match(output.preds[0].interval, /^Heuristic ±/);
