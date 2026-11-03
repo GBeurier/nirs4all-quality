@@ -18,7 +18,7 @@ import { methodsRoot, qualifiedMethodsStage } from './scripts/methods-stage.mjs'
 //   default        → served static site (lazy WASM)          → dist/
 //   `singlefile`   → one self-contained HTML (JS+CSS+WASM inlined, base64) → dist-single/
 //                    Portable/offline; under file:// the WASM may not run, so the
-//                    engine falls back to the stub (the app still fully renders).
+//                    scientific execution is refused if the runtime cannot load.
 const abs = (p: string) => fileURLToPath(new URL(p, import.meta.url));
 const staged = (p: string) => process.env.NIRS4ALL_WASM_ROOT ? resolve(process.env.NIRS4ALL_WASM_ROOT, p) : abs(`../../nirs4all-web/web-app/src/engine/wasm/${p}`);
 

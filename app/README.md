@@ -24,11 +24,11 @@ UI (screens)  ──►  nirs4all-ui/lab             decision contract + lab vie
    ├──►  src/domain/*        lab data model (project/lot/sample/reference/status/audit) — §1bis
    └──►  src/engine/*        the LabEngine PORT (hexagonal seam)
                               ├─ wasmEngine    REAL libn4m PLS via the `nirs4all` portable pipeline (default)
-                              ├─ stubEngine    deterministic null model (fallback / offline)
+                              ├─ stubEngine    diagnostic target; calibration and prediction are refused
                               └─ pythonEngine  REST client over the nirs4all runtime  [anticipated]
 ```
 
-*No numerics in this app.* All ML lives behind the port. The WASM target reuses the **`nirs4all` package's `runPortablePipeline` / `predictPortablePipeline`** (libn4m compiled to WASM), resolved through the same peer-package aliases studio-lite uses (`@nirs4all/methods-wasm` → the staged `n4m.wasm`). The Python target is a future backend implementing the same two-method contract.
+The WASM target reuses the **`nirs4all` package's `runPortablePipeline` / `predictPortablePipeline`** (libn4m compiled to WASM), resolved through qualified Methods aliases. Transitional JS PLS/Ridge and preprocessing screens remain behind the engine port. Their scores are selection scores, and fitted MSC state is isolated from validation rows. See [the evaluation contract](../docs/SCIENTIFIC_EVALUATION.md). The Python target is a future backend implementing the same two-method contract.
 
 ## Commands
 
