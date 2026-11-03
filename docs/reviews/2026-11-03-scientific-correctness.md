@@ -77,8 +77,9 @@ as `nirs4all@0.4.5` and `nirs4all-ui@0.1.15`.
   independent-test claim, and a visible failure when the engine chunk is blocked.
 - `git diff --check`: passed.
 
-Existing untracked `AGENTS.md` and `codegraph.json` were left untouched. Changes
-remain uncommitted for review; no release, push or publication was performed.
+Existing untracked `AGENTS.md` and `codegraph.json` were left untouched. The initial batch was left uncommitted for review; no release, push or publication
+was performed during that stage. Subsequent release integration is recorded in
+[the release review](2026-11-03-release-integration.md).
 
 ## Original independent report
 
