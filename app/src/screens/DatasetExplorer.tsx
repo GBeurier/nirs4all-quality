@@ -9,7 +9,8 @@ import { meanSpectrum, type SpectraDataset } from '@/domain/spectra';
 import { parseReferenceColumn } from '@/lib/dataset';
 import { histogram } from '@/lib/histogram';
 import { computePca } from '@/lib/pca';
-import { applyPreviewPp, PREVIEW_PP } from '@/lib/preview';
+import { PREVIEW_PP } from '@/lib/preview';
+import { usePreviewSpectra } from '@/lib/usePreviewSpectra';
 import { buildRepetitionModel, distanceColor, type RepSort } from '@/lib/repetitions';
 import { downloadText, slug, toCsv } from '@/lib/export';
 import { useTr } from '@/i18n';
@@ -42,7 +43,8 @@ export function DatasetExplorer({ projectId }: { projectId: string }) {
   const repMode = state.repModeByProject[projectId] ?? 'mean';
   // display-only preprocessing preview (shared with Data-health), applied to the
   // spectra + PCA views so the tech sees the corrected signal
-  const displaySpectra = useMemo(() => (spectra ? applyPreviewPp(spectra, previewPp) : spectra), [spectra, previewPp]);
+  const preview = usePreviewSpectra(projectId, spectra, previewPp);
+  const displaySpectra = preview.spectra;
   const [tab, setTab] = useState<Tab>('spectra');
   const yInputRef = useRef<HTMLInputElement>(null);
   const [yMsg, setYMsg] = useState('');
@@ -126,13 +128,17 @@ export function DatasetExplorer({ projectId }: { projectId: string }) {
           <span className="text-xs font-medium text-muted-foreground">{tr('Aperçu préprocessing', 'Preprocessing preview')} :</span>
           <div className="flex flex-wrap gap-1">
             {PREVIEW_PP.map((pp) => (
-              <button key={pp.id} onClick={() => dispatch({ kind: 'set_preview_pp', projectId, pp: pp.id })}
+              <button key={pp.id} aria-pressed={previewPp === pp.id} data-testid={`preview-option-${pp.id}`} onClick={() => dispatch({ kind: 'set_preview_pp', projectId, pp: pp.id })}
                 className={`rounded-md px-2 py-0.5 text-xs transition ${previewPp === pp.id ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}>
-                {tr(pp.fr, pp.en)}
+                {pp.en}
               </button>
             ))}
           </div>
           <Explain content={EXPLAIN.preprocessingPreview} />
+          <p role="status" data-testid="preview-status" data-preview-state={preview.status} className="w-full text-xs text-muted-foreground">
+            {preview.label}{preview.reason ? `: ${preview.reason}` : ''}
+          </p>
+          {preview.description && <p className="w-full text-xs text-muted-foreground">{preview.description}</p>}
           <span className="w-full text-[11px] text-muted-foreground">{tr('Aperçu visuel — n’altère pas les données brutes ; le choix est partagé avec « Santé des données ».', 'Visual preview — does not alter the raw data; the choice is shared with "Data health".')}</span>
         </div>
       )}

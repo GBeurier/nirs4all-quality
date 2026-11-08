@@ -3337,6 +3337,8 @@ export interface StandardScaleParams {
     with_mean?: boolean;
     /** Default true. */
     with_std?: boolean;
+    /** Default 0. */
+    ddof?: number;
 }
 /** Native `preprocessing.scaling.standard_scale` (transformer). */
 export declare class StandardScale extends NativeEstimator implements Transformer {
@@ -3344,6 +3346,7 @@ export declare class StandardScale extends NativeEstimator implements Transforme
     readonly paramTypes: {
         readonly with_mean: "bool";
         readonly with_std: "bool";
+        readonly ddof: "int";
     };
     constructor(params?: StandardScaleParams);
     transform(X: Matrix): Matrix;

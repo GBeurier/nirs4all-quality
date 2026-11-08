@@ -2636,6 +2636,7 @@ export class StandardScale extends NativeEstimator {
     paramTypes = {
         with_mean: "bool",
         with_std: "bool",
+        ddof: "int",
     };
     constructor(params = {}) {
         super();
