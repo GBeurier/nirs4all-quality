@@ -1,17 +1,18 @@
+// Named pre-migration Quali reference; test-only, never a production fallback.
 // JS-numerics engine for the calibration variants libn4m's portable path can't
 // run (Ridge + the compact/extended AOM operator screens). Real closed-form ridge
 // (see jsNumerics), a deterministic 25% selection hold-out. It
 // screens a list of preprocessing chains × an α grid and keeps the best, then
 // returns the SAME RunResult shape as the WASM engine so the leaderboard and the
 // TrainingResults charts treat every variant uniformly.
-import { regressionMetrics } from './metrics.js';
-import { validateCalibrationDataset, validateSelectionSplit } from './evaluation.js';
-import { candidateIssue, validatePreprocessingStep } from './preprocessing.js';
+import { regressionMetrics } from '../../metrics.js';
+import { validateCalibrationDataset, validateSelectionSplit } from '../../evaluation.js';
+import { candidateIssue, validatePreprocessingStep } from '../../preprocessing.js';
 import {
   applyChain, applySteps, kennardStoneTest, plsFit, plsPredictRow, ridgeFit, ridgePredictRow,
   type Operator, type PreprocStep, type RidgeModel, type StepState,
 } from './jsNumerics.js';
-import type { CandidateIssue, MaterializedDataset, PredRow, RunResult } from './port.js';
+import type { CandidateIssue, MaterializedDataset, PredRow, RunResult } from '../../port.js';
 
 // A Kennard-Stone hold-out on raw X (test_size ≈ 0.25) — the same spread-based
 // split the WASM portable path uses, so PLS and Ridge/AOM metrics are comparable.

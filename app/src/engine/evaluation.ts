@@ -44,3 +44,10 @@ export function validateSelectionSplit(train: number[], validation: number[]): v
     throw new Error('Insufficient disjoint samples for selection validation; resubstitution is refused.');
   }
 }
+
+/** Population description copied from owner-selected identities, never a rank. */
+export function populationLabel(population?: import('./port.js').SelectionPopulation): string {
+  if (!population) return 'Validation population unavailable';
+  const rule = 'n_train' in population.split ? `n_train=${population.split.n_train}` : 'fraction 0.25';
+  return `KS ${rule}; train ${population.trainingSampleIds.length}, validation ${population.validationSampleIds.length}; ${population.foldId}`;
+}

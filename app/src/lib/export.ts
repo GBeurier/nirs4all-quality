@@ -1,5 +1,4 @@
-// Client-side exports — CSV worklists / predictions / LIMS + a portable .n4a
-// model bundle. All in-browser (Blob download), no server.
+// Client-side CSV exports and exact-byte Quali host container downloads. All in-browser (Blob download), no server.
 
 export function downloadText(filename: string, text: string, mime = 'text/csv;charset=utf-8'): void {
   const blob = new Blob([text], { type: mime });
@@ -8,6 +7,11 @@ export function downloadText(filename: string, text: string, mime = 'text/csv;ch
 
 export function downloadJson(filename: string, value: unknown): void {
   downloadText(filename, JSON.stringify(value, null, 2), 'application/json');
+}
+
+/** Download exact container bytes; no text encoding or archive reconstruction. */
+export function downloadBytes(filename: string, bytes: Uint8Array): void {
+  triggerDownload(filename, new Blob([bytes], { type: 'application/octet-stream' }));
 }
 
 function triggerDownload(filename: string, blob: Blob): void {

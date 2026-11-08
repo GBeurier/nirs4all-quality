@@ -10,16 +10,14 @@ import {
 } from 'recharts';
 
 import { meanSpectrum, type SampleSpectra } from '@/domain/spectra';
-import { createEngine, evaluationLabel } from '@/engine';
+import { evaluationLabel, type OwnerRegressionReport } from '@/engine';
 import { predictWithModel } from '@/engine/predict';
-import { CALIB_VARIANTS, runVariant } from '@/engine/variants';
 import { analyzeFiles, assembleDataset, readRawFiles } from '@/lib/dataset';
 import { resampleTo } from '@/lib/drift';
 import { downloadText, slug, toCsv } from '@/lib/export';
 import { histogram } from '@/lib/histogram';
-import { parseModelBundle } from '@/lib/modelIo';
+import { importModelContainer } from '@/lib/modelIo';
 import { buildQualifiedDecisionView, buildRoutinePredictions, type RoutinePrediction, type AlertLevel, type PredictionAlerts, type ReliabilityModel } from '@/lib/reliability';
-import { buildTrainingDataset } from '@/lib/trainingData';
 import { useLang, useTr } from '@/i18n';
 import { useLab, useProjectSpectra, type StoredModel } from '@/store/store';
 import { decisionIcons } from '@/ui/icons';
@@ -56,20 +54,22 @@ export function Predict({ projectId }: { projectId: string }) {
   const stored = state.modelByProject[projectId];
   const unit = project?.method.unit ?? '';
 
-  const referencedCount = samples.filter((s) => s.reference?.value != null).length;
 
   const [loaded, setLoaded] = useState<SampleSpectra[] | null>(null);
   const [loadedName, setLoadedName] = useState('');
   const [rel, setRel] = useState<ReliabilityModel | null>(null);
+  const [predictionReport, setPredictionReport] = useState<OwnerRegressionReport | null>(null);
+  const [unscoredPredictionIds, setUnscoredPredictionIds] = useState<string[]>([]);
   const [usedModel, setUsedModel] = useState<StoredModel | null>(null);
-  const [building, setBuilding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [importMsg, setImportMsg] = useState<string | null>(null);
+  const [importError, setImportError] = useState(false);
 
   async function onImportModel(file: File | undefined) {
     if (!file) return;
-    const res = parseModelBundle(await file.text());
-    if ('error' in res) { setImportMsg(res.error); return; }
+    const res = await importModelContainer(file);
+    if ('error' in res) { setImportError(true); setImportMsg(res.error); return; }
+    setImportError(false);
     dispatch({ kind: 'set_model', projectId, model: res.model });
     setImportMsg(tr(`Modèle « ${res.model.pipelineName} » chargé (${res.model.nFeatures} variables).`, `Model "${res.model.pipelineName}" loaded (${res.model.nFeatures} features).`));
   }
@@ -97,7 +97,7 @@ export function Predict({ projectId }: { projectId: string }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      setError(null);
+      setError(null); setPredictionReport(null); setUnscoredPredictionIds([]);
       if (assessment) { setRel(null); return; }
       if (!spectra || spectra.axis.length === 0) { setRel(null); return; }
       const refIds = new Set(samples.filter((s) => s.reference?.value != null).map((s) => s.id));
@@ -106,26 +106,9 @@ export function Predict({ projectId }: { projectId: string }) {
       const routine = loaded ?? spectra.samples.filter((s) => routineIds.has(s.sampleId));
       if (routine.length === 0) { setRel({ preds: [], ev: () => '0.0' }); setUsedModel(stored ?? null); return; }
 
-      // get (or build) the deployed model
-      let sm = stored;
-      if (!sm) {
-        if (refIds.size < 8) { setRel(null); return; }
-        setBuilding(true);
-        const ds = buildTrainingDataset(spectra, samples, project?.method.target || 'y', state.repModeByProject[projectId] ?? 'mean');
-        const wasm = await createEngine();
-        const variant = CALIB_VARIANTS.find((v) => v.id === 'fast-aom-pls') ?? CALIB_VARIANTS[0]!;
-        const res = await runVariant(ds, variant, wasm);
-        if (cancelled) return;
-        setBuilding(false);
-        const ys = Array.from(ds.y);
-        sm = {
-          model: res.model, engine: res.engine, pipelineName: variant.label.fr,
-          metrics: res.refit.metrics, yRange: [Math.min(...ys), Math.max(...ys)], nFeatures: ds.nFeatures, createdAt: res.createdAt,
-          ...(res.evaluation ? { evaluation: res.evaluation } : {}),
-        };
-        dispatch({ kind: 'set_model', projectId, model: sm });
-        return; // the re-run (stored now set) performs the prediction
-      }
+      // Use only an explicitly activated or imported model.
+      const sm = stored;
+      if (!sm) { setRel(null); setUsedModel(null); return; }
 
       // predict on the routine spectra with the deployed model
       const p = spectra.axis.length;
@@ -133,9 +116,14 @@ export function Predict({ projectId }: { projectId: string }) {
       const n = routine.length;
       const X = new Float64Array(n * p);
       routine.forEach((s, i) => { const m = meanSpectrum(s); for (let j = 0; j < p; j++) X[i * p + j] = m[j] ?? 0; });
-      const out = await predictWithModel(sm.model, X, n, p);
-      if (cancelled) return;
       const refVal = new Map(samples.filter((s) => s.reference?.value != null).map((s) => [s.id, s.reference!.value!]));
+      const out = await predictWithModel(sm.model, X, n, p, {
+        sampleIds: routine.map(s => s.sampleId), targetName: project?.method.target || 'y',
+        references: routine.flatMap(s => refVal.has(s.sampleId) ? [{ sampleId: s.sampleId, actual: refVal.get(s.sampleId)! }] : []),
+      });
+      if (cancelled) return;
+      setPredictionReport(out.report ?? null);
+      setUnscoredPredictionIds(out.unscoredSampleIds ?? []);
       const calY = cal.map((s) => refVal.get(s.sampleId) ?? Number.NaN);
       const r = buildRoutinePredictions({
         cal, routine, predicted: Array.from(out.values), axisLen: p,
@@ -143,7 +131,7 @@ export function Predict({ projectId }: { projectId: string }) {
       });
       setUsedModel(sm);
       setRel(r);
-    })().catch((e) => { if (!cancelled) { setBuilding(false); setError(e instanceof Error ? e.message : String(e)); } });
+    })().catch((e) => { if (!cancelled) { setRel(null); setUsedModel(null); setError(e instanceof Error ? e.message : String(e)); } });
     return () => { cancelled = true; };
     // deps are the data inputs; tr/project/dispatch are stable enough and left
     // out on purpose to avoid re-predicting on every render
@@ -174,9 +162,9 @@ export function Predict({ projectId }: { projectId: string }) {
         <h1 className="font-display text-2xl font-semibold tracking-tight">{tr('Prédire & décider', 'Predict & decide')}</h1>
         <Explain content={EXPLAIN.reliability} />
         <label className="cursor-pointer rounded-md border border-border px-2 py-1 text-xs text-primary hover:bg-primary/5"
-          title={tr('Charger un modèle .n4a (fait ici, ou exporté depuis Studio/lib au format dag-ml/JSON)', 'Load a .n4a model (made here, or exported from Studio/lib in dag-ml/JSON format)')}>
+          title="Load a qualified Quali host container (.n4a)">
           {tr('Importer un modèle (.n4a)', 'Import a model (.n4a)')}
-          <input type="file" accept=".json,.n4a" className="hidden" onChange={(e) => { void onImportModel(e.target.files?.[0]); e.target.value = ''; }} />
+          <input type="file" accept=".n4a" className="hidden" onChange={(e) => { void onImportModel(e.target.files?.[0]); e.target.value = ''; }} />
         </label>
         {batch.length > 0 && (
           <button className="ml-auto btn-outline" onClick={() => downloadText(
@@ -187,8 +175,10 @@ export function Predict({ projectId }: { projectId: string }) {
               extrapolation_outY: p.alerts.outY, reference_yDensity: p.alerts.yDens, spectral_outX: p.alerts.outX,
               evaluation_scope: usedModel?.evaluation?.scope ?? 'unknown', independent_test: usedModel?.evaluation?.independent_test ?? false,
               interval_basis: 'heuristic_from_score_rmse',
+              prediction_report: predictionReport ? JSON.stringify(predictionReport) : '',
+              known_reference_scored: predictionReport ? !unscoredPredictionIds.includes(p.sampleId) : false,
               evaluation_declared_only: usedModel?.evaluationDeclaredOnly ?? false,
-            })), ['sample_id', 'predicted', 'interval', 'uncertainty_kind', 'uncertainty_status', 'nominal_coverage', 'reliability', 'reliability_label', 'required_action', 'reason', 'applicability', 'extrapolation_outY', 'reference_yDensity', 'spectral_outX', 'evaluation_scope', 'independent_test', 'interval_basis', 'evaluation_declared_only']))}>
+            })), ['sample_id', 'predicted', 'interval', 'uncertainty_kind', 'uncertainty_status', 'nominal_coverage', 'reliability', 'reliability_label', 'required_action', 'reason', 'applicability', 'extrapolation_outY', 'reference_yDensity', 'spectral_outX', 'evaluation_scope', 'independent_test', 'interval_basis', 'evaluation_declared_only', 'prediction_report', 'known_reference_scored']))}>
             {tr('Exporter le lot (CSV)', 'Export batch (CSV)')}
           </button>
         )}
@@ -203,34 +193,24 @@ export function Predict({ projectId }: { projectId: string }) {
             {loadedName} · <button className="underline hover:text-foreground" onClick={() => { setLoaded(null); setLoadedName(''); }}>{tr('revenir aux échantillons du projet', 'back to project samples')}</button>
           </p>
         )}
-        {importMsg && <p className={`mt-1 text-xs ${/non reconnu|natif|invalide|manquant/i.test(importMsg) ? 'text-warning' : 'text-success'}`}>{importMsg}</p>}
+        {importMsg && <p className={`mt-1 text-xs ${importError ? 'text-warning' : 'text-success'}`}>{importMsg}</p>}
       </div>
     </>
   );
 
   if (assessment) return <div className="mx-auto max-w-4xl"><SharedAssessmentPanel assessment={assessment} onChange={setAssessment} /></div>;
 
-  if (building) {
-    return (
-      <div className="mx-auto max-w-4xl">
-        {header}
-        <div className="mt-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> {tr('Construction d’un modèle rapide pour prédire…', 'Building a quick model to predict…')}
-        </div>
-      </div>
-    );
-  }
   if (!spectra || spectra.axis.length === 0) {
     return <div className="mx-auto max-w-4xl">{header}<Empty text={tr('Aucun spectre dans ce projet.', 'No spectra in this project.')} /></div>;
   }
   if (routineCount === 0) {
     return <div className="mx-auto max-w-4xl">{header}<Empty text={tr('Aucun échantillon de routine à prédire (tous ont déjà une référence).', 'No routine samples to predict (all already have a reference).')} /></div>;
   }
-  if (!usedModel && referencedCount < 8) {
-    return <div className="mx-auto max-w-4xl">{header}<Empty text={tr('Calibrez d’abord un modèle (au moins 8 échantillons avec référence sont nécessaires).', 'Calibrate a model first (at least 8 samples with a reference are needed).')} /></div>;
-  }
   if (error) {
     return <div className="mx-auto max-w-4xl">{header}<Empty text={error} /></div>;
+  }
+  if (!stored && !usedModel) {
+    return <div className="mx-auto max-w-4xl">{header}<Empty text="Choose a completed calibration profile explicitly, or import a qualified Quali host model." /></div>;
   }
   if (!rel) {
     return (
@@ -250,6 +230,15 @@ export function Predict({ projectId }: { projectId: string }) {
         {usedModel && <span className="ml-1">{tr('Modèle', 'Model')} : <span className="font-medium">{usedModel.pipelineName}</span> · <span className="font-mono">{usedModel.engine}</span> · RMSE {f2(usedModel.metrics.rmse ?? NaN)} · {evaluationLabel(usedModel.evaluation)}</span>}
       </p>
       <p className="mb-3 text-xs text-muted-foreground">Intervals are heuristic bands derived from {evaluationLabel(usedModel?.evaluation)} RMSE and spectral distance; statistical coverage has not been calibrated. {!independentlyEvaluated && 'These predictions are unqualified for routine use until independently validated.'}</p>
+      {predictionReport && <p className="mb-3 text-xs text-muted-foreground">
+        Known-reference prediction report: n={predictionReport.row_count}, RMSE {f2(predictionReport.metrics['rmse']!)}.
+        {Object.entries(predictionReport.undefined_metrics ?? {}).map(([metric, reason]) => ` ${metric} undefined: ${reason}.`).join('')}
+      </p>}
+      {unscoredPredictionIds.length > 0 && <p className="mb-3 text-xs text-muted-foreground">{unscoredPredictionIds.length} predictions have no matching reference and remain unscored.</p>}
+      {usedModel && !usedModel.ownerReport && <p className="mb-3 text-xs text-muted-foreground">Historical metric profile (recorded values).</p>}
+      {!!Object.keys(usedModel?.ownerReport?.undefined_metrics ?? {}).length && <p className="mb-3 text-xs text-muted-foreground">
+        Undefined calibration diagnostics: {Object.entries(usedModel!.ownerReport!.undefined_metrics!).map(([metric, reason]) => `${metric}: ${reason}`).join('; ')}.
+      </p>}
       {usedModel?.evaluationDeclaredOnly && <p className="mb-3 text-xs text-muted-foreground">Imported evaluation is declared by the file and has not been independently verified.</p>}
 
       {/* reliability breakdown */}

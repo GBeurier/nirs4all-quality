@@ -4,16 +4,21 @@ A guided, WASM-first "mini studio" for NIRS analysis labs, implementing the desi
 
 ## Status
 
-**Typechecks + builds + WASM click-through smoke all green.** Serves all 7 screens, and the **WASM target really executes** — the Calibrate screen loads libn4m in the browser and runs a real PLS (verified end-to-end by `npm run smoke`, engine label `nirs4all-core-wasm`).
+The current source routes PLS and Ridge calibration and prediction through
+**DAG-ML + Methods WASM**, with Core providing `.n4a` storage. Completed profiles
+retain selection-validation scores and their populations; the operator explicitly
+chooses a profile to activate. `npm run smoke` replays an already-produced owner
+model; it does not train. Qualification results must identify the exact staged
+artifacts and checks executed.
 
 | Area | State |
 |---|---|
 | Lab data model (`src/domain/`) — §1bis | ✅ complete, strict-typed |
-| Engine port + stub + Python client (`src/engine/`) | ✅ complete |
-| **WASM target — real libn4m via the `nirs4all` portable pipeline** | ✅ **working** (bundles `n4m.wasm`; smoke passes) |
+| Engine port + stub + Python client (`src/engine/`) | WASM default; stub refuses scientific execution; Python client anticipates a separate service |
+| **WASM target — DAG-ML scheduling + Methods numerical roles** | PLS and Ridge banks, selected REFIT packages and prediction replay |
 | App shell + workflow rail + 7 screens | ✅ building + serving |
 | Reuse of `nirs4all-ui/lab` (decision contract, cards, worklist…) | ✅ via package export |
-| Real dataset ingestion (upload → `nirs4all-io` WASM) | ⏳ next — Calibrate currently uses demo spectra |
+| Real dataset ingestion (upload → `nirs4all-io` WASM) | Setup uses the explicitly staged IO import/review path; calibration uses labelled project spectra |
 | Native kernels (D-optimal, conformal, GMM, PDS) | ⏳ next — see DESIGN §8.3 |
 
 ## Architecture (thin shell)
@@ -23,34 +28,81 @@ UI (screens)  ──►  nirs4all-ui/lab             decision contract + lab vie
    │
    ├──►  src/domain/*        lab data model (project/lot/sample/reference/status/audit) — §1bis
    └──►  src/engine/*        the LabEngine PORT (hexagonal seam)
-                              ├─ wasmEngine    REAL libn4m PLS via the `nirs4all` portable pipeline (default)
+                              ├─ wasmEngine    DAG-ML + Methods PLS/Ridge banks and replay (default)
                               ├─ stubEngine    diagnostic target; calibration and prediction are refused
                               └─ pythonEngine  REST client over the nirs4all runtime  [anticipated]
 ```
 
-The WASM target reuses the **`nirs4all` package's `runPortablePipeline` / `predictPortablePipeline`** (libn4m compiled to WASM), resolved through qualified Methods aliases. Transitional JS PLS/Ridge and preprocessing screens remain behind the engine port. Their scores are selection scores, and fitted MSC state is isolated from validation rows. See [the evaluation contract](../docs/SCIENTIFIC_EVALUATION.md). The Python target is a future backend implementing the same two-method contract.
+`wasmEngine.ts` delegates production execution to `dagEngine.ts`. DAG-ML owns
+candidate generation, holdout execution, scoring and selection; its Methods
+controller calls native numerical roles. Prediction replays the selected owner
+package. Run labels are `dag-ml-methods-pls` and `dag-ml-methods-ridge`.
+Historical Core-JS and JS models require recalibration; their reference
+implementations remain test-only. Core's `nirs4all` package supplies storage.
+See [the evaluation contract](../docs/SCIENTIFIC_EVALUATION.md). The Python client
+anticipates a separately supplied service behind the engine port.
 
 ## Commands
 
+From `app/`, with Node 24 and dependencies already available, select the current
+private owner snapshot explicitly. Setup also requires its separate IO path:
+
 ```bash
-export PATH="$HOME/.nvm/versions/node/v22.21.1/bin:$PATH"   # node is not on the default PATH here
-npm install
-npm run typecheck   # tsc --noEmit — green
-npm run build       # vite build → dist/ (bundles n4m.wasm etc.) — green
-npm run dev         # dev server
-# WASM click-through smoke (needs Chrome): builds a model, asserts libn4m ran
-npm run build && (npm run preview -- --port 4399 --strictPort & sleep 4 && npm run smoke)
+export NIRS4ALL_WASM_ROOT="$PWD/vendor/owners-current/wasm"
+export NIRS4ALL_IO_WASM_ROOT="$NIRS4ALL_WASM_ROOT/io"
+unset NIRS4ALL_METHODS_WASM_ROOT   # use Methods from the same stage
+npm run typecheck
+npm run build       # vite build → dist/
+npm run dev
 ```
+
+For the existing fixture checks, serve the already-built `dist/` in one terminal:
+
+```bash
+npm run preview -- --host 127.0.0.1 --port 4399 --strictPort
+```
+
+In a second terminal, from `app/`, reuse the same stage environment and supply an
+already-produced qualified Quali owner container from the pooled owner gates:
+
+```bash
+export QUALI_MODEL_FIXTURE=/absolute/path/already-produced-qualified-model.n4a
+QUALI_MODEL_FIXTURE="$QUALI_MODEL_FIXTURE" npm run test:model-import
+SMOKE_MODEL="$QUALI_MODEL_FIXTURE" SMOKE_URL=http://localhost:4399/ npm run smoke
+```
+
+The importer accepts the fixture as its first argument or `QUALI_MODEL_FIXTURE`;
+without either it explicitly skips the positive existing-container round trip.
+The browser smoke requires `SMOKE_MODEL`, uses Chrome (`CHROME` overrides
+`/usr/bin/google-chrome`), and performs storage/replay checks without fitting.
+Optional `SMOKE_EXPORT` must name a new output file distinct from `SMOKE_MODEL`.
+Neither command produces its own training fixture.
 
 ## How the WASM target works (the reuse path)
 
-The naive approach — importing studio-lite's `src/engine` by source — **fails**, because studio-lite's engine imports its own modules through *its* `@/` alias (→ its `src`), which collides with this app's `@/`. Instead, this app reuses the **clean, package-exported** surface of `nirs4all`:
+- `package.json` consumes Core through `file:vendor/owners-current/core` for
+  `openN4aContainer` / `writeN4aContainer`; this is the current owner snapshot.
+- `vite.config.ts` resolves staged DAG-ML, its Methods controller, DMD and the
+  other owner modules through `NIRS4ALL_WASM_ROOT`. Both Methods aliases resolve
+  to the same admitted artifact. Without an explicit root, the existing default
+  is the active `nirs4all-web/web-app/src/engine/wasm` stage.
+- `ownerRecipes.ts` and `ownerRidgeBanks.ts` lower finite ordered banks to Methods
+  roles. DAG's `execute_single_holdout_bank_json` expands each bank, produces
+  native regression reports and makes its sole selection decision. The host
+  displays that ranking within the profile; completed profiles remain in catalog
+  order and are activated manually, without an inter-profile score ranking.
+- PLS exports a selected REFIT package fitted on KS training rows. Ridge exports
+  its selected REFIT package fitted on all labelled rows. Both retain the bank's
+  selection-validation scores; deployment refitting supplies no independent test.
+- `.n4a` exports use Core V1 storage for the Quali host profile
+  `nirs4all.quali-host.bundle` version 1 in `host/bundle.json`, preserving the exact
+  DAG `packageJson` string and owner reports. Quali admits that profile before
+  DAG/Methods replay; generic container readability does not grant execution.
 
-- `package.json` depends on `nirs4all` (studio-lite's vendored aggregate).
-- `vite.config.ts` aliases the optional peer WASM packages (`@nirs4all/methods-wasm`, `dag-ml-wasm`, …) to studio-lite's staged `src/engine/wasm/*` — exactly as studio-lite does.
-- `wasmEngine.ts` lowers the app's `PipelineDSL` to a portable class-path source (`nirs4all.operators.transforms.StandardNormalVariate`, `sklearn.cross_decomposition.PLSRegression`, `nirs4all.operators.splitters.KennardStoneSplitter`) and calls `runPortablePipeline`.
-
-**Scope of the portable path:** regression + PLS with SNV / Savitzky-Golay and a Kennard-Stone split (the design's MVP calibration). Broader coverage (CV/OOF, D-optimal, conformal) plugs in behind the same `LabEngine` port when the dag-ml scheduler path is wired (or the runtime is extracted to a shared package).
+This calibration profile supports regression with a single KS selection holdout,
+not independent outer evaluation or CV/OOF qualification. Unsupported candidates
+and runtime failures remain explicit; missing owner capabilities do not select a
+JS substitute.
 
 ## Integration contract
 
@@ -64,7 +116,7 @@ subpath export. The shared theme is imported through
 ```
 src/
   domain/      lab data model (model.ts) + SampleStatus mirror
-  engine/      port.ts (contract) · stubEngine · wasmEngine (deferred) · pythonEngine · index (factory)
+  engine/      port.ts · wasmEngine/dagEngine · owner banks/reports/replay · stubEngine · pythonEngine · index
   store/       React context/reducer over the domain + demo seed
   screens/     Projects · Setup · Health · SelectHplc · Calibrate · Predict · Maintenance
   app/         App shell + workflow rail
@@ -80,8 +132,8 @@ samples; routine or candidate rows are projected without refitting the reference
 The cold-start HPLC view explicitly uses the pool as its descriptive reference.
 Hotelling T² and Q values and alpha=0.05 control limits come from the native
 `HotellingT2` and `QResiduals` procedures. Unsupported populations are displayed
-as unavailable, never as a clean diagnostic. Quality requires the fixed owner Methods **1.3.10 or later within major 1**,
-with **ABI 2.20 or later within major 2**. Build admission and browser startup
+as unavailable, never as a clean diagnostic. Quality requires the fixed owner Methods **1.3.15 or later within major 1**,
+with **ABI 2.22 or later within major 2**. Build admission and the first Methods load
 query the loaded WASM version/ABI; the old 1.3.4 staging is refused. The
 `methods-cohort.json` build receipt identifies the actual WASM/loader hashes.
 
@@ -111,45 +163,46 @@ not authenticate a producer or authorize a model reliability verdict. Comparison
 require identical contexts, reference/evaluation populations and metric parameters.
 Missing references, unavailable values and unresolved evidence remain explicit N/A.
 
-Local verification (Node 24):
+Local verification commands (Node 24; record outcomes for the exact stage):
 
 ```bash
-npm ci
-# Optional for isolated worktrees: point to the existing staged WASM directory.
-export NIRS4ALL_WASM_ROOT=/absolute/path/nirs4all-web/web-app/src/engine/wasm
-# Optional local owner build (not a published cohort):
-# export NIRS4ALL_METHODS_WASM_ROOT=/absolute/path/nirs4all-methods/bindings/js/dist
+# After selecting the stage and existing model fixture as above:
 npm run typecheck
 npm run test:assessment
 npm run test:methods-cohort
 npm run test:science
-npm run test:model-import
+QUALI_MODEL_FIXTURE="$QUALI_MODEL_FIXTURE" npm run test:model-import
 npm run build
-# Serve dist/ locally, then run both real-browser checks:
-SMOKE_URL=http://localhost:4499 npm run smoke
-SMOKE_URL=http://localhost:4499 node scripts/science-browser.mjs
-SMOKE_URL=http://localhost:4499 npm run test:assessment-browser
+# Against the already-served dist/:
+SMOKE_MODEL="$QUALI_MODEL_FIXTURE" SMOKE_URL=http://localhost:4399/ npm run smoke
+SMOKE_URL=http://localhost:4399/ npm run test:assessment-browser
 ```
+
+`test:science` retains the named historical regressions; it is not the current
+owner migration/parity gate. `scripts/science-browser.mjs` still assumes the old
+engine label and automatic model activation and is not the current replay smoke.
 
 ## Methods delivery floor
 
-The optional npm peer range records `@nirs4all/methods >=1.3.10 <2` in the
-manifest and lock. Optional resolution permits the existing explicit staging
-delivery; it does not waive the runtime requirement. Vite and scientific tests
-check the actual staged WASM rather than an npm package label. Both Methods
-aliases resolve to the same verified artifact.
+The optional npm peer range records `@nirs4all/methods >=1.3.15 <2` in the
+manifest and lock. Optional resolution permits explicit staging delivery; it
+does not waive runtime admission. Builds and the first Methods load check the actual
+WASM version and ABI (`>=2.22 <3`), rather than an npm label. Both Methods aliases
+resolve to the same verified artifact.
 
-Methods1.3.10 and Core0.4.6 are published owner packages. The qualified browser
-stage uses the downloaded Methods1.3.10, DAG0.3.43 and Data0.2.14 npm artifacts.
-Formats0.2.13, IO0.2.11 and Datasets0.3.14 are built with `wasm-pack --target web`
-from their exact published source tags. Their public npm artifacts target Node;
-a web-target build must not be relabelled as those downloaded npm bytes.
-Use the owner's IO `scripts/stage_wasm_package.mjs` from its clean source checkout
-to include its authored public-dataset facade and audited legal/SBOM surface.
-Set `NIRS4ALL_WASM_ROOT` to that complete stage and
-`NIRS4ALL_METHODS_WASM_ROOT` to its Methods `dist` copy. Actual runtime admission
-still runs on every build; `methods-cohort.json` records the measured artifact
-hashes without asserting publication of the assembled application.
+The current private snapshot is recorded in `vendor/owners-current/DELIVERY.json`:
+Core 0.5.0, Methods 1.3.15, DAG 0.4.0, DMD 0.2.16, Formats 0.2.14, IO 0.3.0 and
+Datasets 0.3.18 are its package metadata. That receipt describes staged bytes and
+explicitly claims neither publication nor runtime qualification. Package versions
+alone do not identify a qualified cohort; retain the receipt and exact hashes.
+`IO_STAGE.json` and `IO_COMPANION.json` accompany the separate Setup admission.
+Use the explicit snapshot paths above; the historical owner cohort is provenance.
+
+An optional `NIRS4ALL_METHODS_WASM_ROOT` selects a separately supplied Methods
+SDK, and the Methods receipt labels that delivery `local_source_override`. Leave
+it unset to use the snapshot's staged Methods. `methods-cohort.json` records the
+measured runtime version, ABI and WASM/loader hashes with
+`publication_claimed: false`; a build receipt does not certify browser or scientific qualification.
 
 `npm run test:methods-cohort` checks admission of compatible versions and
 refusal of the old ABI, missing identities and unqualified major versions.

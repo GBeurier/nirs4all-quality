@@ -1,0 +1,120 @@
+{
+  "status": "SOURCE_DELIVERED_GATES_UNEXECUTED",
+  "repository": "/home/delete/nirs4all/nirs4all-io",
+  "api": {
+    "export": "numericCoordinates",
+    "signature": "numericCoordinates(packet: unknown, expectedCount: number): Float64Array",
+    "module": "bindings/wasm/numeric-wire.mjs",
+    "declaration": "bindings/wasm/numeric-wire.d.ts",
+    "reexports_added": false,
+    "expectedCount": "required owner X.n_cols",
+    "handoff_sha256": "87e41d7c821f93e8b5a3acee69988fb85b772758b73900cd1013c9323758d386"
+  },
+  "source_changes": [
+    {
+      "path": "crates/nirs4all-io-core/src/materialize/projection.rs",
+      "change": "modified",
+      "sha256_before": "a142f3e7d2d33667bccd674ffc56ccfab8f99189a197457da1f197bae153f4d3",
+      "sha256_after": "a965c4d867b965848dbf63bf8a5f4063e47efa3cd1e323a2eeb624f10fed3412",
+      "mode_before": "0o644",
+      "mode_after": "0o644"
+    },
+    {
+      "path": "bindings/wasm/types/nirs4all-io.d.ts",
+      "change": "modified",
+      "sha256_before": "9e7a028b443cf2a093ee54e191be1571b3b44d76c49b13784c55cd6b67106e95",
+      "sha256_after": "b985daa73ba4609788a4a26286389c7ecbfb19c2fcb51e14994069c6bbfcbe52",
+      "mode_before": "0o644",
+      "mode_after": "0o644"
+    },
+    {
+      "path": "bindings/wasm/numeric-wire.mjs",
+      "change": "added",
+      "sha256_before": null,
+      "sha256_after": "82e35e14f51aa49f6ad2da382e26d080e7b4ec84b257b6cf77da52b5410d618b",
+      "mode_before": null,
+      "mode_after": "0o644"
+    },
+    {
+      "path": "bindings/wasm/numeric-wire.d.ts",
+      "change": "added",
+      "sha256_before": null,
+      "sha256_after": "48a26a8d6754a59e3d074c3c52351970e3f5725f3991899913bf61810229c0b0",
+      "mode_before": null,
+      "mode_after": "0o644"
+    },
+    {
+      "path": "bindings/wasm/tests/fixtures/numeric-coordinates.json",
+      "change": "added",
+      "sha256_before": null,
+      "sha256_after": "bc0f074fb554f98f134be6de71d8ac789b8f770acaa5d9bc1421a80aabcdbdca",
+      "mode_before": null,
+      "mode_after": "0o644"
+    },
+    {
+      "path": "bindings/wasm/tests/numeric-wire.mjs",
+      "change": "added",
+      "sha256_before": null,
+      "sha256_after": "a36e83b0167c93768c9464a850cbcffb918344c5b2316c433b46516596b513bb",
+      "mode_before": null,
+      "mode_after": "0o644"
+    }
+  ],
+  "rust_production_prefix": {
+    "bytes": 33866,
+    "sha256": "a142f3e7d2d33667bccd674ffc56ccfab8f99189a197457da1f197bae153f4d3",
+    "unchanged": true
+  },
+  "shared_corpus": {
+    "path": "bindings/wasm/tests/fixtures/numeric-coordinates.json",
+    "cases": 15,
+    "valid_cases": 2,
+    "refusal_cases": 13,
+    "native_entrypoint": "materialize::projection::numeric_coordinate_tests::numeric_coordinates_owner_corpus -> axes_from_full(&axes, columns)",
+    "js_entrypoint": "bindings/wasm/tests/numeric-wire.mjs -> numericCoordinates(packet, expectedCount)"
+  },
+  "proposed_gates": [
+    {
+      "cwd": "/home/delete/nirs4all/nirs4all-io",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "nirs4all-io-core",
+        "--lib",
+        "materialize::projection::numeric_coordinate_tests::numeric_coordinates_owner_corpus",
+        "--",
+        "--exact"
+      ],
+      "status": "UNEXECUTED",
+      "exit_status": null
+    },
+    {
+      "cwd": "/home/delete/nirs4all/nirs4all-io",
+      "argv": [
+        "node",
+        "--test",
+        "bindings/wasm/tests/numeric-wire.mjs"
+      ],
+      "status": "UNEXECUTED",
+      "exit_status": null
+    }
+  ],
+  "historical_blocker": {
+    "path": "BLOCKER.md",
+    "sha256": "757e151e33509632a673b8342ff56944ce56e61f953a5548a5884bcb136ebbbd",
+    "unchanged": true,
+    "resolved_by": "Follow-up user authorization for an appended cfg(test) Rust unit; no production native API needed"
+  },
+  "notes_added_this_turn": [
+    "PUBLIC_API.md",
+    "IMPLEMENTATION.md",
+    "CHANGES.json",
+    "SOURCE.diff"
+  ],
+  "report_preimages": {
+    "IMPLEMENTATION.md": "absent",
+    "CHANGES.json": "absent",
+    "SOURCE.diff": "absent"
+  }
+}

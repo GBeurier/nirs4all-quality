@@ -73,5 +73,7 @@ export function makeDemoState(): LabState {
     modelByProject: {},
     calibByProject: {},
     audit: [],
+    importsByProject: {},
+    setupImportDraft: null,
   };
 }

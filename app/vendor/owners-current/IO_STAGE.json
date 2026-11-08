@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "status": "SNAPSHOTTED_AWAITING_ROOT_GATES",
+  "captured_at_utc": "2026-11-08T04:32:44.354211+00:00",
+  "directory": "/home/delete/nirs4all/nirs4all-quality/app/vendor/owners-current/wasm/io",
+  "source_directory": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io",
+  "wasm_sha256": "b955facd114c3a6c7b7f991ade1fe5007bbfcd7d21adb5e71fa9376a32a432b6",
+  "loader_sha256": "ee7ab93044dcb159c1a7d53fdfbd797ef6d6c8ee0b6b7a0cb5b82c6c5a3f032f",
+  "scope": "Quali-owned byte copy of the accepted current IO b955 delivery with all companions, types, legal files and provenance. No WASM initialization, browser or scientific qualification performed by this author.",
+  "publication_claimed": false,
+  "runtime_qualification_claimed": false,
+  "files": [
+    {
+      "path": "COPY_PROVENANCE.md",
+      "bytes": 36034,
+      "sha256": "16493b8d06437f2e5a34ac2e4d9af7d72735104781ddc544a087c2590bb8a3d0",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/COPY_PROVENANCE.md"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 34020,
+      "sha256": "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/LICENSE"
+    },
+    {
+      "path": "LICENSING.md",
+      "bytes": 2113,
+      "sha256": "b41ad1d4b8e62c89e42704fc4c9b5bb8a2099a0ad0680d72e95efb57c5d3326c",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/LICENSING.md"
+    },
+    {
+      "path": "PROVENANCE.json",
+      "bytes": 12766,
+      "sha256": "364942696bc96578e9d1a5cb6fd64f8a3b01d82a112c49decaba17d93ffc5e9c",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/PROVENANCE.json"
+    },
+    {
+      "path": "README.md",
+      "bytes": 7389,
+      "sha256": "2d3c64e66e6b6d9ba2161fdf58f12627dc829ef871c718776a4ef467e604166f",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/README.md"
+    },
+    {
+      "path": "THIRD_PARTY_NOTICES.md",
+      "bytes": 5732,
+      "sha256": "c2f5c9061e7bc5a259a2d630330930ce9438f157e9646724824730ce516a5179",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/THIRD_PARTY_NOTICES.md"
+    },
+    {
+      "path": "idiomatic.d.ts",
+      "bytes": 2255,
+      "sha256": "76cac94b2829a64977359ea807dd1c84bef41cb60af291c14eb3eecb372ceef0",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/idiomatic.d.ts"
+    },
+    {
+      "path": "idiomatic.mjs",
+      "bytes": 2688,
+      "sha256": "e2870220f4580cf3bc2db2440ff9b53ec530de26effdf3c01b354201ac8ef494",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/idiomatic.mjs"
+    },
+    {
+      "path": "nirs4all-io-wasm.cdx.json",
+      "bytes": 35568,
+      "sha256": "d1273320302fa9cb0d014843e68ab926a38c958ed970dd62b46f43bd083927d8",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/nirs4all-io-wasm.cdx.json"
+    },
+    {
+      "path": "nirs4all_io_wasm.d.ts",
+      "bytes": 6006,
+      "sha256": "330eb68f22da3e42fcbd3495cce4efcaafceb543cecfef649069f6cd2dc5decf",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/nirs4all_io_wasm.d.ts"
+    },
+    {
+      "path": "nirs4all_io_wasm.js",
+      "bytes": 26055,
+      "sha256": "ee7ab93044dcb159c1a7d53fdfbd797ef6d6c8ee0b6b7a0cb5b82c6c5a3f032f",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/nirs4all_io_wasm.js"
+    },
+    {
+      "path": "nirs4all_io_wasm_bg.wasm",
+      "bytes": 2708538,
+      "sha256": "b955facd114c3a6c7b7f991ade1fe5007bbfcd7d21adb5e71fa9376a32a432b6",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/nirs4all_io_wasm_bg.wasm"
+    },
+    {
+      "path": "nirs4all_io_wasm_bg.wasm.d.ts",
+      "bytes": 1348,
+      "sha256": "a3d3595633d4e94fd368535fcbf68a3027a0266abbad91fd9c8cce3510829241",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/nirs4all_io_wasm_bg.wasm.d.ts"
+    },
+    {
+      "path": "numeric-wire.d.ts",
+      "bytes": 744,
+      "sha256": "48a26a8d6754a59e3d074c3c52351970e3f5725f3991899913bf61810229c0b0",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/numeric-wire.d.ts"
+    },
+    {
+      "path": "numeric-wire.mjs",
+      "bytes": 1949,
+      "sha256": "82e35e14f51aa49f6ad2da382e26d080e7b4ec84b257b6cf77da52b5410d618b",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/numeric-wire.mjs"
+    },
+    {
+      "path": "package.json",
+      "bytes": 855,
+      "sha256": "9f105323de368988fdc8324e4a5fe5b699a001fdc30a4cd076cea4902fd7e5ec",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/package.json"
+    },
+    {
+      "path": "public-dataset.d.ts",
+      "bytes": 4765,
+      "sha256": "c5f53b89e2ceb21bc9aafe0d6ed8bd2f037eda58f1a36997ca895ec638c181a8",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/public-dataset.d.ts"
+    },
+    {
+      "path": "public-dataset.mjs",
+      "bytes": 31123,
+      "sha256": "ab29fc57e4e78e3c6b49bd3aae026d3f310750c974803b7fa00a44906f621981",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/public-dataset.mjs"
+    },
+    {
+      "path": "LICENSES/AGPL-3.0-or-later.txt",
+      "bytes": 34020,
+      "sha256": "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/LICENSES/AGPL-3.0-or-later.txt"
+    },
+    {
+      "path": "LICENSES/Apache-2.0.txt",
+      "bytes": 9723,
+      "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/LICENSES/Apache-2.0.txt"
+    },
+    {
+      "path": "LICENSES/BSD-3-Clause.txt",
+      "bytes": 1459,
+      "sha256": "3cf06aba3588c41c514f6946bb2d757b413ff6491647d474800f55edca75dcb4",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/LICENSES/BSD-3-Clause.txt"
+    },
+    {
+      "path": "LICENSES/COMMERCIAL-LICENSE.md",
+      "bytes": 670,
+      "sha256": "e62a66dc45d618d419706048b17a840f87d0c0c5c940eadd1cf6ea13c7eae08f",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/LICENSES/COMMERCIAL-LICENSE.md"
+    },
+    {
+      "path": "LICENSES/COMMERCIAL-LICENSE_FR.md",
+      "bytes": 759,
+      "sha256": "7d1fd841891d4cb53836a6aca2fbbf7f36ef3bca540a394a9d94633af34ea3d6",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/LICENSES/COMMERCIAL-LICENSE_FR.md"
+    },
+    {
+      "path": "LICENSES/CeCILL-2.1.txt",
+      "bytes": 21778,
+      "sha256": "4ea234937bc7b0aa5247e436690d1eb9324875bc7590ecde50befd38e35190a5",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/LICENSES/CeCILL-2.1.txt"
+    },
+    {
+      "path": "LICENSES/MIT.txt",
+      "bytes": 1078,
+      "sha256": "b05785f9f18e6716bab63424b11454513b9943a222595b70411009202fc592b5",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/LICENSES/MIT.txt"
+    },
+    {
+      "path": "LICENSES/Unicode-3.0.txt",
+      "bytes": 1995,
+      "sha256": "f7db81051789b729fea528a63ec4c938fdcb93d9d61d97dc8cc2e9df6d47f2a1",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/LICENSES/Unicode-3.0.txt"
+    },
+    {
+      "path": "types/nirs4all-io.d.ts",
+      "bytes": 12078,
+      "sha256": "6d6f5a8c0f445e740c15f81e0c00298bfaa9915eba05a1a53b4a1b2bc35c91f5",
+      "origin": "/home/delete/nirs4all/nirs4all-web/web-app/src/engine/wasm/io/types/nirs4all-io.d.ts"
+    }
+  ]
+}

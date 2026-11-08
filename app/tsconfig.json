@@ -17,8 +17,14 @@
     "allowImportingTsExtensions": false,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "dag-ml-data-wasm": ["vendor/owners-current/wasm/dagml-data/dag_ml_data_wasm.d.ts"],
+      "@nirs4all/datasets-wasm": ["vendor/owners-current/wasm/datasets/nirs4all_datasets_wasm.d.ts"],
+      "@nirs4all/methods": ["vendor/owners-current/wasm/methods/index.d.ts"],
+      "dag-ml-wasm": ["vendor/owners-current/wasm/dagml/dag_ml_wasm.d.ts"],
+      "dag-ml-wasm/n4m-controller": ["vendor/owners-current/wasm/dagml/n4m_controller.d.ts"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/engine/testing/oracle"]
 }

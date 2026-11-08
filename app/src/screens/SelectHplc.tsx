@@ -36,11 +36,15 @@ export function SelectHplc({ projectId }: { projectId: string }) {
 
   const pool = samples.filter((s) => !s.reference && s.status !== 'excluded');
 
-  const model = useMemo(() => {
-    if (!spectra) return null;
-    const labelledIds = new Set(samples.filter((s) => s.reference?.value != null).map((s) => s.id));
-    const poolIds = new Set(pool.map((s) => s.id));
-    return scoreCandidates(spectra, labelledIds, poolIds);
+  const { model, selectionError } = useMemo(() => {
+    if (!spectra) return { model: null, selectionError: null };
+    try {
+      const labelledIds = new Set(samples.filter((s) => s.reference?.value != null).map((s) => s.id));
+      const poolIds = new Set(pool.map((s) => s.id));
+      return { model: scoreCandidates(spectra, labelledIds, poolIds), selectionError: null };
+    } catch (error) {
+      return { model: null, selectionError: error instanceof Error ? error.message : String(error) };
+    }
   }, [spectra, samples, pool]);
 
   // The app PROPOSES a count (informative candidates before diminishing returns);
@@ -141,8 +145,9 @@ export function SelectHplc({ projectId }: { projectId: string }) {
       </div>
 
       {!model || model.candidates.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          {tr('Aucun échantillon en attente de référence (ou pas de spectres). Rien à sélectionner.', 'No samples awaiting a reference (or no spectra). Nothing to select.')}
+        <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground"
+          role={selectionError ? 'alert' : undefined} data-testid={selectionError ? 'hplc-selection-refusal' : undefined}>
+          {selectionError ?? tr('Aucun échantillon en attente de référence (ou pas de spectres). Rien à sélectionner.', 'No samples awaiting a reference (or no spectra). Nothing to select.')}
         </div>
       ) : (
         <div className="card p-0">
@@ -196,6 +201,7 @@ export function SelectHplc({ projectId }: { projectId: string }) {
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
           className="btn-primary"
+          disabled={selectionError !== null}
           onClick={() => dispatch({
             kind: 'set_sample_status',
             projectId,
@@ -209,6 +215,7 @@ export function SelectHplc({ projectId }: { projectId: string }) {
         </button>
         <button
           className="btn-outline"
+          disabled={selectionError !== null}
           onClick={() => downloadText(
             `${slug(project?.name ?? 'projet')}-hplc.csv`,
             toCsv(rows.map((r) => ({ rank: r.rank ?? '', sample_id: r.sampleId, barcode: r.barcode ?? '', reason: r.reasonLabel ?? '', info_score: (noveltyById.get(r.sampleId) ?? 0).toFixed(3), safety: r.safety })),

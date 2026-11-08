@@ -69,17 +69,21 @@ export function TrainingResults({ dsl, result }: { dsl: PipelineDSL; result: Run
         </div>
       </div>
 
+      {!result.refit.ownerReport && <p className="mb-2 text-xs text-muted-foreground">Historical metric profile (recorded values).</p>}
       {/* metrics */}
       <p className="mb-2 text-xs text-muted-foreground">{evaluationLabel(result.evaluation)}. {evaluationNote(result.evaluation)}</p>
       {!!result.candidateIssues?.length && <details className="mb-2 text-xs">
         <summary>{result.candidateIssues.length} backend refusals or failures</summary>
         <ul>{result.candidateIssues.map((candidate, i) => <li key={i}>{candidate.label} ({candidate.backend}, {candidate.status}): {candidate.reason}</li>)}</ul>
       </details>}
+      {!!Object.keys(result.refit.ownerReport?.undefined_metrics ?? {}).length && <p className="mb-2 text-xs text-muted-foreground">
+        Undefined diagnostics: {Object.entries(result.refit.ownerReport!.undefined_metrics!).map(([metric, reason]) => `${metric}: ${reason}`).join('; ')}.
+      </p>}
       <div className="mb-3 flex flex-wrap gap-2 text-xs">
-        {([['RMSE', m.rmse], ['R²', m.r2], ['RPD', m.rpd], ['RPIQ', m.rpiq], ['bias', m.bias], ['n', m.n]] as const).map(([k, v]) => (
+        {([['RMSE', 'rmse'], ['R²', 'r2'], ['RPD', 'rpd'], ['RPIQ', 'rpiq'], ['bias', 'bias'], ['n', 'n']] as const).map(([k, key]) => (
           <span key={k} className="inline-flex items-baseline gap-1 rounded-md bg-muted px-2 py-1">
             <span className="text-muted-foreground">{k}</span>
-            <span className="font-mono font-medium">{fmt(v)}</span>
+            <span className="font-mono font-medium">{result.refit.ownerReport?.undefined_metrics?.[key] ? `undefined (${result.refit.ownerReport.undefined_metrics[key]})` : fmt(m[key])}</span>
           </span>
         ))}
         <span className="inline-flex items-baseline gap-1 rounded-md bg-muted px-2 py-1">

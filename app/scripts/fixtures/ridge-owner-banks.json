@@ -1,0 +1,458 @@
+[
+  {
+    "id": "ridge-cart",
+    "candidate_count": 40,
+    "alphas": [
+      0.01,
+      0.1,
+      1,
+      10,
+      100
+    ],
+    "chains": [
+      {
+        "label": "brut",
+        "ops": [],
+        "steps": [
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      },
+      {
+        "label": "brut + d1",
+        "ops": [
+          "diff1"
+        ],
+        "steps": [
+          {
+            "class": "n4m:preprocessing.derivatives.derivate",
+            "params": {
+              "order": 1,
+              "delta": 1
+            }
+          },
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      },
+      {
+        "label": "brut + d2",
+        "ops": [
+          "diff2"
+        ],
+        "steps": [
+          {
+            "class": "n4m:preprocessing.derivatives.derivate",
+            "params": {
+              "order": 2,
+              "delta": 1
+            }
+          },
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      },
+      {
+        "label": "brut + detrend",
+        "ops": [
+          "detrend"
+        ],
+        "steps": [
+          {
+            "class": "n4m:preprocessing.baselines.detrend",
+            "params": {
+              "polyorder": 1
+            }
+          },
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      },
+      {
+        "label": "SNV",
+        "ops": [
+          "snv"
+        ],
+        "steps": [
+          {
+            "class": "n4m:preprocessing.scatter.snv",
+            "params": {
+              "ddof": 1
+            }
+          },
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      },
+      {
+        "label": "SNV + d1",
+        "ops": [
+          "snv",
+          "diff1"
+        ],
+        "steps": [
+          {
+            "class": "n4m:preprocessing.scatter.snv",
+            "params": {
+              "ddof": 1
+            }
+          },
+          {
+            "class": "n4m:preprocessing.derivatives.derivate",
+            "params": {
+              "order": 1,
+              "delta": 1
+            }
+          },
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      },
+      {
+        "label": "SNV + d2",
+        "ops": [
+          "snv",
+          "diff2"
+        ],
+        "steps": [
+          {
+            "class": "n4m:preprocessing.scatter.snv",
+            "params": {
+              "ddof": 1
+            }
+          },
+          {
+            "class": "n4m:preprocessing.derivatives.derivate",
+            "params": {
+              "order": 2,
+              "delta": 1
+            }
+          },
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      },
+      {
+        "label": "SNV + detrend",
+        "ops": [
+          "snv",
+          "detrend"
+        ],
+        "steps": [
+          {
+            "class": "n4m:preprocessing.scatter.snv",
+            "params": {
+              "ddof": 1
+            }
+          },
+          {
+            "class": "n4m:preprocessing.baselines.detrend",
+            "params": {
+              "polyorder": 1
+            }
+          },
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fast-aom-ridge",
+    "candidate_count": 9,
+    "alphas": [
+      0.1,
+      1,
+      10
+    ],
+    "chains": [
+      {
+        "label": "brut",
+        "ops": [],
+        "steps": [
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      },
+      {
+        "label": "d1",
+        "ops": [
+          "diff1"
+        ],
+        "steps": [
+          {
+            "class": "n4m:preprocessing.derivatives.derivate",
+            "params": {
+              "order": 1,
+              "delta": 1
+            }
+          },
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      },
+      {
+        "label": "d2",
+        "ops": [
+          "diff2"
+        ],
+        "steps": [
+          {
+            "class": "n4m:preprocessing.derivatives.derivate",
+            "params": {
+              "order": 2,
+              "delta": 1
+            }
+          },
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "slow-aom-ridge",
+    "candidate_count": 49,
+    "alphas": [
+      0.001,
+      0.01,
+      0.1,
+      1,
+      10,
+      100,
+      1000
+    ],
+    "chains": [
+      {
+        "label": "brut",
+        "ops": [],
+        "steps": [
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      },
+      {
+        "label": "d1",
+        "ops": [
+          "diff1"
+        ],
+        "steps": [
+          {
+            "class": "n4m:preprocessing.derivatives.derivate",
+            "params": {
+              "order": 1,
+              "delta": 1
+            }
+          },
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      },
+      {
+        "label": "d2",
+        "ops": [
+          "diff2"
+        ],
+        "steps": [
+          {
+            "class": "n4m:preprocessing.derivatives.derivate",
+            "params": {
+              "order": 2,
+              "delta": 1
+            }
+          },
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      },
+      {
+        "label": "detrend",
+        "ops": [
+          "detrend"
+        ],
+        "steps": [
+          {
+            "class": "n4m:preprocessing.baselines.detrend",
+            "params": {
+              "polyorder": 1
+            }
+          },
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      },
+      {
+        "label": "detrend+d1",
+        "ops": [
+          "detrend",
+          "diff1"
+        ],
+        "steps": [
+          {
+            "class": "n4m:preprocessing.baselines.detrend",
+            "params": {
+              "polyorder": 1
+            }
+          },
+          {
+            "class": "n4m:preprocessing.derivatives.derivate",
+            "params": {
+              "order": 1,
+              "delta": 1
+            }
+          },
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      },
+      {
+        "label": "SNV",
+        "ops": [
+          "snv"
+        ],
+        "steps": [
+          {
+            "class": "n4m:preprocessing.scatter.snv",
+            "params": {
+              "ddof": 1
+            }
+          },
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      },
+      {
+        "label": "SNV+d1",
+        "ops": [
+          "snv",
+          "diff1"
+        ],
+        "steps": [
+          {
+            "class": "n4m:preprocessing.scatter.snv",
+            "params": {
+              "ddof": 1
+            }
+          },
+          {
+            "class": "n4m:preprocessing.derivatives.derivate",
+            "params": {
+              "order": 1,
+              "delta": 1
+            }
+          },
+          {
+            "class": "n4m:models.regularized.ridge",
+            "params": {
+              "center_x": true,
+              "scale_x": false,
+              "center_y": true
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

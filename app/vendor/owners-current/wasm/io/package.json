@@ -1,0 +1,31 @@
+{
+  "name": "@nirs4all/io-wasm",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "license": "CECILL-2.1 OR AGPL-3.0-or-later",
+  "description": "Private current IO 0.3 browser qualification package; explicit parsing options before first inference. Not published.",
+  "main": "./nirs4all_io_wasm.js",
+  "types": "./nirs4all_io_wasm.d.ts",
+  "exports": {
+    ".": {
+      "types": "./nirs4all_io_wasm.d.ts",
+      "default": "./nirs4all_io_wasm.js"
+    },
+    "./idiomatic": {
+      "types": "./idiomatic.d.ts",
+      "import": "./idiomatic.mjs"
+    },
+    "./public-dataset": {
+      "types": "./public-dataset.d.ts",
+      "import": "./public-dataset.mjs"
+    },
+    "./numeric-wire": {
+      "types": "./numeric-wire.d.ts",
+      "import": "./numeric-wire.mjs"
+    },
+    "./types": {
+      "types": "./types/nirs4all-io.d.ts"
+    }
+  }
+}

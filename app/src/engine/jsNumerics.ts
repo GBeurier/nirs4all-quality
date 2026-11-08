@@ -1,11 +1,5 @@
-// Honest closed-form numerics for the calibration variants the portable libn4m
-// WASM path does NOT cover (Ridge, and the compact AOM operator-bank screen).
-//
-// This is REAL, exact linear algebra — not a fake or a stand-in for PLS. Ridge is
-// the closed-form (XᵀX + αI)⁻¹Xᵀy; the AOM "operator bank" applies genuine
-// strict-linear operators (finite differences, detrend, SNV) and selects the best
-// by held-out RMSE, which is exactly the AOM idea (a compact form of it). PLS
-// itself stays on real libn4m WASM. Everything here is deterministic.
+// Existing display-preview transforms only. Calibration and replay use DAG/Methods.
+// Frozen historical calibration math lives under testing/oracle.
 
 import { validatePreprocessingStep } from './preprocessing.js';
 
@@ -71,47 +65,6 @@ export function applyOperator(X: Float64Array, n: number, p: number, op: Operato
     for (let j = 0; j < p; j++) out[i * p + j] = X[i * p + j]! - (intercept + slope * j);
   }
   return { data: out, n, p };
-}
-
-/** Kennard-Stone test selection on raw X — mirrors the WASM portable path's
- *  KennardStoneSplitter (test_size ≈ 0.25) so the JS variants are scored on the
- *  SAME kind of spread-based hold-out as the PLS variants (comparable metrics).
- *  KS selects the most-spread points as the calibration set; the remainder (the
- *  interior points) is the test set. */
-export function kennardStoneTest(X: Float64Array, n: number, p: number, testFrac = 0.25): number[] {
-  if (n < 4) return [0];
-  const m = Math.max(2, Math.round(n * (1 - testFrac))); // calibration (training) size
-  const dist = (a: number, b: number): number => {
-    let s = 0;
-    for (let j = 0; j < p; j++) { const d = X[a * p + j]! - X[b * p + j]!; s += d * d; }
-    return Math.sqrt(s);
-  };
-  // seed with the two most distant points
-  let a = 0;
-  let b = 1;
-  let best = -1;
-  for (let i = 0; i < n; i++) for (let k = i + 1; k < n; k++) { const d = dist(i, k); if (d > best) { best = d; a = i; b = k; } }
-  const selected = new Set<number>([a, b]);
-  const minDist = new Array<number>(n).fill(Infinity);
-  for (let i = 0; i < n; i++) if (!selected.has(i)) minDist[i] = Math.min(dist(i, a), dist(i, b));
-  while (selected.size < m) {
-    let bestI = -1;
-    let bestD = -1;
-    for (let i = 0; i < n; i++) { if (selected.has(i)) continue; if (minDist[i]! > bestD) { bestD = minDist[i]!; bestI = i; } }
-    if (bestI < 0) break;
-    selected.add(bestI);
-    for (let i = 0; i < n; i++) if (!selected.has(i)) minDist[i] = Math.min(minDist[i]!, dist(i, bestI));
-  }
-  const test: number[] = [];
-  for (let i = 0; i < n; i++) if (!selected.has(i)) test.push(i);
-  return test.length ? test : [0];
-}
-
-/** Apply a chain of strict-linear operators in sequence (composition). */
-export function applyChain(X: Float64Array, n: number, p: number, ops: readonly Operator[]): Matrix {
-  let cur: Matrix = { data: X, n, p };
-  for (const op of ops) cur = applyOperator(cur.data, cur.n, cur.p, op);
-  return cur;
 }
 
 // --- Real preprocessing steps (window-aware) for the PLS-screen bank ----------
@@ -238,101 +191,3 @@ function solve(A: number[][], b: number[]): number[] {
   return M.map((row, i) => (M[i]![i]! !== 0 ? row[n]! / M[i]![i]! : 0));
 }
 
-export interface RidgeModel { w: number[]; colMean: number[]; yMean: number; p: number; }
-
-/** Closed-form ridge regression on centred X: (XᵀX + αI) w = Xᵀ y_c. */
-export function ridgeFit(X: Float64Array, n: number, p: number, y: Float64Array, alpha: number): RidgeModel {
-  const colMean = new Array<number>(p).fill(0);
-  for (let i = 0; i < n; i++) for (let j = 0; j < p; j++) colMean[j]! += X[i * p + j]!;
-  for (let j = 0; j < p; j++) colMean[j]! /= n;
-  let yMean = 0;
-  for (let i = 0; i < n; i++) yMean += y[i]!;
-  yMean /= n;
-
-  // A = XcᵀXc + αI  (p×p),  b = Xcᵀ yc
-  const A: number[][] = Array.from({ length: p }, () => new Array<number>(p).fill(0));
-  const b = new Array<number>(p).fill(0);
-  for (let i = 0; i < n; i++) {
-    const yc = y[i]! - yMean;
-    for (let a = 0; a < p; a++) {
-      const xa = X[i * p + a]! - colMean[a]!;
-      b[a]! += xa * yc;
-      for (let c = a; c < p; c++) {
-        A[a]![c]! += xa * (X[i * p + c]! - colMean[c]!);
-      }
-    }
-  }
-  for (let a = 0; a < p; a++) {
-    for (let c = a + 1; c < p; c++) A[c]![a]! = A[a]![c]!; // symmetrize
-    A[a]![a]! += alpha;
-  }
-  const w = solve(A, b);
-  return { w, colMean, yMean, p };
-}
-
-export function ridgePredictRow(model: RidgeModel, row: Float64Array, offset: number): number {
-  let acc = model.yMean;
-  for (let j = 0; j < model.p; j++) acc += (row[offset + j]! - model.colMean[j]!) * model.w[j]!;
-  return acc;
-}
-
-export interface PlsModel { B: number[]; colMean: number[]; yMean: number; p: number; nComp: number; }
-
-/** Exact PLS regression (NIPALS) on centred X → regression coefficients B such
- *  that ŷ = ȳ + (x − x̄)·B. A dependency-free in-browser fallback for the libn4m
- *  WASM path (used when the staged methods WASM is unavailable/incompatible). */
-export function plsFit(X: Float64Array, n: number, p: number, y: Float64Array, ncomp: number): PlsModel {
-  const colMean = new Array<number>(p).fill(0);
-  for (let i = 0; i < n; i++) for (let j = 0; j < p; j++) colMean[j]! += X[i * p + j]!;
-  for (let j = 0; j < p; j++) colMean[j]! /= n;
-  let yMean = 0;
-  for (let i = 0; i < n; i++) yMean += y[i]!;
-  yMean /= n;
-
-  const Xres = new Float64Array(n * p);
-  for (let i = 0; i < n; i++) for (let j = 0; j < p; j++) Xres[i * p + j] = X[i * p + j]! - colMean[j]!;
-  const yres = new Float64Array(n);
-  for (let i = 0; i < n; i++) yres[i] = y[i]! - yMean;
-
-  const A = Math.max(1, Math.min(ncomp, n - 1, p));
-  const Ws: number[][] = [];
-  const Ps: number[][] = [];
-  const qs: number[] = [];
-  for (let a = 0; a < A; a++) {
-    const w = new Array<number>(p).fill(0);
-    for (let i = 0; i < n; i++) { const yi = yres[i]!; const b = i * p; for (let j = 0; j < p; j++) w[j]! += Xres[b + j]! * yi; }
-    let nw = 0; for (let j = 0; j < p; j++) nw += w[j]! * w[j]!;
-    nw = Math.sqrt(nw); if (nw < 1e-12) break;
-    for (let j = 0; j < p; j++) w[j]! /= nw;
-    const t = new Array<number>(n).fill(0);
-    for (let i = 0; i < n; i++) { let s = 0; const b = i * p; for (let j = 0; j < p; j++) s += Xres[b + j]! * w[j]!; t[i] = s; }
-    let tt = 0; for (let i = 0; i < n; i++) tt += t[i]! * t[i]!;
-    if (tt < 1e-12) break;
-    const pl = new Array<number>(p).fill(0);
-    for (let i = 0; i < n; i++) { const ti = t[i]!; const b = i * p; for (let j = 0; j < p; j++) pl[j]! += Xres[b + j]! * ti; }
-    for (let j = 0; j < p; j++) pl[j]! /= tt;
-    let q = 0; for (let i = 0; i < n; i++) q += yres[i]! * t[i]!; q /= tt;
-    for (let i = 0; i < n; i++) { const ti = t[i]!; const b = i * p; for (let j = 0; j < p; j++) Xres[b + j]! -= ti * pl[j]!; yres[i]! -= ti * q; }
-    Ws.push(w); Ps.push(pl); qs.push(q);
-  }
-
-  // B = W (PᵀW)⁻¹ q
-  const Aeff = Ws.length;
-  const B = new Array<number>(p).fill(0);
-  if (Aeff > 0) {
-    const PtW: number[][] = Array.from({ length: Aeff }, () => new Array<number>(Aeff).fill(0));
-    for (let a = 0; a < Aeff; a++) for (let b = 0; b < Aeff; b++) {
-      let s = 0; for (let j = 0; j < p; j++) s += Ps[a]![j]! * Ws[b]![j]!;
-      PtW[a]![b] = s;
-    }
-    const r = solve(PtW, qs.slice(0, Aeff));
-    for (let j = 0; j < p; j++) { let s = 0; for (let a = 0; a < Aeff; a++) s += Ws[a]![j]! * r[a]!; B[j] = s; }
-  }
-  return { B, colMean, yMean, p, nComp: Aeff };
-}
-
-export function plsPredictRow(model: PlsModel, row: Float64Array, offset: number): number {
-  let acc = model.yMean;
-  for (let j = 0; j < model.p; j++) acc += (row[offset + j]! - model.colMean[j]!) * model.B[j]!;
-  return acc;
-}

@@ -5,9 +5,10 @@ import { createContext, useContext, useEffect, useMemo, useReducer, useRef, useS
 
 import type { AuditEntry, Project, Sample, SampleStatus, User } from '@/domain/model';
 import { cropSpectra, type SpectraDataset } from '@/domain/spectra';
-import type { Evaluation, FittedModel, Metrics, RunResult } from '@/engine';
+import type { Evaluation, FittedModel, Metrics, OwnerRegressionReport, RunResult, SelectionPopulation } from '@/engine';
 import { newId, nowIso } from '@/lib/ids';
 import { loadState, saveState } from '@/lib/persist';
+import type { RetainedImport } from '@/lib/ioImport';
 
 /** The active fitted model for a project (produced by Calibrate, used by Predict). */
 export interface StoredModel {
@@ -15,6 +16,11 @@ export interface StoredModel {
   engine: string;
   pipelineName: string;
   metrics: Metrics;
+  ownerReport?: OwnerRegressionReport;
+  population?: SelectionPopulation;
+  selectedProfileId?: string;
+  /** Exact imported host metadata, including reports and recorded failures. */
+  sourceBundle?: Record<string, unknown>;
   evaluation?: Evaluation;
   /** Imported evaluation claims are retained as provenance, not verified qualification. */
   evaluationDeclaredOnly?: boolean;
@@ -29,6 +35,7 @@ export interface StoredModel {
 export interface CalibrationState {
   results: { variantId: string; result: RunResult }[];
   selectedId: string | null;
+  failures?: { label: string; reason: string; candidateIssues?: RunResult['candidateIssues'] }[];
 }
 
 export interface LabState {
@@ -51,10 +58,13 @@ export interface LabState {
   /** the last calibration leaderboard per project (ephemeral, not persisted) */
   calibByProject: Record<string, CalibrationState>;
   audit: AuditEntry[];
+  importsByProject: Record<string, RetainedImport>;
+  setupImportDraft: { projectId: string; record: RetainedImport } | null;
 }
 
 export type LabAction =
-  | { kind: 'create_project'; project: Project; samples: Sample[]; spectra?: SpectraDataset }
+  | { kind: 'create_project'; project: Project; samples: Sample[]; spectra?: SpectraDataset; retainedImport?: RetainedImport }
+  | { kind: 'set_setup_import_draft'; draft: LabState['setupImportDraft'] }
   | { kind: 'set_sample_status'; projectId: string; sampleIds: string[]; status: SampleStatus; justification?: string }
   | { kind: 'set_references'; projectId: string; values: (number | null)[] }
   | { kind: 'set_crop'; projectId: string; from: number | null; to: number | null }
@@ -80,10 +90,16 @@ function auditEntry(state: LabState, projectId: string, action: AuditEntry['acti
 
 function reducer(state: LabState, action: LabAction): LabState {
   switch (action.kind) {
+    case 'set_setup_import_draft':
+      return { ...state, setupImportDraft: action.draft };
     case 'create_project': {
       return {
         ...state,
         projects: [...state.projects, action.project],
+        importsByProject: action.retainedImport
+          ? { ...state.importsByProject, [action.project.id]: action.retainedImport }
+          : state.importsByProject,
+        setupImportDraft: state.setupImportDraft?.projectId === action.project.id ? null : state.setupImportDraft,
         samplesByProject: { ...state.samplesByProject, [action.project.id]: action.samples },
         spectraByProject: { ...state.spectraByProject, [action.project.id]: action.spectra ?? { axis: [], axisUnit: 'nm', samples: [] } },
         cropByProject: { ...state.cropByProject, [action.project.id]: { from: null, to: null } },
@@ -163,7 +179,7 @@ function reducer(state: LabState, action: LabAction): LabState {
       return { ...state, audit: [...state.audit, action.entry] };
     case 'hydrate':
       // defensively fill fields that older persisted states may lack
-      return { ...action.state, modelByProject: action.state.modelByProject ?? {}, calibByProject: action.state.calibByProject ?? {}, cropByProject: action.state.cropByProject ?? {}, previewPpByProject: action.state.previewPpByProject ?? {}, repModeByProject: action.state.repModeByProject ?? {} };
+      return { ...action.state, importsByProject: action.state.importsByProject ?? {}, setupImportDraft: action.state.setupImportDraft ?? null, modelByProject: action.state.modelByProject ?? {}, calibByProject: action.state.calibByProject ?? {}, cropByProject: action.state.cropByProject ?? {}, previewPpByProject: action.state.previewPpByProject ?? {}, repModeByProject: action.state.repModeByProject ?? {} };
     default:
       return state;
   }
@@ -179,7 +195,7 @@ export function LabProvider({ initial, children }: { initial: LabState; children
   useEffect(() => {
     let cancelled = false;
     loadState<LabState>().then((persisted) => {
-      if (!cancelled && persisted && persisted.projects?.length) dispatch({ kind: 'hydrate', state: persisted });
+      if (!cancelled && persisted && (persisted.projects?.length || persisted.setupImportDraft)) dispatch({ kind: 'hydrate', state: persisted });
       if (!cancelled) setHydrated(true);
     });
     return () => { cancelled = true; };
