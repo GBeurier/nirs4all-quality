@@ -1,14 +1,15 @@
-import { meanSpectrum } from '@/domain/spectra';
+import { meanSpectrum, type SpectraDataset } from '@/domain/spectra';
 import { resolveSafety, summarizeWorklist, WorklistTable, type WorklistItemInput } from 'nirs4all-ui/lab';
 import { Activity, FlaskConical, RefreshCw } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   CartesianGrid, Cell, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis,
 } from 'recharts';
 
-import { analyzeDrift, calibrationMatrix, makeDriftBatch, resampleTo, type DriftVerdict, type Mat } from '@/lib/drift';
+import { analyzeDrift, calibrationMatrix, makeDriftBatch, resampleTo, type DriftVerdict, type DriftAnalysis, type DriftPoint, type Mat } from '@/lib/drift';
 import { predictWithModel } from '@/engine/predict';
-import { analyzeFiles, assembleDataset, readRawFiles } from '@/lib/dataset';
+import { errorMessage, projectForLab, type LabProjection, type RetainedImport } from '@/lib/ioImport';
+import { newId } from '@/lib/ids';
 import { downloadText, slug, toCsv } from '@/lib/export';
 import { useLang, useTr } from '@/i18n';
 import { useLab, useProjectSpectra } from '@/store/store';
@@ -16,12 +17,67 @@ import { safetyIcons } from '@/ui/icons';
 import { Explain } from '@/ui/Explain';
 import { EXPLAIN } from '@/ui/explanations';
 import { Dropzone } from '@/ui/Dropzone';
+import { DatasetConfig, ImportBindings, useDatasetImport } from '@/ui/DatasetConfig';
 
 const VERDICT: Record<DriftVerdict, { fr: string; en: string; tone: string; pill: string }> = {
   stable: { fr: 'Stable', en: 'Stable', tone: 'text-success', pill: 'n4-pill n4-pill--green' },
   moderate: { fr: 'Dérive modérée', en: 'Moderate drift', tone: 'text-warning', pill: 'n4-pill n4-pill--amber' },
   strong: { fr: 'Dérive forte', en: 'Strong drift', tone: 'text-destructive', pill: 'n4-pill n4-pill--rose' },
 };
+
+type Projected = Extract<LabProjection, { ok: true }>;
+export interface MaintenanceBatch extends Mat {
+  record: RetainedImport | null;
+  projection: Projected | null;
+  sampleIds: string[];
+}
+type IdentifiedPoint = DriftPoint & { sampleId: string };
+export interface ResendEntry { sampleId: string; idx: number; predicted: number; outX: boolean; outY: boolean; priority: number }
+
+/** Host snapshot: owner identity order travels with the exact matrix it labels. */
+export function maintenanceBatch(record: RetainedImport, projection: Projected, target: SpectraDataset): MaintenanceBatch {
+  const source = projection.spectra;
+  const p = target.axis.length, n = source.samples.length;
+  const X = new Float64Array(n * p);
+  source.samples.forEach((sample, row) => {
+    if (!sample.reps.length || sample.reps.some((rep) => rep.values.length !== source.axis.length || !rep.values.every(Number.isFinite))) {
+      throw new Error('Maintenance requires complete finite spectra; missing values are not imputed.');
+    }
+    const values = resampleTo(meanSpectrum(sample), source.axis, target.axis, source.axisUnit, target.axisUnit);
+    X.set(values, row * p);
+  });
+  return { record, projection, sampleIds: source.samples.map((sample) => sample.sampleId), X, n, p };
+}
+
+export function identifiedDriftPoints(analysis: DriftAnalysis, batch: MaintenanceBatch): IdentifiedPoint[] {
+  return analysis.newPts.map((point) => {
+    const sampleId = batch.sampleIds[point.idx];
+    if (sampleId === undefined) throw new Error('Drift output does not identify a row of the current batch.');
+    return { ...point, sampleId };
+  });
+}
+
+export function maintenanceResend(points: IdentifiedPoint[], sampleIds: string[], out: { values: Float64Array; sampleIds?: string[] }, yRange: [number, number]): ResendEntry[] {
+  if (!out.sampleIds || out.sampleIds.length !== sampleIds.length || out.values.length !== sampleIds.length
+      || out.sampleIds.some((id, row) => id !== sampleIds[row])) throw new Error('Prediction identities differ from the current maintenance batch.');
+  const [ylo, yhi] = yRange;
+  return points.map((z) => {
+    const predicted = out.values[z.idx] ?? Number.NaN;
+    const outX = z.out;
+    const outY = Number.isFinite(predicted) && (predicted < ylo || predicted > yhi);
+    return { sampleId: z.sampleId, idx: z.idx, predicted, outX, outY, priority: z.novelty + (outY ? 1.5 : 0) };
+  }).filter((r) => r.outX || r.outY).sort((a, b) => b.priority - a.priority);
+}
+
+export function maintenanceWorklist(points: IdentifiedPoint[], threshold: number): WorklistItemInput[] {
+  return points.filter((z) => z.out).sort((a, b) => b.novelty - a.novelty).map((z, i) => ({
+    sampleId: z.sampleId, reason: z.novelty > threshold * 1.6 ? 'rare_type' : 'boundary', decisionColor: 'out_of_domain', rank: i + 1,
+  }));
+}
+export const resendExportRows = (resend: ResendEntry[]) => resend.map((r, i) => ({ rank: i + 1, sample_id: r.sampleId,
+  predicted: Number.isFinite(r.predicted) ? r.predicted.toFixed(3) : '', out_x: r.outX ? 'yes' : '', out_y: r.outY ? 'yes' : '' }));
+export const controlExportRows = (worklist: WorklistItemInput[]) => worklist.map((b) => ({ rank: b.rank ?? '', sample_id: b.sampleId,
+  reason: b.reason ?? '', safety: resolveSafety(b) }));
 
 // §3 Écran 6 — maintenance planner. Add a new routine batch (drop spectra or
 // simulate one), project it into a frozen calibration-only PCA reference, and get a recommendation: keep monitoring,
@@ -41,72 +97,56 @@ export function Maintenance({ projectId }: { projectId: string }) {
     const refIds = new Set(samples.filter((s) => s.reference?.value != null).map((s) => s.id));
     return refIds.size >= 3 ? calibrationMatrix(spectra, refIds) : null;
   }, [spectra, samples]);
-  const [batch, setBatch] = useState<Mat | null>(null);
-  const [note, setNote] = useState<string>('');
-
+  const [simulated, setSimulated] = useState<MaintenanceBatch | null>(null);
+  const [external, setExternal] = useState(false);
+  const [handle] = useState(() => newId('maintenance'));
+  const [note, setNote] = useState('');
+  const predictionRequest = useRef(0);
+  const [resendResult, setResendResult] = useState<{ batch: MaintenanceBatch; model: unknown; analysis: DriftAnalysis; items: ResendEntry[] } | null>(null);
+  const upload = useDatasetImport(undefined, () => { predictionRequest.current++; setResendResult(null); setNote(''); });
+  const projection = useMemo(() => projectForLab(upload.record, handle), [upload.record, handle]);
+  const prepared = useMemo(() => {
+    if (!external || !projection.ok || upload.readingFiles || upload.fileReadFailed || !spectra) return { batch: null, error: '' };
+    try { return { batch: maintenanceBatch(upload.record, projection, spectra), error: '' }; }
+    catch (reason) { return { batch: null, error: errorMessage(reason) }; }
+  }, [external, projection, upload.record, upload.readingFiles, upload.fileReadFailed, spectra]);
+  const batch = external ? prepared.batch : simulated;
   const analysis = useMemo(() => (cal && batch ? analyzeDrift(cal, batch) : null), [cal, batch]);
+  const points = useMemo(() => analysis && batch ? identifiedDriftPoints(analysis, batch) : [], [analysis, batch]);
   const stored = state.modelByProject[projectId];
+  const resend = resendResult && resendResult.batch === batch && resendResult.model === stored && resendResult.analysis === analysis ? resendResult.items : null;
 
-  // §8 — use the DEPLOYED calibration model (its PLS/Ridge space) to decide what to
-  // re-send to HPLC: predict the new batch, then prioritize samples the model is
-  // least sure of — spectrally out-of-domain (out-X) and/or predicted outside the
-  // trained reference range (out-Y). Those are the most useful to re-measure.
-  const [resend, setResend] = useState<{ idx: number; predicted: number; outX: boolean; outY: boolean; priority: number }[] | null>(null);
   useEffect(() => {
     let cancelled = false;
+    const request = ++predictionRequest.current;
+    setResendResult(null);
     (async () => {
-      if (!analysis || !batch || !stored || stored.nFeatures !== batch.p) { setResend(null); return; }
-      const out = await predictWithModel(stored.model, batch.X, batch.n, batch.p);
-      if (cancelled) return;
-      const [ylo, yhi] = stored.yRange;
-      const list = analysis.newPts.map((z) => {
-        const predicted = out.values[z.idx] ?? Number.NaN;
-        const outX = z.out;
-        const outY = Number.isFinite(predicted) && (predicted < ylo || predicted > yhi);
-        return { idx: z.idx, predicted, outX, outY, priority: z.novelty + (outY ? 1.5 : 0) };
-      }).filter((r) => r.outX || r.outY).sort((a, b) => b.priority - a.priority);
-      setResend(list);
-    })().catch(() => setResend(null));
+      if (!analysis || !batch || !stored || stored.nFeatures !== batch.p) return;
+      const out = await predictWithModel(stored.model, batch.X, batch.n, batch.p, { sampleIds: batch.sampleIds });
+      if (cancelled || request !== predictionRequest.current) return;
+      const items = maintenanceResend(points, batch.sampleIds, out, stored.yRange);
+      setResendResult({ batch, model: stored, analysis, items });
+    })().catch((reason) => {
+      if (!cancelled && request === predictionRequest.current) { setResendResult(null); setNote(errorMessage(reason)); }
+    });
     return () => { cancelled = true; };
-  }, [analysis, batch, stored]);
+  }, [analysis, batch, points, stored]);
 
   function simulate() {
     if (!cal) return;
-    setBatch(makeDriftBatch(cal.p, 24));
-    setNote(tr('Lot simulé : 24 spectres de routine (nouveau site partiel).', 'Simulated batch: 24 routine spectra (partial new site).'));
+    predictionRequest.current++; setResendResult(null);
+    setExternal(false); upload.reset();
+    const matrix = makeDriftBatch(cal.p, 24);
+    setSimulated({ ...matrix, record: null, projection: null, sampleIds: Array.from({ length: matrix.n }, (_, i) => `simulated:${i + 1}`) });
+    setNote('Simulated batch: 24 routine spectra (partial new site). Sample labels are synthetic.');
   }
-  async function onFiles(files: File[]) {
-    if (!cal || files.length === 0) return;
-    try {
-      const a = analyzeFiles(await readRawFiles(files));
-      if (!spectra) return;
-      const assembled = assembleDataset('maintenance', a, a.leading);
-      const p = cal.p;
-      const n = assembled.spectra.samples.length;
-      const X = new Float64Array(n * p);
-      assembled.spectra.samples.forEach((sample, i) => {
-        const values = resampleTo(meanSpectrum(sample), assembled.spectra.axis, spectra.axis, assembled.spectra.axisUnit, spectra.axisUnit);
-        X.set(values, i * p);
-      });
-      setBatch({ X, n, p });
-      setNote(tr(`${files[0]?.name} · ${n} spectres ajoutés au suivi.`, `${files[0]?.name} · ${n} spectra added to monitoring.`));
-    } catch (e) {
-      setNote(tr('CSV illisible : ', 'Unreadable CSV: ') + (e instanceof Error ? e.message : ''));
-    }
+  function onFiles(files: File[]) {
+    if (!files.length) return;
+    setExternal(true); setSimulated(null);
+    return upload.onFiles(files);
   }
 
-  // control / enrichment worklist = the out-of-domain new samples (golden rule → verify)
-  const worklist: WorklistItemInput[] = useMemo(() => {
-    if (!analysis) return [];
-    return analysis.newPts.filter((z) => z.out)
-      .sort((a, b) => b.novelty - a.novelty)
-      .map((z, i) => ({
-        sampleId: `N-${String(1000 + z.idx)}`,
-        reason: z.novelty > analysis.threshold * 1.6 ? 'rare_type' : 'boundary',
-        decisionColor: 'out_of_domain',
-        rank: i + 1,
-      }));
-  }, [analysis]);
+  const worklist = useMemo(() => analysis ? maintenanceWorklist(points, analysis.threshold) : [], [analysis, points]);
   const summary = summarizeWorklist(worklist, 'remeasure', lang);
 
   return (
@@ -121,14 +161,21 @@ export function Maintenance({ projectId }: { projectId: string }) {
       </p>
 
       {/* add spectra */}
-      <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
-        <Dropzone onFiles={onFiles} compact accept=".csv,.txt,.tsv"
+      <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-center" data-testid="quali-maintenance-import">
+        <Dropzone onFiles={onFiles} multiple compact accept=".csv,.txt,.tsv" privacy error={upload.error || null}
           title={tr('Déposez un nouveau lot de spectres', 'Drop a new batch of spectra')}
           hint={<>{tr('ou ', 'or ')}<span className="font-medium text-primary">{tr('parcourir', 'browse')}</span>{tr(' — spectres de routine à surveiller', ' — routine spectra to monitor')}</>} />
         <button className="btn-outline h-fit" onClick={simulate} disabled={!cal}>
           <RefreshCw size={14} /> {tr('Simuler un nouveau lot', 'Simulate a batch')}
         </button>
       </div>
+      {external && <div className="mb-4">
+        <ImportBindings record={upload.record} onRemove={upload.removeFile} />
+        {upload.notice && <p className="text-xs" role="status">{upload.notice}</p>}
+        {(upload.record.files.length > 0 || upload.readingFiles) && <DatasetConfig record={upload.record} onChange={upload.updateRecord}
+          readingFiles={upload.readingFiles} projection={projection} />}
+        {prepared.error && <p role="alert">{prepared.error}</p>}
+      </div>}
       {note && <p className="mb-4 -mt-3 text-xs text-muted-foreground">{note}</p>}
 
       {!analysis && (
@@ -184,7 +231,7 @@ export function Maintenance({ projectId }: { projectId: string }) {
                 <Explain content={EXPLAIN.maintenanceModelSpace} />
                 <span className="text-xs font-normal text-muted-foreground">{tr('modèle', 'model')} : {stored.pipelineName}</span>
                 <button className="btn-outline ml-auto" onClick={() => downloadText(`${slug(project?.name ?? 'projet')}-renvoi-hplc.csv`, toCsv(
-                  resend.map((r, i) => ({ rank: i + 1, sample_id: `N-${String(1000 + r.idx)}`, predicted: Number.isFinite(r.predicted) ? r.predicted.toFixed(3) : '', out_x: r.outX ? 'yes' : '', out_y: r.outY ? 'yes' : '' })),
+                  resendExportRows(resend),
                   ['rank', 'sample_id', 'predicted', 'out_x', 'out_y']))}>
                   {tr('Exporter CSV', 'Export CSV')}
                 </button>
@@ -199,21 +246,7 @@ export function Maintenance({ projectId }: { projectId: string }) {
                       <th className="px-3 py-2">{tr('Pourquoi le renvoyer', 'Why re-send')}</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {resend.slice(0, 30).map((r, i) => (
-                      <tr key={r.idx} className="border-t border-border/60">
-                        <td className="px-4 py-1.5 text-muted-foreground">{i + 1}</td>
-                        <td className="px-3 py-1.5 font-mono text-xs">N-{1000 + r.idx}</td>
-                        <td className="px-3 py-1.5 text-right tabular-nums">{Number.isFinite(r.predicted) ? r.predicted.toFixed(2) : '—'}</td>
-                        <td className="px-3 py-1.5">
-                          <span className="flex flex-wrap gap-1.5">
-                            {r.outX && <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">{tr('spectre hors-domaine (X)', 'spectrum out-of-domain (X)')}</span>}
-                            {r.outY && <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[11px] font-medium text-warning">{tr('prédit hors-gamme (Y)', 'predicted out-of-range (Y)')}</span>}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
+                  <MaintenanceResendBody resend={resend} tr={tr} />
                 </table>
               </div>
               <p className="px-4 py-2 text-xs text-muted-foreground">
@@ -228,11 +261,11 @@ export function Maintenance({ projectId }: { projectId: string }) {
 
           {/* control / enrichment worklist */}
           {worklist.length > 0 && (
-            <div className="mt-4 card p-2">
+            <div className="mt-4 card p-2" data-testid="maintenance-control-worklist">
               <div className="flex items-center justify-between px-2 py-2 text-sm font-medium">
                 {tr('Lot de contrôle recommandé (échantillons dérivés à mesurer)', 'Recommended control batch (drifted samples to measure)')}
                 <button className="btn-outline" onClick={() => downloadText(`${slug(project?.name ?? 'projet')}-controle.csv`, toCsv(
-                  worklist.map((b) => ({ rank: b.rank ?? '', sample_id: b.sampleId, reason: b.reason ?? '', safety: resolveSafety(b) })),
+                  controlExportRows(worklist),
                   ['rank', 'sample_id', 'reason', 'safety']))}>
                   {tr('Exporter CSV', 'Export CSV')}
                 </button>
@@ -255,6 +288,24 @@ export function Maintenance({ projectId }: { projectId: string }) {
       )}
     </div>
   );
+}
+
+export function MaintenanceResendBody({ resend, tr }: { resend: ResendEntry[]; tr: (fr: string, en: string) => string }) {
+  return (<tbody>
+    {resend.slice(0, 30).map((r, i) => (
+      <tr key={r.idx} className="border-t border-border/60">
+        <td className="px-4 py-1.5 text-muted-foreground">{i + 1}</td>
+        <td className="px-3 py-1.5 font-mono text-xs">{r.sampleId}</td>
+        <td className="px-3 py-1.5 text-right tabular-nums">{Number.isFinite(r.predicted) ? r.predicted.toFixed(2) : '—'}</td>
+        <td className="px-3 py-1.5">
+          <span className="flex flex-wrap gap-1.5">
+            {r.outX && <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">{tr('spectre hors-domaine (X)', 'spectrum out-of-domain (X)')}</span>}
+            {r.outY && <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[11px] font-medium text-warning">{tr('prédit hors-gamme (Y)', 'predicted out-of-range (Y)')}</span>}
+          </span>
+        </td>
+      </tr>
+    ))}
+  </tbody>);
 }
 
 function Recommendation({ verdict, share, tr }: { verdict: DriftVerdict; share: number; tr: (fr: string, en: string) => string }) {

@@ -1,30 +1,21 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import type { Project } from '@/domain/model';
 import { newId, nowIso } from '@/lib/ids';
-import { emptyImport, errorMessage, invalidateImport, projectForLab, readImportFiles, replaceBindings, type RetainedImport } from '@/lib/ioImport';
+import { projectForLab } from '@/lib/ioImport';
 import { useLab } from '@/store/store';
-import { DatasetConfig } from '@/ui/DatasetConfig';
+import { DatasetConfig, ImportBindings, useDatasetImport } from '@/ui/DatasetConfig';
 import { Dropzone } from '@/ui/Dropzone';
 
-// Setup import/preview only. Other product ingestion routes retain their legacy adapter.
+// Project creation uses the same retained IO review as routine imports.
 export function Setup({ onCancel, onCreated }: { onCancel: () => void; onCreated: (projectId: string) => void }) {
   const { state, dispatch } = useLab();
   const [id] = useState(() => state.setupImportDraft?.projectId ?? newId('p'));
-  const [record, setRecord] = useState<RetainedImport>(() => {
-    const saved = state.setupImportDraft?.record;
-    // A restored result must undergo a fresh owner cycle before later Create eligibility.
-    return saved ? { ...saved, revision: saved.revision + 1, status: saved.files.length ? 'pending' : 'idle', assembled: null, validationSucceeded: false } : emptyImport();
+  const [name, setName] = useState(() => state.setupImportDraft?.name ?? '');
+  const upload = useDatasetImport(state.setupImportDraft?.record, (next) => {
+    dispatch({ kind: 'set_setup_import_draft', draft: { projectId: id, record: next, name } });
   });
-  const current = useRef(record);
-  current.current = record;
-  const active = useRef(true);
-  const fileRequest = useRef(0);
-  const fileQueue = useRef(Promise.resolve());
-  const pendingReads = useRef(0);
-  const [readingFiles, setReadingFiles] = useState(false);
-  useEffect(() => { active.current = true; return () => { active.current = false; fileRequest.current++; }; }, []);
-  const [name, setName] = useState('');
+  const { record, current, readingFiles, pendingReads, fileReadFailed, error, setError, notice, updateRecord, onFiles } = upload;
   const [analyte, setAnalyte] = useState('');
   const [unit, setUnit] = useState('%');
   const [matrix, setMatrix] = useState('');
@@ -32,50 +23,12 @@ export function Setup({ onCancel, onCreated }: { onCancel: () => void; onCreated
   const [sop, setSop] = useState('SOP-v1');
   const [instrument, setInstrument] = useState('');
   const [budget, setBudget] = useState(15);
-  const [notice, setNotice] = useState('');
-  const [error, setError] = useState('');
-  const [fileReadFailed, setFileReadFailed] = useState(false);
   const projection = useMemo(() => projectForLab(record, id), [record, id]);
   const emptyEligible = !record.files.length && !record.witness && !readingFiles && pendingReads.current === 0
     && !state.setupImportDraft?.record.files.length && record.status !== 'pending' && !fileReadFailed;
 
-  function updateRecord(next: RetainedImport, expectedRevision = current.current.revision) {
-    if (!active.current || expectedRevision !== current.current.revision) return;
-    current.current = next;
-    setRecord(next);
-    dispatch({ kind: 'set_setup_import_draft', draft: { projectId: id, record: next } });
-  }
-
-  function onFiles(files: File[]) {
-    const request = fileRequest.current;
-    pendingReads.current++;
-    setReadingFiles(true);
-    setError('');
-    setFileReadFailed(false);
-    // File reads/hash completion can race an existing IO result: invalidate first.
-    updateRecord(invalidateImport(current.current));
-    // Apply batches in drop order so distinct concurrent drops accumulate and
-    // the latest same-name drop wins, independently of file read completion.
-    fileQueue.current = fileQueue.current.then(async () => {
-      try {
-        const added = await readImportFiles(files);
-        if (!active.current || request !== fileRequest.current) return;
-        const previousNames = new Set(current.current.files.map((f) => f.name));
-        const replaced = added.filter((f) => previousNames.has(f.name)).map((f) => f.name);
-        setNotice(replaced.length ? `Replaced same-name bindings: ${replaced.join(', ')}. Decisions and row confirmation were cleared.` : 'Original file bytes retained for IO review.');
-        updateRecord(replaceBindings(current.current, added));
-      } catch (reason) { if (active.current && request === fileRequest.current) { setError(errorMessage(reason)); setFileReadFailed(true); } }
-      finally {
-        pendingReads.current--;
-        if (active.current) setReadingFiles(pendingReads.current > 0);
-      }
-    });
-    return fileQueue.current;
-  }
-
   function cancel() {
-    active.current = false;
-    fileRequest.current++;
+    upload.stop();
     dispatch({ kind: 'set_setup_import_draft', draft: null });
     onCancel();
   }
@@ -94,8 +47,7 @@ export function Setup({ onCancel, onCreated }: { onCancel: () => void; onCreated
       instrumentId: instrument || null, hplcBudget: budget,
       createdAt: nowIso(), updatedAt: nowIso(), activeModelVersionId: null,
     };
-    active.current = false;
-    fileRequest.current++;
+    upload.stop();
     dispatch({ kind: 'create_project', project, samples: projected?.samples ?? [],
       ...(projected ? { spectra: projected.spectra, retainedImport: current.current } : {}) });
     onCreated(id);
@@ -105,7 +57,10 @@ export function Setup({ onCancel, onCreated }: { onCancel: () => void; onCreated
     <h1 className="mb-1 font-display text-2xl font-semibold tracking-tight">New project</h1>
     <p className="mb-6 text-sm text-muted-foreground">Describe the analytical method, then review the dataset with IO. Refused imports remain saved as a Setup draft.</p>
     <div className="space-y-4 card p-5">
-      <Field label="Project name"><input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Protein — flour" /></Field>
+      <Field label="Project name"><input className="input" value={name} onChange={(e) => {
+        setName(e.target.value);
+        dispatch({ kind: 'set_setup_import_draft', draft: { projectId: id, record: current.current, name: e.target.value } });
+      }} placeholder="Protein — flour" /></Field>
       <Field label="What do you measure?"><input className="input" data-testid="io-analyte" value={analyte} onChange={(e) => setAnalyte(e.target.value)} placeholder="Protein" /></Field>
       {projection.ok && projection.targetName !== null && <p className="text-xs">Analytical target from IO: {projection.targetName}. The analyte description does not select data.</p>}
       <Field label="Unit"><input className="input" value={unit} onChange={(e) => setUnit(e.target.value)} /></Field>
@@ -123,13 +78,7 @@ export function Setup({ onCancel, onCreated }: { onCancel: () => void; onCreated
         <Dropzone onFiles={onFiles} multiple accept=".csv,.txt,.tsv" error={error || null} privacy
           title="Drop X (spectra), y (target) and metadata" hint="Drop files together or in successive batches. A same-name file replaces its previous binding." />
         {notice && <p className="mt-2 text-xs" role="status" data-testid="io-binding-notice">{notice}</p>}
-        <ul className="mt-2 space-y-1 text-xs" data-testid="io-input-bindings">
-          {record.files.map((file) => <li key={file.bindingId}>
-            {file.name} · {file.bytes.byteLength} original bytes
-            <button type="button" className="ml-2 underline" aria-label={`Remove ${file.name}`}
-              onClick={() => { fileRequest.current++; updateRecord(replaceBindings(current.current, [], file.name)); }}>Remove</button>
-          </li>)}
-        </ul>
+        <ImportBindings record={record} onRemove={upload.removeFile} />
         {(record.files.length > 0 || readingFiles) && <DatasetConfig record={record} onChange={updateRecord} readingFiles={readingFiles} projection={projection} />}
       </div>
     </div>

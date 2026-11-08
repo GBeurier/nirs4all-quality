@@ -1,12 +1,11 @@
 import { Plus } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Area, Bar, BarChart, CartesianGrid, Cell, ComposedChart, Line, ReferenceLine,
   ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis,
 } from 'recharts';
 
 import { meanSpectrum, type SpectraDataset } from '@/domain/spectra';
-import { parseReferenceColumn } from '@/lib/dataset';
 import { histogram } from '@/lib/histogram';
 import { computePca } from '@/lib/pca';
 import { PREVIEW_PP } from '@/lib/preview';
@@ -16,6 +15,7 @@ import { downloadText, slug, toCsv } from '@/lib/export';
 import { useTr } from '@/i18n';
 import { useLab, useProjectSpectra } from '@/store/store';
 import { Explain } from '@/ui/Explain';
+import { ReferenceImport } from '@/ui/ReferenceImport';
 import { EXPLAIN } from '@/ui/explanations';
 
 const CHART = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)'];
@@ -46,23 +46,8 @@ export function DatasetExplorer({ projectId }: { projectId: string }) {
   const preview = usePreviewSpectra(projectId, spectra, previewPp);
   const displaySpectra = preview.spectra;
   const [tab, setTab] = useState<Tab>('spectra');
-  const yInputRef = useRef<HTMLInputElement>(null);
   const [yMsg, setYMsg] = useState('');
-
-  async function onAddY(file: File | undefined) {
-    if (!file) return;
-    try {
-      const values = parseReferenceColumn(await file.text());
-      // align to the samples by order (a value per row of X, missing cells = null)
-      const aligned = samples.map((_, i) => values[i] ?? null);
-      const added = aligned.filter((v): v is number => typeof v === 'number' && Number.isFinite(v)).length;
-      if (added === 0) { setYMsg(tr('Aucune valeur numérique trouvée.', 'No numeric value found.')); return; }
-      dispatch({ kind: 'set_references', projectId, values: aligned });
-      setYMsg(tr(`${added} référence(s) ajoutée(s) — prêtes pour la calibration.`, `${added} reference(s) added — ready for calibration.`));
-    } catch (e) {
-      setYMsg(tr('Fichier illisible : ', 'Unreadable file: ') + (e instanceof Error ? e.message : ''));
-    }
-  }
+  const [addYOpen, setAddYOpen] = useState(false);
 
   const yBySample = useMemo(() => {
     const m: Record<string, number | undefined> = {};
@@ -85,14 +70,12 @@ export function DatasetExplorer({ projectId }: { projectId: string }) {
         <div className="ml-auto flex items-center gap-2">
           <button
             className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-primary hover:bg-primary/5"
-            title={tr('Ajouter les valeurs de référence y (une par échantillon, cellules vides = manquant)', 'Add reference values y (one per sample, empty cells = missing)')}
-            onClick={() => yInputRef.current?.click()}
+            title="Add reference values y (sample-ID column + value column; empty cells keep the existing reference)"
+            aria-expanded={addYOpen}
+            onClick={() => setAddYOpen((open) => !open)}
           >
             <Plus size={13} /> {tr('Ajouter y', 'Add y')}
           </button>
-          <Explain content={EXPLAIN.addY} />
-          <input ref={yInputRef} type="file" accept=".csv,.txt,.tsv" className="hidden"
-            onChange={(e) => { void onAddY(e.target.files?.[0]); e.target.value = ''; }} />
           <button
             className="rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-muted"
             onClick={() => downloadText('lims-samples.csv', toCsv(
@@ -107,6 +90,10 @@ export function DatasetExplorer({ projectId }: { projectId: string }) {
           </button>
         </div>
       </div>
+      {addYOpen && (
+        <ReferenceImport key={projectId} projectId={projectId} samples={samples}
+          onClose={() => setAddYOpen(false)} onDone={(message) => setYMsg(message)} />
+      )}
       {yMsg && <p className="mb-2 text-xs text-success">{yMsg}</p>}
       <p className="mb-4 text-sm text-muted-foreground">
         {tr(

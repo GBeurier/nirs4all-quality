@@ -5,10 +5,88 @@ import 'nirs4all-ui/assets/datasetBuilder.css';
 import 'nirs4all-ui/browser/styles.css';
 
 import {
-  confirmProposal, confirmTargetRows, errorMessage, invalidateImport, objectFields,
+  confirmProposal, confirmTargetRows, emptyImport, errorMessage, invalidateImport, objectFields, readImportFiles, replaceBindings,
   previewRows, previewView, proposalViews, startImportWorker, undoProposal,
   type ImportWorkerRequest, type ImportWorkerResponse, type LabProjection, type MappingContext, type RetainedImport,
 } from '@/lib/ioImport';
+
+/** Shared byte-read queue from Setup; IO still owns all parsing and assembly. */
+export function useDatasetImport(saved?: RetainedImport, onRecord?: (record: RetainedImport) => void) {
+  const [record, setRecord] = useState<RetainedImport>(() => saved
+    ? { ...saved, revision: saved.revision + 1, status: saved.files.length ? 'pending' : 'idle', assembled: null, validationSucceeded: false }
+    : emptyImport());
+  const current = useRef(record);
+  const active = useRef(true);
+  const epoch = useRef(0);
+  const queue = useRef(Promise.resolve());
+  const pendingReads = useRef(0);
+  const notify = useRef(onRecord);
+  notify.current = onRecord;
+  const [readingFiles, setReadingFiles] = useState(false);
+  const [fileReadFailed, setFileReadFailed] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  useEffect(() => { active.current = true; return () => { active.current = false; epoch.current++; }; }, []);
+
+  function updateRecord(next: RetainedImport, expectedRevision = current.current.revision) {
+    if (!active.current || expectedRevision !== current.current.revision) return;
+    current.current = next;
+    setRecord(next);
+    notify.current?.(next);
+  }
+  function cancelReads() {
+    epoch.current++;
+    queue.current = Promise.resolve();
+    pendingReads.current = 0;
+    setReadingFiles(false);
+  }
+  function onFiles(files: File[]) {
+    if (!files.length) return Promise.resolve();
+    const request = epoch.current;
+    pendingReads.current++;
+    setReadingFiles(true); setError(''); setFileReadFailed(false);
+    updateRecord(invalidateImport(current.current));
+    queue.current = queue.current.then(async () => {
+      if (!active.current || request !== epoch.current) return;
+      try {
+        const added = await readImportFiles(files);
+        if (!active.current || request !== epoch.current) return;
+        const previous = new Set(current.current.files.map((f) => f.name));
+        const replaced = added.filter((f) => previous.has(f.name)).map((f) => f.name);
+        setNotice(replaced.length ? `Replaced same-name bindings: ${replaced.join(', ')}. Decisions and row confirmation were cleared.` : 'Original file bytes retained for IO review.');
+        updateRecord(replaceBindings(current.current, added));
+      } catch (reason) {
+        if (active.current && request === epoch.current) { setError(errorMessage(reason)); setFileReadFailed(true); }
+      } finally {
+        if (active.current && request === epoch.current) {
+          pendingReads.current--;
+          setReadingFiles(pendingReads.current > 0);
+        }
+      }
+    });
+    return queue.current;
+  }
+  function removeFile(name: string) {
+    cancelReads(); setError(''); setFileReadFailed(false);
+    updateRecord(replaceBindings(current.current, [], name));
+  }
+  function reset() {
+    cancelReads(); setError(''); setNotice(''); setFileReadFailed(false);
+    updateRecord({ ...emptyImport(), revision: current.current.revision + 1 });
+  }
+  function stop() { active.current = false; epoch.current++; }
+  return { record, current, readingFiles, pendingReads, fileReadFailed, error, setError, notice,
+    updateRecord, onFiles, removeFile, reset, stop };
+}
+
+export function ImportBindings({ record, onRemove }: { record: RetainedImport; onRemove: (name: string) => void }) {
+  return <ul className="mt-2 space-y-1 text-xs" data-testid="io-input-bindings">
+    {record.files.map((file) => <li key={file.bindingId}>
+      {file.name} · {file.bytes.byteLength} original bytes
+      <button type="button" className="ml-2 underline" aria-label={`Remove ${file.name}`} onClick={() => onRemove(file.name)}>Remove</button>
+    </li>)}
+  </ul>;
+}
 
 export function DatasetConfig({ record, onChange, readingFiles, projection }: {
   record: RetainedImport;

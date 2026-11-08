@@ -274,6 +274,33 @@ assert.equal(incompleteProjection.ok, true, JSON.stringify(incompleteProjection)
 assert.ok(Number.isNaN(incompleteProjection.spectra.samples[9].reps[0].values[1]));
 assert.equal(incompleteRecord.assembled.blocks.train.x[0].validity[28], false);
 
+// Repeated IDs require the owner's explicit repetition relationship.
+const undeclaredRepetitions = structuredClone(ready);
+undeclaredRepetitions.assembled.repetition = null;
+assert.deepEqual(host.projectForLab(undeclaredRepetitions, 'undeclared'), {
+  ok: false, reasons: ['Repeated sample IDs require an owner-declared repetition relationship.'],
+});
+const declaredRepetitions = host.projectForLab(ready, 'declared');
+assert.equal(declaredRepetitions.ok, true);
+assert.deepEqual(declaredRepetitions.spectra.samples.map((sample) => sample.reps.length), [4, 4, 4]);
+
+// Small feature width makes this a cap regression, not a large-corpus workload.
+const uncappedFiles = [{ name: 'uncapped.csv', text: ['sample_id,1000,1100,1200',
+  ...Array.from({ length: 1503 }, (_, row) => `owner-${row},1,2,3`)].join('\n') }];
+const uncappedSpec = {
+  schema_version: 1, task_type: 'auto', sample_index: { by: 'id', key: 'sample_id' },
+  params: { delimiter: ',', has_header: true, na: { policy: 'ignore' } },
+  sources: [{ id: 'observations', input: 'uncapped.csv', role: 'mixed', params: { header_unit: 'nm' },
+    columns: [{ role: 'features', select: ['1000', '1100', '1200'] }, { role: 'metadata', select: ['sample_id'] }] }],
+};
+const uncappedRecord = host.runOwnerCycle(io, await inputFor(uncappedSpec, uncappedFiles), stage);
+const uncapped = host.projectForLab(uncappedRecord, 'uncapped');
+assert.equal(uncapped.ok, true, JSON.stringify(uncapped));
+assert.equal(uncappedRecord.assembled.blocks.train.n_samples, 1503);
+assert.equal(uncapped.samples.length, 1503);
+assert.equal(uncapped.samples.at(-1).id, 'owner-1502');
+assert.equal(uncappedRecord.files[0].bytes.length, new TextEncoder().encode(uncappedFiles[0].text).length);
+
 const appRoot = fileURLToPath(new URL('..', import.meta.url));
 // Use the actual app config/staged runtime, with no Core/Methods substitution.
 const server = await createServer({ root: appRoot, configFile: resolve(appRoot, 'vite.config.ts'),
@@ -295,7 +322,7 @@ try {
   const { createEngine } = await server.ssrLoadModule('/src/engine/index.ts');
   const { runVariant, CALIB_VARIANTS } = await server.ssrLoadModule('/src/engine/variants.ts');
   const engine = await createEngine();
-  assert.equal(engine.name, 'nirs4all-core-wasm', 'actual WASM engine, not a stub or mocked Core');
+  assert.equal(engine.name, 'dag-ml-methods', 'actual DAG/Methods owner engine');
   await assert.rejects(() => runVariant(labelled, CALIB_VARIANTS.find((variant) => variant.spec.kind === 'wasm_pls_screen'), engine),
     { message: 'Calibration requires finite spectra and targets.' });
   const { initializeDiagnostics, fitPcaReference } = await server.ssrLoadModule('/src/engine/nativeDiagnostics.ts');

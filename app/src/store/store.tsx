@@ -9,6 +9,7 @@ import type { Evaluation, FittedModel, Metrics, OwnerRegressionReport, RunResult
 import { newId, nowIso } from '@/lib/ids';
 import { loadState, saveState } from '@/lib/persist';
 import type { RetainedImport } from '@/lib/ioImport';
+import { applyReferenceDeltaToState, type ReferenceDelta } from '@/lib/referenceImport';
 
 /** The active fitted model for a project (produced by Calibrate, used by Predict). */
 export interface StoredModel {
@@ -59,14 +60,15 @@ export interface LabState {
   calibByProject: Record<string, CalibrationState>;
   audit: AuditEntry[];
   importsByProject: Record<string, RetainedImport>;
-  setupImportDraft: { projectId: string; record: RetainedImport } | null;
+  /** `name` seeds the editable quick-drop project name; unrelated fields are untouched. */
+  setupImportDraft: { projectId: string; record: RetainedImport; name?: string } | null;
 }
 
 export type LabAction =
   | { kind: 'create_project'; project: Project; samples: Sample[]; spectra?: SpectraDataset; retainedImport?: RetainedImport }
   | { kind: 'set_setup_import_draft'; draft: LabState['setupImportDraft'] }
   | { kind: 'set_sample_status'; projectId: string; sampleIds: string[]; status: SampleStatus; justification?: string }
-  | { kind: 'set_references'; projectId: string; values: (number | null)[] }
+  | { kind: 'apply_reference_delta'; projectId: string; delta: ReferenceDelta }
   | { kind: 'set_crop'; projectId: string; from: number | null; to: number | null }
   | { kind: 'set_preview_pp'; projectId: string; pp: string }
   | { kind: 'set_rep_mode'; projectId: string; mode: 'mean' | 'raw' }
@@ -131,26 +133,11 @@ function reducer(state: LabState, action: LabAction): LabState {
         ],
       };
     }
-    case 'set_references': {
-      // add/update references a posteriori (aligned to samples by order); a finite
-      // value labels the sample (→ integrated), an empty/null one is left untouched.
-      const current = state.samplesByProject[action.projectId] ?? [];
-      let added = 0;
-      const next = current.map((s, i) => {
-        const v = action.values[i];
-        if (typeof v === 'number' && Number.isFinite(v)) {
-          added += 1;
-          return { ...s, reference: { value: v, status: 'validated' as const }, status: 'integrated' as const };
-        }
-        return s;
-      });
-      if (added === 0) return state;
-      return {
-        ...state,
-        samplesByProject: { ...state.samplesByProject, [action.projectId]: next },
-        audit: [...state.audit, auditEntry(state, action.projectId, 'reference_imported', { count: added })],
-      };
-    }
+    case 'apply_reference_delta':
+      // Owner-keyed reference delta (exact Sample.id). The historical retained import is provenance
+      // and is left untouched; model/calibration are dropped only when a value actually changed.
+      return applyReferenceDeltaToState(state, action.projectId, action.delta,
+        (detail) => auditEntry(state, action.projectId, 'reference_imported', detail));
     case 'set_crop': {
       // changing the spectral window changes the feature count → any deployed model /
       // calibration is now stale; drop them so Calibrate/Predict rebuild on the crop.

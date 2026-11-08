@@ -3,16 +3,19 @@ import {
   type DecisionColor, type DecisionInput, type DecisionView,
 } from 'nirs4all-ui/lab';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Bar, BarChart, CartesianGrid, Cell, ReferenceLine,
   ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis,
 } from 'recharts';
 
 import { meanSpectrum, type SampleSpectra } from '@/domain/spectra';
+import type { Sample } from '@/domain/model';
+import type { PredictionContext } from '@/engine/port';
 import { evaluationLabel, type OwnerRegressionReport } from '@/engine';
 import { predictWithModel } from '@/engine/predict';
-import { analyzeFiles, assembleDataset, readRawFiles } from '@/lib/dataset';
+import { projectForLab, type LabProjection } from '@/lib/ioImport';
+import { newId } from '@/lib/ids';
 import { resampleTo } from '@/lib/drift';
 import { downloadText, slug, toCsv } from '@/lib/export';
 import { histogram } from '@/lib/histogram';
@@ -22,6 +25,7 @@ import { useLang, useTr } from '@/i18n';
 import { useLab, useProjectSpectra, type StoredModel } from '@/store/store';
 import { decisionIcons } from '@/ui/icons';
 import { Dropzone } from '@/ui/Dropzone';
+import { DatasetConfig, ImportBindings, useDatasetImport } from '@/ui/DatasetConfig';
 import { Explain } from '@/ui/Explain';
 import { EXPLAIN } from '@/ui/explanations';
 import { SharedAssessmentPanel } from '@/ui/SharedAssessmentPanel';
@@ -39,10 +43,31 @@ const f2 = (v: number) => (Number.isFinite(v) ? v.toFixed(2) : '—');
 
 interface Pred { sampleId: string; predicted: number; input: DecisionInput; view: DecisionView; interval: string; uncertainty: RoutinePrediction['uncertainty']; alerts: PredictionAlerts; yNovelty: number; }
 
-// §3 Écran 5 — predict & decide. REAL predictions: the project's routine
-// (un-referenced) spectra are run through the deployed model (from Calibrate, or
-// a fast one auto-built here), then each prediction gets a reliability feu from
-// its real applicability-domain signals (§4bis).
+/** Prepare the actual prediction request; references belong to this input only. */
+export function predictionInput(routine: SampleSpectra[], p: number, projectSamples: Sample[], projectTarget: string | null,
+  external?: Extract<LabProjection, { ok: true }>) {
+  const references = external ? external.samples : projectSamples;
+  const targetName = external ? external.targetName : projectTarget;
+  const X = new Float64Array(routine.length * p);
+  routine.forEach((sample, row) => {
+    if (!sample.reps.length || sample.reps.some((rep) => rep.values.length !== p || !rep.values.every(Number.isFinite))) {
+      throw new Error('Prediction requires complete finite spectra with the fitted feature width; missing values are not imputed.');
+    }
+    const values = meanSpectrum(sample);
+    if (values.length !== p || !values.every(Number.isFinite)) throw new Error('The sample mean is unavailable for prediction.');
+    X.set(values, row * p);
+  });
+  const known = new Map(references.filter((sample) => sample.reference?.value != null).map((sample) => [sample.id, sample.reference!.value!]));
+  const context: PredictionContext = {
+    sampleIds: routine.map((sample) => sample.sampleId),
+    ...(targetName === null ? {} : { targetName }),
+    references: targetName === null ? [] : routine.flatMap((sample) => known.has(sample.sampleId)
+      ? [{ sampleId: sample.sampleId, actual: known.get(sample.sampleId)! }] : []),
+  };
+  return { X, n: routine.length, p, context };
+}
+
+// Routine prediction uses an explicitly activated model and a separate calibration population.
 export function Predict({ projectId }: { projectId: string }) {
   const { state, dispatch } = useLab();
   const [assessment, setAssessment] = useState<SharedAssessment | null>(null);
@@ -55,8 +80,9 @@ export function Predict({ projectId }: { projectId: string }) {
   const unit = project?.method.unit ?? '';
 
 
-  const [loaded, setLoaded] = useState<SampleSpectra[] | null>(null);
-  const [loadedName, setLoadedName] = useState('');
+  const [external, setExternal] = useState(false);
+  const [handle] = useState(() => newId('routine'));
+  const predictionRequest = useRef(0);
   const [rel, setRel] = useState<ReliabilityModel | null>(null);
   const [predictionReport, setPredictionReport] = useState<OwnerRegressionReport | null>(null);
   const [unscoredPredictionIds, setUnscoredPredictionIds] = useState<string[]>([]);
@@ -64,6 +90,17 @@ export function Predict({ projectId }: { projectId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [importMsg, setImportMsg] = useState<string | null>(null);
   const [importError, setImportError] = useState(false);
+
+  function clearResults() {
+    predictionRequest.current++;
+    setRel(null); setUsedModel(null); setPredictionReport(null); setUnscoredPredictionIds([]); setError(null);
+  }
+  const upload = useDatasetImport(undefined, clearResults);
+  const projection = useMemo(() => projectForLab(upload.record, handle), [upload.record, handle]);
+  const loaded = useMemo(() => external && projection.ok && !upload.readingFiles && !upload.fileReadFailed
+    ? { record: upload.record, projection } : null,
+  [external, projection, upload.record, upload.readingFiles, upload.fileReadFailed]);
+  const loadedName = upload.record.files.map((file) => file.name).join(', ');
 
   async function onImportModel(file: File | undefined) {
     if (!file) return;
@@ -74,36 +111,30 @@ export function Predict({ projectId }: { projectId: string }) {
     setImportMsg(tr(`Modèle « ${res.model.pipelineName} » chargé (${res.model.nFeatures} variables).`, `Model "${res.model.pipelineName}" loaded (${res.model.nFeatures} features).`));
   }
 
-  // routine batch = freshly LOADED spectra if any, else the project's un-referenced samples
   const projectRoutineCount = samples.filter((s) => !s.reference && s.status !== 'excluded').length;
-  const routineCount = loaded ? loaded.length : projectRoutineCount;
+  const routineCount = external ? (loaded?.projection.spectra.samples.length ?? 0) : projectRoutineCount;
 
-  async function onLoadFiles(files: File[]) {
-    if (!spectra || files.length === 0) return;
-    try {
-      const a = analyzeFiles(await readRawFiles(files));
-      const asm = assembleDataset('routine', a, a.leading);
-      const routine: SampleSpectra[] = asm.spectra.samples.map((s) => ({
-        sampleId: s.sampleId,
-        reps: s.reps.map((r) => ({ repId: r.repId, values: resampleTo(r.values, asm.spectra.axis, spectra.axis, asm.spectra.axisUnit, spectra.axisUnit) })),
-      }));
-      setLoaded(routine);
-      setLoadedName(tr(`${files[0]?.name} · ${routine.length} échantillons chargés`, `${files[0]?.name} · ${routine.length} samples loaded`));
-    } catch (e) {
-      setError(tr('Fichier illisible : ', 'Unreadable file: ') + (e instanceof Error ? e.message : ''));
-    }
+  function onLoadFiles(files: File[]) {
+    if (!files.length) return;
+    setExternal(true);
+    return upload.onFiles(files);
   }
 
   useEffect(() => {
     let cancelled = false;
+    const request = ++predictionRequest.current;
     (async () => {
-      setError(null); setPredictionReport(null); setUnscoredPredictionIds([]);
+      setError(null); setRel(null); setUsedModel(null); setPredictionReport(null); setUnscoredPredictionIds([]);
+      if (external && !loaded) return;
       if (assessment) { setRel(null); return; }
       if (!spectra || spectra.axis.length === 0) { setRel(null); return; }
       const refIds = new Set(samples.filter((s) => s.reference?.value != null).map((s) => s.id));
       const routineIds = new Set(samples.filter((s) => !s.reference && s.status !== 'excluded').map((s) => s.id));
       const cal = spectra.samples.filter((s) => refIds.has(s.sampleId));
-      const routine = loaded ?? spectra.samples.filter((s) => routineIds.has(s.sampleId));
+      const routine: SampleSpectra[] = loaded ? loaded.projection.spectra.samples.map((sample) => ({
+        ...sample, reps: sample.reps.map((rep) => ({ ...rep, values: resampleTo(rep.values,
+          loaded.projection.spectra.axis, spectra.axis, loaded.projection.spectra.axisUnit, spectra.axisUnit) })),
+      })) : spectra.samples.filter((s) => routineIds.has(s.sampleId));
       if (routine.length === 0) { setRel({ preds: [], ev: () => '0.0' }); setUsedModel(stored ?? null); return; }
 
       // Use only an explicitly activated or imported model.
@@ -113,17 +144,13 @@ export function Predict({ projectId }: { projectId: string }) {
       // predict on the routine spectra with the deployed model
       const p = spectra.axis.length;
       if (sm.nFeatures !== p) { setError(tr('Le modèle ne correspond pas à ces spectres.', 'The model does not match these spectra.')); return; }
-      const n = routine.length;
-      const X = new Float64Array(n * p);
-      routine.forEach((s, i) => { const m = meanSpectrum(s); for (let j = 0; j < p; j++) X[i * p + j] = m[j] ?? 0; });
-      const refVal = new Map(samples.filter((s) => s.reference?.value != null).map((s) => [s.id, s.reference!.value!]));
-      const out = await predictWithModel(sm.model, X, n, p, {
-        sampleIds: routine.map(s => s.sampleId), targetName: project?.method.target || 'y',
-        references: routine.flatMap(s => refVal.has(s.sampleId) ? [{ sampleId: s.sampleId, actual: refVal.get(s.sampleId)! }] : []),
-      });
-      if (cancelled) return;
+      const input = predictionInput(routine, p, samples, project?.method.target || null, loaded?.projection);
+      const out = await predictWithModel(sm.model, input.X, input.n, input.p, input.context);
+      if (cancelled || request !== predictionRequest.current) return;
       setPredictionReport(out.report ?? null);
       setUnscoredPredictionIds(out.unscoredSampleIds ?? []);
+      // Applicability keeps its independent project-calibration reference.
+      const refVal = new Map(samples.filter((s) => s.reference?.value != null).map((s) => [s.id, s.reference!.value!]));
       const calY = cal.map((s) => refVal.get(s.sampleId) ?? Number.NaN);
       const r = buildRoutinePredictions({
         cal, routine, predicted: Array.from(out.values), axisLen: p,
@@ -131,12 +158,12 @@ export function Predict({ projectId }: { projectId: string }) {
       });
       setUsedModel(sm);
       setRel(r);
-    })().catch((e) => { if (!cancelled) { setRel(null); setUsedModel(null); setError(e instanceof Error ? e.message : String(e)); } });
+    })().catch((e) => { if (!cancelled && request === predictionRequest.current) { setRel(null); setUsedModel(null); setError(e instanceof Error ? e.message : String(e)); } });
     return () => { cancelled = true; };
     // deps are the data inputs; tr/project/dispatch are stable enough and left
     // out on purpose to avoid re-predicting on every render
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assessment, stored, spectra, samples, projectId, loaded]);
+  }, [assessment, stored, spectra, samples, projectId, external, loaded]);
 
   const batch: Pred[] = useMemo(() => (rel?.preds ?? []).map((p) => ({
     sampleId: p.sampleId, predicted: p.predicted, input: p.input, interval: p.interval, uncertainty: p.uncertainty,
@@ -184,13 +211,19 @@ export function Predict({ projectId }: { projectId: string }) {
         )}
       </div>
       <SharedAssessmentPanel assessment={assessment} onChange={setAssessment} />
-      <div className="mb-4">
-        <Dropzone onFiles={onLoadFiles} multiple compact accept=".csv,.txt,.tsv"
+      <div className="mb-4" data-testid="quali-predict-import">
+        <Dropzone onFiles={onLoadFiles} multiple compact accept=".csv,.txt,.tsv" privacy error={upload.error || null}
           title={tr('Charger de nouveaux spectres à prédire', 'Load new spectra to predict')}
           hint={<>{tr('ou ', 'or ')}<span className="font-medium text-primary">{tr('parcourir', 'browse')}</span>{tr(' — un lot de routine ; sinon les échantillons non-référencés du projet sont prédits', ' — a routine batch; otherwise the project’s un-referenced samples are predicted')}</>} />
-        {loaded && (
+        {external && <>
+          <ImportBindings record={upload.record} onRemove={upload.removeFile} />
+          {upload.notice && <p className="text-xs" role="status">{upload.notice}</p>}
+          {(upload.record.files.length > 0 || upload.readingFiles) && <DatasetConfig record={upload.record} onChange={upload.updateRecord}
+            readingFiles={upload.readingFiles} projection={projection} />}
+        </>}
+        {external && (
           <p className="mt-1 text-xs text-muted-foreground">
-            {loadedName} · <button className="underline hover:text-foreground" onClick={() => { setLoaded(null); setLoadedName(''); }}>{tr('revenir aux échantillons du projet', 'back to project samples')}</button>
+            {loadedName} · <button className="underline hover:text-foreground" onClick={() => { setExternal(false); upload.reset(); clearResults(); }}>{tr('revenir aux échantillons du projet', 'back to project samples')}</button>
           </p>
         )}
         {importMsg && <p className={`mt-1 text-xs ${importError ? 'text-warning' : 'text-success'}`}>{importMsg}</p>}
@@ -202,6 +235,11 @@ export function Predict({ projectId }: { projectId: string }) {
 
   if (!spectra || spectra.axis.length === 0) {
     return <div className="mx-auto max-w-4xl">{header}<Empty text={tr('Aucun spectre dans ce projet.', 'No spectra in this project.')} /></div>;
+  }
+  if (external && !loaded) {
+    return <div className="mx-auto max-w-4xl">{header}<Empty text={upload.error ||
+      (upload.readingFiles || upload.record.status === 'pending' ? 'Reviewing the current external input with IO.'
+        : projection.ok ? 'Select external files or return to project samples.' : projection.reasons.join(' '))} /></div>;
   }
   if (routineCount === 0) {
     return <div className="mx-auto max-w-4xl">{header}<Empty text={tr('Aucun échantillon de routine à prédire (tous ont déjà une référence).', 'No routine samples to predict (all already have a reference).')} /></div>;

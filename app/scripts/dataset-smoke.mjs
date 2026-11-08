@@ -61,8 +61,112 @@ async function waitForState(predicate) {
   throw new Error('Expected lab state was not persisted.');
 }
 
+// Only the keyed amendment needed by these retention/NA cases is repeated here.
+// The broader Add y interaction campaign stays in the SDK-owned addy-smoke.mjs.
+async function applyKeyedReferences(text, expectedCounts) {
+  await page.getByRole('button', { name: 'EN', exact: true }).click();
+  await page.getByRole('button', { name: 'Add y', exact: true }).click();
+  const panel = page.getByRole('region', { name: 'Add reference values y', exact: true });
+  await panel.getByLabel('Reference file').setInputFiles({ name: 'later-reference.csv', mimeType: 'text/csv', buffer: Buffer.from(text) });
+  const idColumn = panel.getByLabel('Sample-ID column');
+  const headerYes = panel.getByRole('radio', { name: 'Yes', exact: true });
+  const comma = panel.getByRole('radio', { name: '","', exact: true });
+  for (;;) {
+    await idColumn.or(headerYes).or(comma).first().waitFor();
+    if (await idColumn.isVisible()) break;
+    if (await headerYes.isVisible()) await headerYes.check();
+    else await comma.check();
+  }
+  await idColumn.selectOption('sample_id');
+  await panel.getByLabel('Reference value column').selectOption('protein');
+  await panel.getByRole('button', { name: 'Preview', exact: true }).click();
+  const status = panel.getByTestId('reference-preview').getByRole('status');
+  await status.waitFor();
+  assert.match(await status.innerText(), expectedCounts);
+  await panel.getByRole('button', { name: 'Confirm and apply', exact: true }).click();
+  await panel.waitFor({ state: 'detached' });
+}
+
 try {
   await page.goto(url, { waitUntil: 'load' });
+  await page.waitForSelector('header img[alt="nirs4all"]');
+  await page.locator('input[type=file]').first().waitFor({ state: 'attached' });
+  // The quick-start route hands off to the actual Setup draft and IO worker.
+  const quickText = 'sample_id,protein,1000,1100,1200\nquick-a,2,1,2,3\nquick-b,3,2,3,4\nquick-c,4,3,5,6\nquick-d,5,4,6,9\nquick-e,6,5,10,12\nquick-f,7,6,9,8';
+  const quickFile = { name: 'Quick-start.csv', mimeType: 'text/csv', buffer: Buffer.from(quickText) };
+  const quickSpec = {
+    schema_version: 1, task_type: 'regression', sample_index: { by: 'id', key: 'sample_id' },
+    params: { delimiter: ',', has_header: true, na: { policy: 'ignore' } },
+    sources: [{ id: 'observations', input: quickFile.name, role: 'mixed', params: { header_unit: 'nm' },
+      columns: [{ role: 'features', select: ['1000', '1100', '1200'] }, { role: 'targets', select: ['protein'] },
+        { role: 'metadata', select: ['sample_id'] }] }],
+  };
+  const initialState = await waitForState((state) => Array.isArray(state.projects));
+  await page.locator('input[type=file]').first().setInputFiles(quickFile);
+  await page.getByTestId('quali-setup-import').waitFor();
+  await settled();
+  const quickDraft = await waitForPersist((saved) => saved?.record.files[0]?.name === quickFile.name);
+  assert.equal((await persistedState()).projects.length, initialState.projects.length, 'quick drop does not create a project');
+  assert.equal(await page.getByLabel('Project name', { exact: true }).inputValue(), 'Quick-start');
+  assert.deepEqual(quickDraft.record.files[0].bytes, [...quickFile.buffer]);
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await waitForPersist((saved) => saved === null);
+  assert.equal((await persistedState()).projects.length, initialState.projects.length);
+  await page.locator('input[type=file]').first().setInputFiles(quickFile);
+  await page.getByTestId('quali-setup-import').waitFor();
+  await settled();
+  await page.getByText('Review IO specification and column roles', { exact: true }).click();
+  await page.getByTestId('io-spec-json').fill(JSON.stringify(quickSpec));
+  await settled();
+  await page.getByLabel('Project name', { exact: true }).fill('Quick-start reviewed');
+  const configured = await waitForPersist((saved) => saved?.name === 'Quick-start reviewed' && saved.record.status === 'ready');
+  await page.getByTestId('io-create-project').click();
+  await page.waitForSelector('[data-step-id="explore"]');
+  const quickCreated = await waitForState((state) => Object.hasOwn(state.importsByProject, configured.projectId));
+  assert.equal(quickCreated.projects.find((project) => project.id === configured.projectId).name, 'Quick-start reviewed');
+  assert.equal(quickCreated.samplesByProject[configured.projectId].length, 6);
+
+  // Predict and Maintenance expose the same real IO review; no model fit.
+  await page.locator('[data-step-id="predict"]').click();
+  const predictZone = page.getByTestId('quali-predict-import');
+  const routineFile = { name: 'external-browser.csv', mimeType: 'text/csv',
+    buffer: Buffer.from('sample_id,protein,1000,1100,1200\nquick-a,20,1,2,3\nquick-a,20,3,4,5\nexternal-missing,,4,5,6') };
+  await predictZone.locator('input[type=file]').setInputFiles(routineFile);
+  await settled();
+  await page.getByText('Review IO specification and column roles', { exact: true }).click();
+  const routineSpec = structuredClone(quickSpec);
+  routineSpec.repetition = 'sample_id'; routineSpec.sources[0].input = routineFile.name;
+  await page.getByTestId('io-spec-json').fill(JSON.stringify(routineSpec));
+  await settled();
+  await page.getByText('2 samples · 3 spectra · target protein. No observation identity is invented.', { exact: true }).waitFor();
+  assert.ok((await page.getByTestId('io-preview-values').textContent()).includes('20'));
+  await page.getByRole('button', { name: /back to project samples|revenir aux échantillons du projet/ }).click();
+  assert.equal(await page.getByTestId('io-import-review').count(), 0);
+
+  await page.locator('[data-step-id="maintain"]').click();
+  const maintenanceZone = page.getByTestId('quali-maintenance-import');
+  const monitorFile = { name: 'monitor-browser.csv', mimeType: 'text/csv',
+    buffer: Buffer.from('sample_id,protein,1000,1100,1200\nS02,2,1000,2000,3000\nS7,7,2,3,4\nS02,2,1002,2002,3002\nS10,10,1500,2500,3500') };
+  await maintenanceZone.locator('input[type=file]').setInputFiles(monitorFile);
+  await settled();
+  await page.getByText('Review IO specification and column roles', { exact: true }).click();
+  const monitorSpec = structuredClone(routineSpec); monitorSpec.sources[0].input = monitorFile.name;
+  await page.getByTestId('io-spec-json').fill(JSON.stringify(monitorSpec));
+  await settled();
+  const control = page.getByTestId('maintenance-control-worklist');
+  await control.waitFor();
+  const controlText = await control.locator('table').textContent();
+  assert.ok(controlText.includes('S02') && controlText.includes('S10'));
+  assert.ok(!controlText.includes('N-1000'));
+  const downloadPromise = page.waitForEvent('download');
+  await control.getByRole('button', { name: /Exporter CSV|Export CSV/ }).click();
+  const controlCsv = await readFile(await (await downloadPromise).path(), 'utf8');
+  assert.ok(controlCsv.includes('S02') && controlCsv.includes('S10'));
+  await maintenanceZone.locator('input[type=file]').setInputFiles({ ...monitorFile, buffer: Buffer.from('unreadable replacement') });
+  await control.waitFor({ state: 'detached' });
+  await settled();
+  assert.equal(await page.getByTestId('maintenance-control-worklist').count(), 0, 'replacement/refusal clears the previous worklist');
+  await page.locator('header button').first().click();
   await openSetup();
   assert.equal(await page.getByTestId('io-create-project').isEnabled(), true, 'no-input project needs no IO approval');
   assert.equal(await page.getByTestId('io-import-review').count(), 0, 'no IO worker review for an empty project');
@@ -180,14 +284,11 @@ try {
     assert.equal(committed.projects.find((p) => p.id === projectId).method.target, 'protein');
     assert.equal(committed.importsByProject[projectId].assembled.blocks.train.n_samples, 12);
     assert.deepEqual([...committed.importsByProject[projectId].assembled.blocks.train.y.data], fixture.expected.y_row_major);
-    // Existing reference-edit route changes lab references only. Its legacy
-    // ingestion policy is separate follow-up debt, not qualified by this test.
-    await page.locator('input[type=file]').first().setInputFiles({ name: 'later-reference.csv', mimeType: 'text/csv', buffer: Buffer.from('protein\n16.1\n17.3\n18.9') });
-    for (let attempt = 0; attempt < 80; attempt++) {
-      if ((await persistedState()).samplesByProject[projectId][0].reference.value === 16.1) break;
-      await page.waitForTimeout(100);
-    }
-    const edited = await persistedState();
+    // Keyed reference amendments change current lab values, not the retained IO history.
+    await applyKeyedReferences('sample_id,protein\nC,18.9\nA,16.1\nB,17.3', /0 set · 3 changed · 0 unchanged · 0 invalid/);
+    const edited = await waitForState((state) => state.samplesByProject[projectId]?.[0]?.reference?.value === 16.1);
+    assert.deepEqual(edited.samplesByProject[projectId].map((sample) => [sample.id, sample.reference.value]),
+      [['A', 16.1], ['B', 17.3], ['C', 18.9]]);
     assert.equal(edited.samplesByProject[projectId][0].reference.value, 16.1);
     assert.deepEqual([...edited.importsByProject[projectId].assembled.blocks.train.y.data], fixture.expected.y_row_major);
     assert.deepEqual(edited.importsByProject[projectId].targetConfirmation.rows, beforeCreate.record.targetConfirmation.rows);
@@ -219,8 +320,11 @@ try {
     assert.equal(unlabelled.projects.find((p) => p.id === projectId).method.taskType, 'regression');
     assert.ok(unlabelled.samplesByProject[projectId].every((s) => s.reference === null && s.status === 'nirs_measured'));
     assert.deepEqual(unlabelled.spectraByProject[projectId].samples.map((s) => s.reps.length), [4, 4, 4]);
-    await page.locator('input[type=file]').first().setInputFiles({ name: 'later-reference.csv', mimeType: 'text/csv', buffer: Buffer.from('protein\n6.1\n7.3\n8.9') });
-    const labelled = await waitForState((s) => s.samplesByProject[projectId]?.[0]?.reference?.value === 6.1);
+    await applyKeyedReferences('sample_id,protein\nB,7.3\nC,8.9\nA,6.1', /3 set · 0 changed · 0 unchanged · 0 invalid/);
+    const labelled = await waitForState((state) => state.samplesByProject[projectId]?.[0]?.reference?.value === 6.1);
+    assert.deepEqual(labelled.samplesByProject[projectId].map((sample) => [sample.id, sample.reference.value]),
+      [['A', 6.1], ['B', 7.3], ['C', 8.9]]);
+    assert.equal(labelled.projects.find((project) => project.id === projectId).method.target, 'Unlabelled protein method');
     assert.equal(labelled.importsByProject[projectId].assembled.blocks.train.y, null);
     assert.deepEqual(labelled.importsByProject[projectId].files.map((f) => f.name), ['Xtrain.csv', 'Mtrain.csv']);
     await page.reload({ waitUntil: 'load' });
@@ -266,9 +370,11 @@ try {
     await page.getByTestId('hplc-selection-refusal').waitFor();
     assert.equal(await page.getByTestId('hplc-selection-refusal').textContent(), 'Missing or non-finite spectra must be resolved before analysis.');
     await page.locator('[data-step-id="explore"]').click();
-    // Label the incomplete pool row through the unchanged later-reference UI.
-    await page.locator('input[type=file]').first().setInputFiles({ name: 'later-reference.csv', mimeType: 'text/csv',
-      buffer: Buffer.from(['protein', ...Array.from({ length: 10 }, (_, row) => String(row + 10))].join('\n')) });
+    // Keyed lab references cannot repair or conceal the missing spectral value.
+    await applyKeyedReferences(['sample_id,protein', ...Array.from({ length: 10 }, (_, index) => {
+      const row = 9 - index;
+      return `sample-${row},${row + 10}`;
+    })].join('\n'), /2 set · 0 changed · 8 unchanged · 0 invalid/);
     await waitForState((s) => s.samplesByProject[projectId]?.[9]?.reference?.value === 19);
     await page.locator('[data-step-id="calibrate"]').click();
     await page.getByText('Calibration requires finite spectra and targets.', { exact: true }).waitFor();

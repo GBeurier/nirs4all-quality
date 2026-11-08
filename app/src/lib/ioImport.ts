@@ -330,7 +330,7 @@ export type LabProjection = { ok: true; samples: Sample[]; spectra: SpectraDatas
 export function projectForLab(record: RetainedImport, projectId: string): LabProjection {
   const refuse = (...reasons: string[]): LabProjection => ({ ok: false, reasons });
   if (record.status !== 'ready' || !record.validationSucceeded || record.assembled === null) {
-    return refuse('Create requires successful validation and assembly of the current import.');
+    return refuse('Using data requires successful validation and assembly of the current import.');
   }
   const assembled = record.assembled;
   const spec = readSpec(record.specJson);
@@ -340,7 +340,7 @@ export function projectForLab(record: RetainedImport, projectId: string): LabPro
   if (assembled.assembled_schema_version !== 3) return refuse('Unsupported IO assembled schema.');
   if (assembled.partition_order.length !== 1 || assembled.partition_order[0] !== 'train'
       || Object.keys(assembled.blocks).length !== 1 || assembled.folds.length || assembled.fold_provenance.length) {
-    return refuse('Held-out partitions and folds cannot be preserved by the current lab training route. Only alltrain imports without folds can create a project.');
+    return refuse('Held-out partitions and folds cannot be preserved by this lab execution route. Only alltrain imports without folds can be used.');
   }
   const block = assembled.blocks.train;
   if (!block || block.x.length !== 1 || block.feature_axes.length !== 1 || block.feature_axes[0]?.length !== 1) {
@@ -388,7 +388,11 @@ export function projectForLab(record: RetainedImport, projectId: string): LabPro
   for (let row = 0; row < block.n_samples; row++) {
     const id = ids[row];
     if (typeof id !== 'string') return refuse('The owner sample-ID column contains a non-string value.');
-    const rows = rowsBySample.get(id) ?? [];
+    const existingRows = rowsBySample.get(id);
+    if (existingRows && assembled.repetition !== sampleColumn) {
+      return refuse('Repeated sample IDs require an owner-declared repetition relationship.');
+    }
+    const rows = existingRows ?? [];
     rows.push(row); rowsBySample.set(id, rows);
   }
   const samples: Sample[] = [], spectra: SpectraDataset = {
