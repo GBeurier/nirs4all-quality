@@ -10,13 +10,14 @@ const app = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const stageManifest = resolve(app, 'vendor/owners-current/IO_STAGE.json');
 const companionDelivery = resolve(app, 'vendor/owners-current/IO_COMPANION.json');
 
-// Pinned bytes of the current IO0.3 delivery (b955, with explicit parsing options and header diagnostics).
-const EXPECTED_LOADER = 'ee7ab93044dcb159c1a7d53fdfbd797ef6d6c8ee0b6b7a0cb5b82c6c5a3f032f';
-const EXPECTED_WASM = 'b955facd114c3a6c7b7f991ade1fe5007bbfcd7d21adb5e71fa9376a32a432b6';
+// Exact local-unpublished IO0.3.2 browser build from source 6c1a256.
+const EXPECTED_LOADER = '7dd87d55807f43b163cd017a48751cd56273b044bc731be137f1c9256dbee5f7';
+const EXPECTED_WASM = '9bd041658f0cdb87042926e0ae608af6fc318568bc01d9c594ae33fd0d5f1012';
 const EXPECTED_TYPES = '6d6f5a8c0f445e740c15f81e0c00298bfaa9915eba05a1a53b4a1b2bc35c91f5';
 // Historical IO0.3 witnesses are refused, including the prior Setup stage (1e55dbf1...).
 // That stage remains provenance only and is not reproducible through this current script.
 const SUPERSEDED_WASM = [
+  'b955facd114c3a6c7b7f991ade1fe5007bbfcd7d21adb5e71fa9376a32a432b6',
   '81915706a69ff10139434de9f0e4b02601f1bc58861bff2e71925bf45df7e347',
   '6808a164d291cd76219ffc5db7f0f74d4e1471e7de89c5358f68cf77dd74bbce',
   '1e55dbf1d42462e258804804178a45d57b0343d3e1c5586356766a80964422a3',
@@ -45,11 +46,11 @@ export async function qualifiedIOImportStage() {
   const browserHash = (path) => browser.files?.find((f) => f.path === path)?.sha256;
   const companionHash = (name) => companion.source_changes?.find((f) => f.path === `bindings/wasm/${name}`)?.sha256_after;
   if (SUPERSEDED_WASM.includes(browserHash('nirs4all_io_wasm_bg.wasm'))) {
-    throw new Error('IO stage manifest names a superseded IO0.3 artifact (81915706..., 6808a164... or 1e55dbf1...); stage the current cohort.');
+    throw new Error('IO stage manifest names a superseded IO0.3 artifact (b955facd..., 81915706..., 6808a164... or 1e55dbf1...); stage the current cohort.');
   }
   if (browserHash('nirs4all_io_wasm.js') !== EXPECTED_LOADER
       || browserHash('nirs4all_io_wasm_bg.wasm') !== EXPECTED_WASM) {
-    throw new Error('IO stage manifest differs from the pinned IO0.3 candidate; review the cohort before changing it.');
+    throw new Error('IO stage manifest differs from the pinned IO0.3.2 browser build; review the cohort before changing it.');
   }
   const loader_sha256 = await verify(root, 'nirs4all_io_wasm.js', browserHash('nirs4all_io_wasm.js'));
   const wasm_sha256 = await verify(root, 'nirs4all_io_wasm_bg.wasm', browserHash('nirs4all_io_wasm_bg.wasm'));
@@ -61,6 +62,14 @@ export async function qualifiedIOImportStage() {
   }
   const companion_sha256 = await verify(root, 'numeric-wire.mjs', expectedCompanion);
   const companion_declaration_sha256 = await verify(root, 'numeric-wire.d.ts', expectedDeclaration);
+  const expectedPublicDataset = 'ab29fc57e4e78e3c6b49bd3aae026d3f310750c974803b7fa00a44906f621981';
+  const expectedPublicDatasetDeclaration = 'c5f53b89e2ceb21bc9aafe0d6ed8bd2f037eda58f1a36997ca895ec638c181a8';
+  if (companionHash('public-dataset.mjs') !== expectedPublicDataset
+      || companionHash('public-dataset.d.ts') !== expectedPublicDatasetDeclaration) {
+    throw new Error('IO public dataset companion differs from the pinned owner delivery.');
+  }
+  await verify(root, 'public-dataset.mjs', expectedPublicDataset);
+  await verify(root, 'public-dataset.d.ts', expectedPublicDatasetDeclaration);
   if (browserHash('types/nirs4all-io.d.ts') !== EXPECTED_TYPES) {
     throw new Error('IO stage manifest differs from the pinned public types.');
   }
