@@ -394,40 +394,52 @@ export const EXPLAIN = {
     },
   },
   calibrationChooser: {
-    fr: {
-      title: 'Choisir & comparer les pipelines',
-      what: 'Pipelines are ranked using selection validation scores. The scored rows are reused to choose settings and pipelines.',
-      why: 'Il n’existe pas un « meilleur » préprocessing universel : ça dépend de vos spectres. Comparer plusieurs recettes évite de se contenter d’un PLS brut sous-optimal.',
-      details: 'Les PLS tournent sur le vrai moteur libn4m (WASM) ; Ridge et AOM-Ridge sur un solveur numérique honnête embarqué. Chaque pipeline balaie son réglage (composantes, α, ou opérateur) et garde le meilleur.',
-      takeaway: 'Cochez une petite matrice, lancez, et laissez le classement désigner le gagnant.',
-      methods: ['PLS (libn4m WASM)', 'Ridge (closed-form)', 'AOM (screen+select)'],
+    "fr": {
+      "title": "Choose calibration profiles",
+      "what": "Each profile selects settings using its own designated selection population. Every completed profile and failure is retained.",
+      "why": "PLS and Ridge use different validation populations. Their scores are not ranked against each other.",
+      "details": "Each checked profile evaluates its full ordered bank. PLS deploys its KS-train winner; Ridge refits the selected recipe on all labelled rows, keeping its holdout scores separate.",
+      "takeaway": "Run the checked profiles, then click a completed profile to activate it explicitly. Independent prediction error is not measured here.",
+      "methods": [
+        "Single holdout bank",
+        "PLS / Ridge"
+      ]
     },
-    en: {
-      title: 'Choose & compare pipelines',
-      what: 'Pipelines are ranked using selection validation scores. The scored rows are reused to choose settings and pipelines.',
-      why: 'There is no universal "best" preprocessing — it depends on your spectra. Comparing recipes avoids settling for a sub-optimal raw PLS.',
-      details: 'PLS runs on the real libn4m engine (WASM); Ridge and AOM-Ridge on an honest embedded numeric solver. Each pipeline sweeps its setting (components, α, or operator) and keeps the best.',
-      takeaway: 'Tick a small matrix, run, and let the leaderboard name the winner.',
-      methods: ['PLS (libn4m WASM)', 'Ridge (closed-form)', 'AOM (screen+select)'],
-    },
+    "en": {
+      "title": "Choose calibration profiles",
+      "what": "Each profile selects settings using its own designated selection population. Every completed profile and failure is retained.",
+      "why": "PLS and Ridge use different validation populations. Their scores are not ranked against each other.",
+      "details": "Each checked profile evaluates its full ordered bank. PLS deploys its KS-train winner; Ridge refits the selected recipe on all labelled rows, keeping its holdout scores separate.",
+      "takeaway": "Run the checked profiles, then click a completed profile to activate it explicitly. Independent prediction error is not measured here.",
+      "methods": [
+        "Single holdout bank",
+        "PLS / Ridge"
+      ]
+    }
   },
   cartesianMatrix: {
-    fr: {
-      title: 'Cartésien — la matrice de préprocessing',
-      what: 'On combine une étape de diffusion {aucune, SNV} et une étape de dérivée {aucune, lissage, 1re, 2de} : le produit cartésien donne toutes les combinaisons, chacune testée avec le modèle (PLS ou Ridge).',
-      why: 'Selection scores help compare candidates. Independent prediction error must be measured on a separate cohort after selection.',
-      details: 'PLS tourne sur le vrai moteur libn4m (WASM) ; Ridge sur un solveur closed-form honnête (XᵀX + αI)⁻¹Xᵀy exécuté dans le navigateur. L’onglet « RMSE vs réglage » montre la RMSE de chaque combinaison.',
-      takeaway: 'La case gagnante = la combinaison préprocessing la mieux adaptée à vos données.',
-      methods: ['produit cartésien', 'PLS (WASM) / Ridge (closed-form)'],
+    "fr": {
+      "title": "Cartesian preprocessing bank",
+      "what": "Each profile evaluates its ordered preprocessing and model-parameter combinations.",
+      "why": "Each internal selection uses the profile’s designated holdout population. Independent error needs a separate cohort.",
+      "details": "Every candidate in a profile shares its designated holdout. Exact score ties keep the first ordered candidate. The sweep shows eligible selection scores within that bank.",
+      "takeaway": "An internal bank winner does not make its profile better than another profile. Activate a profile explicitly.",
+      "methods": [
+        "Cartesian bank",
+        "Preprocessing / models"
+      ]
     },
-    en: {
-      title: 'Cartesian — the preprocessing matrix',
-      what: 'We combine a scatter stage {none, SNV} and a derivative stage {none, smooth, 1st, 2nd}: the Cartesian product yields every combination, each tested with the model (PLS or Ridge).',
-      why: 'Selection scores help compare candidates. Independent prediction error must be measured on a separate cohort after selection.',
-      details: 'PLS runs on the real libn4m engine (WASM); Ridge on an honest closed-form solver (XᵀX + αI)⁻¹Xᵀy run in the browser. The "RMSE vs setting" tab shows each combination’s RMSE.',
-      takeaway: 'The winning cell = the preprocessing combination best suited to your data.',
-      methods: ['Cartesian product', 'PLS (WASM) / Ridge (closed-form)'],
-    },
+    "en": {
+      "title": "Cartesian preprocessing bank",
+      "what": "Each profile evaluates its ordered preprocessing and model-parameter combinations.",
+      "why": "Each internal selection uses the profile’s designated holdout population. Independent error needs a separate cohort.",
+      "details": "Every candidate in a profile shares its designated holdout. Exact score ties keep the first ordered candidate. The sweep shows eligible selection scores within that bank.",
+      "takeaway": "An internal bank winner does not make its profile better than another profile. Activate a profile explicitly.",
+      "methods": [
+        "Cartesian bank",
+        "Preprocessing / models"
+      ]
+    }
   },
   aomVariants: {
     fr: {

@@ -6,18 +6,17 @@
 //     in a fast (compact bank) or slow (extended bank) tier.
 // Grounded in nirs4all `examples/configs/pipelines/generator_search.yaml`
 // (`_or_[SNV, MSC, Detrend]` × PLS `_range_`) and studio-lite's preset gallery.
-import type { LabEngine, MaterializedDataset, PipelineDSL, PipelineStep, RunResult } from './port.js';
-import { runJsVariant, runPlsScreenSteps, type JsRidgeScreenSpec, type RidgeChain } from './jsEngine.js';
-import { OPERATOR_LABEL, type Operator } from './jsNumerics.js';
-import { regressionMetrics } from './metrics.js';
+import type { LabEngine, MaterializedDataset, PipelineStep, RunResult } from './port.js';
+import { OPERATOR_LABEL, type RidgeBank, type RidgeChain, type RidgeOperator as Operator } from './ownerRidgeBanks.js';
 import { validateCalibrationDataset } from './evaluation.js';
 import { candidateIssue } from './preprocessing.js';
+import { PlsCalibrationRefusal, RidgeCalibrationRefusal } from './dagEngine.js';
 
 export type VariantGroup = 'cart' | 'aom';
 export type VariantTier = 'fast' | 'thorough';
 
 interface WasmPlsScreenSpec { kind: 'wasm_pls_screen'; screen: { label: string; steps: PipelineStep[] }[]; maxComp: number; }
-type Spec = WasmPlsScreenSpec | JsRidgeScreenSpec;
+type Spec = WasmPlsScreenSpec | RidgeBank;
 
 export interface CalibVariant {
   id: string;
@@ -142,62 +141,25 @@ export const CALIB_VARIANTS: CalibVariant[] = [
   },
 ];
 
-function plsDsl(name: string, steps: PipelineStep[], maxComp: number): PipelineDSL {
-  return { name, steps, model: { id: 'm', type: 'PLS', params: { n_components: maxComp } } };
-}
-
 /** Run one variant; failures are propagated for the host to display. */
 export async function runVariant(ds: MaterializedDataset, v: CalibVariant, wasm: LabEngine): Promise<RunResult> {
   const spec = v.spec;
-  const cap = (want: number) => Math.max(1, Math.min(want, Math.floor(ds.nSamples * 0.55), ds.nFeatures));
   try {
     validateCalibrationDataset(ds);
     if (spec.kind === 'wasm_pls_screen') {
-      let best: RunResult | null = null;
-      const candidateIssues: NonNullable<RunResult['candidateIssues']> = [];
-      const variants: NonNullable<RunResult['variants']> = [];
-      for (let k = 0; k < spec.screen.length; k++) {
-        const s = spec.screen[k]!;
-        try {
-          const res = await wasm.run(ds, plsDsl(`${v.label.fr} · ${s.label}`, s.steps, cap(spec.maxComp)));
-          const rmse = res.refit.metrics.rmse ?? Number.POSITIVE_INFINITY;
-          variants.push({ x: k, rmse, selected: false, label: s.label });
-          if (!best || (best.refit.metrics.rmse ?? Infinity) > rmse) best = res;
-        } catch (err) {
-          candidateIssues.push(candidateIssue(s.label, 'wasm', err));
-        }
+      if (!wasm.runPlsBank) {
+        throw new PlsCalibrationRefusal(spec.screen.map(s => candidateIssue(s.label, 'wasm', new Error('DAG PLS calibration is unavailable; recalibrate with the owner runtime.'))));
       }
-      if (!best) {
-        // the libn4m WASM PLS path is unavailable/incompatible → in-browser PLS,
-        // screening the REAL preprocessing steps (window-aware Savitzky-Golay/MSC)
-        const res = runPlsScreenSteps(ds, spec.screen, cap(spec.maxComp), v.label.fr);
-        return { ...res, candidateIssues: [...candidateIssues, ...(res.candidateIssues ?? [])], engine: v.group === 'aom' ? `${res.engine} · AOM` : `${res.engine} · cart` };
-      }
-      const bestRmse = best.refit.metrics.rmse ?? Infinity;
-      variants.forEach((z) => { z.selected = z.rmse === bestRmse; });
-      return {
-        ...best,
-        // This outer screen selects preprocessing using the same scored rows.
-        ...(best.evaluation ? { evaluation: { ...best.evaluation, scope: best.evaluation.scope === 'training' ? 'training' as const : 'selection_validation' as const, independent_test: false } } : {}),
-        candidateIssues,
-        id: `${v.id}-${ds.nSamples}`,
-        pipelineName: v.label.fr,
-        engine: v.group === 'aom' ? `${best.engine} · AOM` : `${best.engine} · cart`,
-        variants,
-        variantAxis: { fr: 'combo de préprocessing screené', en: 'screened preprocessing combo', categorical: true },
-      };
+      return wasm.runPlsBank(ds, spec, v.label.fr, v.id);
     }
-    // js_ridge_screen
-    return runJsVariant(ds, spec, v.label.fr);
+    if (!wasm.runRidgeBank) {
+      throw new RidgeCalibrationRefusal(spec.chains.map(chain => candidateIssue(chain.label, 'wasm', new Error('DAG Ridge calibration is unavailable; use the current owner runtime.'))));
+    }
+    return wasm.runRidgeBank(ds, spec, v.label.fr, v.id);
   } catch (err) {
     console.warn(`[quali-nirs4all] variant ${v.id} failed`, err);
     throw err;
   }
-}
-
-/** Convenience: RMSE for leaderboard sort (missing → +∞). */
-export function variantScore(r: RunResult): number {
-  return r.refit.metrics.rmse ?? Number.POSITIVE_INFINITY;
 }
 
 /** A display-only pipeline description (composition strip in TrainingResults). */
@@ -214,4 +176,4 @@ export function describeVariant(v: CalibVariant, selectedLabel?: string, scoredC
   return { name: v.label.fr, steps: [step], model };
 }
 
-export { regressionMetrics, OPERATOR_LABEL };
+export { OPERATOR_LABEL };

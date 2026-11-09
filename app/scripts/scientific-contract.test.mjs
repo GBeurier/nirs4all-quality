@@ -1,5 +1,5 @@
-// Regression tests load production TypeScript through Vite. Only the external
-// Core runtime is replaced: local preprocessing, models and consumers are real.
+// Named pre-migration scientific regressions. Historical JS fallback and Core
+// calibration execute the test-only oracle; assertions and tolerances are unchanged.
 import assert from 'node:assert/strict';
 import { after, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -21,7 +21,7 @@ const server = await createServer({
     name: 'core-test-boundary',
     enforce: 'pre',
     transform(source, id) {
-      if (id.endsWith('/engine/wasmEngine.ts')) return source.replace("from 'nirs4all'", "from 'virtual:quali-test-core'");
+      if (id.endsWith('/wasmEngine.ts')) return source.replace("from 'nirs4all'", "from 'virtual:quali-test-core'");
     },
     resolveId(id) {
       if (id === 'virtual:quali-test-core') return '\0core-test-boundary';
@@ -39,11 +39,11 @@ after(async () => { delete globalThis.__qualiCore; await server.close(); });
 const load = (path) => server.ssrLoadModule(`/src/${path}`);
 const { initializeDiagnostics } = await load('engine/nativeDiagnostics.ts');
 await initializeDiagnostics();
-const { wasmEngine } = await load('engine/wasmEngine.ts');
-const { runPlsScreenSteps, runJsVariant } = await load('engine/jsEngine.ts');
-const { applySteps, kennardStoneTest, plsFit, plsPredictRow } = await load('engine/jsNumerics.ts');
-const { CALIB_VARIANTS, runVariant } = await load('engine/variants.ts');
-const { parseModelBundle } = await load('lib/modelIo.ts');
+const { wasmEngine } = await load('engine/testing/oracle/wasmEngine.ts');
+const { runPlsScreenSteps, runJsVariant } = await load('engine/testing/oracle/jsEngine.ts');
+const { applySteps, kennardStoneTest, plsFit, plsPredictRow } = await load('engine/testing/oracle/jsNumerics.ts');
+const { CALIB_VARIANTS, runVariant } = await load('engine/testing/oracle/variants.ts');
+const { parseModelBundle } = await load('engine/testing/oracle/modelIo.ts');
 const { evaluationLabel, validateCalibrationDataset } = await load('engine/evaluation.ts');
 
 function dataset(n = 12, p = 6) {
@@ -138,7 +138,7 @@ test('a refused JS candidate does not discard valid candidates or disappear from
   assert.ok(Number.isFinite(result.refit.metrics.rmse));
 });
 
-test('all shipped variants produce real fallback results, including the extended PLS bank', async () => {
+test('pre-migration oracle: all shipped variants produce real fallback results, including the extended PLS bank', async () => {
   const ds = dataset(12, 35);
   const unavailable = { name: 'unavailable', run() { throw new Error('WASM unavailable fixture'); } };
   for (const v of CALIB_VARIANTS) {
@@ -198,8 +198,8 @@ test('JS rejects unknown operations and unsupported parameter semantics', () => 
   assert.throws(() => runPlsScreenSteps(dataset(), [{ label: 'scaled', steps: [step('StandardScaler')] }], 1, 'refused'), /display previews/);
 });
 
-test('fallback MSC prediction replays deployment state and refuses a missing reference', async () => {
-  const { predictWithModel } = await load('engine/predict.ts');
+test('pre-migration oracle: fallback MSC prediction replays deployment state and refuses a missing reference', async () => {
+  const { predictWithModel } = await load('engine/testing/oracle/predict.ts');
   const ds = dataset();
   const steps = [step('MultiplicativeScatterCorrection')];
   const result = runPlsScreenSteps(ds, [{ label: 'MSC', steps }], 1, 'prediction fixture');
@@ -219,7 +219,7 @@ function close(actual, expected, message) {
   actual.forEach((x, i) => assert.ok(Math.abs(x - expected[i]) < 1e-9, `${message}: ${x} != ${expected[i]}`));
 }
 
-test('fallback PLS scores MSC with a training-only reference and refits deployment on all rows', () => {
+test('pre-migration oracle: fallback PLS scores MSC with a training-only reference and refits deployment on all rows', () => {
   const ds = dataset();
   const steps = [step('MultiplicativeScatterCorrection')];
   const te = kennardStoneTest(ds.X, ds.nSamples, ds.nFeatures);

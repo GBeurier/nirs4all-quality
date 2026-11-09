@@ -49,14 +49,17 @@ export function cropSpectra(ds: SpectraDataset, from: number | null, to: number 
   if (keep.length === 0 || keep.length === ds.axis.length) return ds;
   const axis = keep.map((j) => ds.axis[j]!);
   const samples = ds.samples.map((s) => ({
-    sampleId: s.sampleId,
+    ...s,
     reps: s.reps.map((r) => {
       const v = new Float64Array(keep.length);
-      keep.forEach((j, k) => { v[k] = r.values[j] ?? 0; });
-      return r.suspect ? { repId: r.repId, values: v, suspect: r.suspect } : { repId: r.repId, values: v };
+      keep.forEach((j, k) => {
+        const value = r.values[j];
+        v[k] = typeof value === 'number' ? value : NaN;
+      });
+      return { ...r, values: v };
     }),
   }));
-  return { axis, axisUnit: ds.axisUnit, samples };
+  return { ...ds, axis, samples };
 }
 
 /** Euclidean distance between two equal-length spectra. */

@@ -1,0 +1,55 @@
+{
+  "status": "SOURCE_DELIVERED_GATES_UNEXECUTED",
+  "repository": "/home/delete/nirs4all/_worktrees/2026-11-09-io-wasm-numeric-wire",
+  "api": {
+    "export": "numericCoordinates",
+    "signature": "numericCoordinates(packet: unknown, expectedCount: number): Float64Array",
+    "module": "bindings/wasm/numeric-wire.mjs",
+    "declaration": "bindings/wasm/numeric-wire.d.ts",
+    "reexports_added": false,
+    "expectedCount": "required owner X.n_cols"
+  },
+  "source_changes": [
+    {
+      "path": "bindings/wasm/numeric-wire.mjs",
+      "change": "unchanged",
+      "sha256_before": "82e35e14f51aa49f6ad2da382e26d080e7b4ec84b257b6cf77da52b5410d618b",
+      "sha256_after": "82e35e14f51aa49f6ad2da382e26d080e7b4ec84b257b6cf77da52b5410d618b",
+      "mode_before": "0o644",
+      "mode_after": "0o644"
+    },
+    {
+      "path": "bindings/wasm/numeric-wire.d.ts",
+      "change": "unchanged",
+      "sha256_before": "48a26a8d6754a59e3d074c3c52351970e3f5725f3991899913bf61810229c0b0",
+      "sha256_after": "48a26a8d6754a59e3d074c3c52351970e3f5725f3991899913bf61810229c0b0",
+      "mode_before": "0o644",
+      "mode_after": "0o644"
+    },
+    {
+      "path": "bindings/wasm/public-dataset.mjs",
+      "change": "unchanged",
+      "sha256_before": "ab29fc57e4e78e3c6b49bd3aae026d3f310750c974803b7fa00a44906f621981",
+      "sha256_after": "ab29fc57e4e78e3c6b49bd3aae026d3f310750c974803b7fa00a44906f621981",
+      "mode_before": "0o644",
+      "mode_after": "0o644"
+    },
+    {
+      "path": "bindings/wasm/public-dataset.d.ts",
+      "change": "unchanged",
+      "sha256_before": "c5f53b89e2ceb21bc9aafe0d6ed8bd2f037eda58f1a36997ca895ec638c181a8",
+      "sha256_after": "c5f53b89e2ceb21bc9aafe0d6ed8bd2f037eda58f1a36997ca895ec638c181a8",
+      "mode_before": "0o644",
+      "mode_after": "0o644"
+    },
+    {
+      "path": "bindings/wasm/types/nirs4all-io.d.ts",
+      "change": "unchanged",
+      "sha256_before": "6d6f5a8c0f445e740c15f81e0c00298bfaa9915eba05a1a53b4a1b2bc35c91f5",
+      "sha256_after": "6d6f5a8c0f445e740c15f81e0c00298bfaa9915eba05a1a53b4a1b2bc35c91f5",
+      "mode_before": "0o644",
+      "mode_after": "0o644"
+    }
+  ],
+  "source_commit": "6c1a2567730464de5147509e39aaeba6bbc00b66"
+}

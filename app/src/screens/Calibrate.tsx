@@ -1,19 +1,22 @@
 import { buildModelReportView, ModelReportCard } from 'nirs4all-ui/lab';
-import { Loader2, Play, Trophy } from 'lucide-react';
+import { Loader2, Play } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { createEngine, evaluationLabel, evaluationNote, type LabEngine, type RunResult } from '@/engine';
-import { CALIB_VARIANTS, describeVariant, runVariant, variantScore, type CalibVariant, type VariantGroup } from '@/engine/variants';
-import { downloadJson, downloadText, slug, toCsv } from '@/lib/export';
+import { CALIB_VARIANTS, describeVariant, runVariant, type CalibVariant, type VariantGroup } from '@/engine/variants';
+import { downloadBytes, downloadText, slug, toCsv } from '@/lib/export';
 import { buildTrainingDataset } from '@/lib/trainingData';
 import { useLang, useTr } from '@/i18n';
 import { useLab, useProjectSpectra, type StoredModel } from '@/store/store';
 import { Explain } from '@/ui/Explain';
 import { EXPLAIN } from '@/ui/explanations';
 import { TrainingResults } from '@/screens/TrainingResults';
+import { exportModelContainer, QUALI_HOST } from '@/lib/modelIo';
+import { populationLabel } from '@/engine/evaluation';
 import { validateCalibrationDataset } from '@/engine/evaluation';
 
 interface Scored { variant: CalibVariant; result: RunResult; }
+interface Failure { label: string; reason: string; candidateIssues?: RunResult['candidateIssues'] }
 
 const GROUP_LABEL: Record<VariantGroup, { fr: string; en: string }> = {
   cart: { fr: 'Cartésien (matrice de préprocessing)', en: 'Cartesian (preprocessing matrix)' },
@@ -21,11 +24,7 @@ const GROUP_LABEL: Record<VariantGroup, { fr: string; en: string }> = {
 };
 const GROUP_ORDER: VariantGroup[] = ['cart', 'aom'];
 
-// §3 Écran 4 — build the model. A RICH chooser: the tech ticks a matrix of
-// preprocessing × PLS / Ridge / AOM variants and launches; each runs (PLS on real
-// libn4m WASM, Ridge/AOM-Ridge on honest JS numerics) on the project's REAL
-// spectra + references, ranked in a leaderboard with the best promoted to the
-// report card + training charts.
+// Every owner profile keeps its own selection population. Activation is explicit.
 export function Calibrate({ projectId }: { projectId: string }) {
   const { state, dispatch } = useLab();
   const tr = useTr();
@@ -48,10 +47,12 @@ export function Calibrate({ projectId }: { projectId: string }) {
   const [selectedId, setSelectedId] = useState<string | null>(() => storedCalib?.selectedId ?? null);
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState('');
-  const [failures, setFailures] = useState<{ label: string; reason: string }[]>([]);
+  const [failures, setFailures] = useState<Failure[]>(storedCalib?.failures ?? []);
 
-  const persistCalib = (results: Scored[], sel: string | null) =>
-    dispatch({ kind: 'set_calibration', projectId, calibration: { results: results.map((s) => ({ variantId: s.variant.id, result: s.result })), selectedId: sel } });
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const persistCalib = (results: Scored[], sel: string | null, recordedFailures = failures) =>
+    dispatch({ kind: 'set_calibration', projectId, calibration: { results: results.map((s) => ({ variantId: s.variant.id, result: s.result })), selectedId: sel, failures: recordedFailures } });
 
   // The REAL training dataset (mean spectrum per labelled sample + its reference)
   // — shared with Predict so parity/metrics/predictions reflect the actual data.
@@ -70,6 +71,8 @@ export function Calibrate({ projectId }: { projectId: string }) {
   const deploy = (s: Scored) => {
     const m: StoredModel = {
       model: s.result.model, engine: s.result.engine, pipelineName: tr(s.variant.label.fr, s.variant.label.en),
+      ...(s.result.refit.ownerReport ? { ownerReport: s.result.refit.ownerReport } : {}),
+      population: s.result.population!, selectedProfileId: s.variant.id,
       metrics: s.result.refit.metrics, yRange, nFeatures: ds.nFeatures, createdAt: s.result.createdAt,
       ...(s.result.evaluation ? { evaluation: s.result.evaluation } : {}),
     };
@@ -84,6 +87,7 @@ export function Calibrate({ projectId }: { projectId: string }) {
     try {
       const wasm: LabEngine = await createEngine();
       const out: Scored[] = [];
+      const recordedFailures: Failure[] = [];
       for (let i = 0; i < chosen.length; i++) {
         const v = chosen[i]!;
         setProgress(tr(`Calibration ${i + 1}/${chosen.length} : ${v.label.fr}…`, `Calibrating ${i + 1}/${chosen.length}: ${v.label.en}…`));
@@ -91,16 +95,19 @@ export function Calibrate({ projectId }: { projectId: string }) {
           const result = await runVariant(ds, v, wasm);
           out.push({ variant: v, result });
         } catch (err) {
-          setFailures((prev) => [...prev, { label: v.label.en, reason: err instanceof Error ? err.message : String(err) }]);
+          const issues = err && typeof err === 'object' && 'candidateIssues' in err && Array.isArray(err.candidateIssues)
+            ? err.candidateIssues as NonNullable<RunResult['candidateIssues']> : undefined;
+          recordedFailures.push({ label: v.label.en, reason: err instanceof Error ? err.message : String(err),
+            ...(issues ? { candidateIssues: issues } : {}) });
+          setFailures([...recordedFailures]);
         }
       }
-      out.sort((a, b) => variantScore(a.result) - variantScore(b.result));
-      setScored(out);
-      setSelectedId(out[0]?.variant.id ?? null);
-      if (out[0]) deploy(out[0]); // the best pipeline becomes the project's active model
-      persistCalib(out, out[0]?.variant.id ?? null); // survive navigation away and back
+      setScored(out); // Catalog order, with every completed profile retained.
+      setSelectedId(null);
+      persistCalib(out, null, recordedFailures); // No automatic deployment or inter-profile rank.
     } catch (err) {
-      setFailures((prev) => [...prev, { label: 'Calibration', reason: err instanceof Error ? err.message : String(err) }]);
+      const failed = [{ label: 'Calibration', reason: err instanceof Error ? err.message : String(err) }];
+      setFailures(failed); setScored([]); persistCalib([], null, failed);
     } finally {
       setRunning(false); setProgress('');
     }
@@ -108,7 +115,25 @@ export function Calibrate({ projectId }: { projectId: string }) {
 
   const toggle = (id: string) => setChecked((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const selected = scored?.find((s) => s.variant.id === selectedId) ?? null;
-  const best = scored?.[0] ?? null;
+  async function exportSelected() {
+    if (!selected || !scored) return;
+    setExporting(true); setExportError(null);
+    try {
+      const r = selected.result;
+      const bytes = await exportModelContainer({
+        schema: QUALI_HOST.schema, schema_version: 1, selectedProfileId: selected.variant.id,
+        createdAt: r.createdAt, engine: r.engine, method: project?.method, pipeline: selected.variant.label.en,
+        targetName: r.targetName, model: r.model, nFeatures: r.model.nFeatures, yRange,
+        population: r.population, metrics: r.refit.metrics, ownerReport: r.refit.ownerReport,
+        evaluation: r.evaluation, candidateIssues: r.candidateIssues ?? [], failedPipelines: failures,
+        leaderboard: scored.map(({ variant, result }) => ({ profileId: variant.id, pipeline: variant.label.en,
+          engine: result.engine, metrics: result.refit.metrics, ownerReport: result.refit.ownerReport,
+          population: result.population, evaluation: result.evaluation, candidateIssues: result.candidateIssues ?? [] })),
+      });
+      downloadBytes(`${slug(project?.name ?? 'project')}.n4a`, bytes);
+    } catch (error) { setExportError(error instanceof Error ? error.message : String(error)); }
+    finally { setExporting(false); }
+  }
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -156,19 +181,18 @@ export function Calibrate({ projectId }: { projectId: string }) {
         <p>Some pipelines could not be scored:</p>
         <ul>{failures.map((failure, i) => <li key={i}>{failure.label}: {failure.reason}</li>)}</ul>
       </div>}
-      {scored && scored.length > 0 && best && (
+      {scored && scored.length > 0 && (
         <>
           {/* leaderboard */}
           <div className="mb-5 card p-0">
             <div className="flex items-center gap-2 border-b border-border px-3 py-2 text-sm font-medium">
-              <Trophy size={15} className="text-primary" /> {tr('Classement des pipelines', 'Pipeline leaderboard')}
-              <Explain content={EXPLAIN.leaderboard} />
-              <span className="ml-auto text-xs font-normal text-muted-foreground">Sorted by selection RMSE</span>
+              Profile results
+              <span className="ml-auto text-xs font-normal text-muted-foreground">Catalog order; click a profile to activate it</span>
             </div>
             <table className="w-full text-sm">
               <thead className="text-left text-xs text-muted-foreground">
                 <tr>
-                  <th className="px-3 py-1.5">#</th>
+                  <th className="px-3 py-1.5">Selected</th>
                   <th className="px-3 py-1.5">{tr('Pipeline', 'Pipeline')}</th>
                   <th className="px-3 py-1.5 text-right">RMSE</th>
                   <th className="px-3 py-1.5 text-right">R²</th>
@@ -177,22 +201,23 @@ export function Calibrate({ projectId }: { projectId: string }) {
                 </tr>
               </thead>
               <tbody>
-                {scored.map((s, i) => {
+                {scored.map((s) => {
                   const m = s.result.refit.metrics;
+                  const reasons = s.result.refit.ownerReport?.undefined_metrics;
                   const on = s.variant.id === selectedId;
                   return (
                     <tr key={s.variant.id} onClick={() => pick(s)}
                       className={`cursor-pointer border-t border-border ${on ? 'bg-primary/[0.06]' : 'hover:bg-muted/40'}`}>
-                      <td className="px-3 py-2">{i === 0 ? '🏆' : i + 1}</td>
+                      <td className="px-3 py-2">{on ? '✓' : ''}</td>
                       <td className="px-3 py-2">
                         <span className="font-medium">{tr(s.variant.label.fr, s.variant.label.en)}</span>
                         <span className="ml-2 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">{s.result.engine}</span>
-                        <span className="block text-xs text-muted-foreground">{evaluationLabel(s.result.evaluation)}</span>
+                        <span className="block text-xs text-muted-foreground">{evaluationLabel(s.result.evaluation)} · {populationLabel(s.result.population)}</span>
                       </td>
                       <td className="px-3 py-2 text-right font-mono font-medium">{fmt(m.rmse)}</td>
-                      <td className="px-3 py-2 text-right font-mono">{fmt(m.r2)}</td>
-                      <td className="px-3 py-2 text-right font-mono">{fmt(m.rpd)}</td>
-                      <td className="px-3 py-2 text-right font-mono">{fmt(m.rpiq)}</td>
+                      <td className="px-3 py-2 text-right font-mono">{reasons?.['r2'] ? `undefined (${reasons['r2']})` : fmt(m.r2)}</td>
+                      <td className="px-3 py-2 text-right font-mono">{reasons?.['rpd'] ? `undefined (${reasons['rpd']})` : fmt(m.rpd)}</td>
+                      <td className="px-3 py-2 text-right font-mono">{reasons?.['rpiq'] ? `undefined (${reasons['rpiq']})` : fmt(m.rpiq)}</td>
                     </tr>
                   );
                 })}
@@ -200,25 +225,24 @@ export function Calibrate({ projectId }: { projectId: string }) {
             </table>
           </div>
 
-          {/* best (or selected) report card + training details */}
-          {selected && <VariantDetail scored={selected} bestId={best.variant.id} lang={lang} tr={tr} />}
+          {!selected && <p className="mb-3 text-sm">No profile was activated by this launch. Populations are not ranked against each other. Click a completed profile to activate it.</p>}
+          {/* Explicitly selected report and training details. */}
+          {selected && <VariantDetail scored={selected} lang={lang} tr={tr} />}
 
           <div className="mt-4 flex flex-wrap gap-2">
             <button className="btn-outline" onClick={() => selected && downloadText(
               `${slug(project?.name ?? 'projet')}-${slug(selected.variant.label.en)}-predictions.csv`,
               toCsv(selected.result.refit.predictions.map((r) => ({ sample_id: r.sampleId, observed: r.actual, predicted: r.predicted, residual: r.residual,
-                evaluation_scope: selected.result.evaluation?.scope ?? 'unknown', independent_test: selected.result.evaluation?.independent_test ?? false })),
-                ['sample_id', 'observed', 'predicted', 'residual', 'evaluation_scope', 'independent_test']))}>
+                evaluation_scope: selected.result.evaluation?.scope ?? 'unknown', independent_test: selected.result.evaluation?.independent_test ?? false,
+                owner_report: selected.result.refit.ownerReport ? JSON.stringify(selected.result.refit.ownerReport) : '' })),
+                ['sample_id', 'observed', 'predicted', 'residual', 'evaluation_scope', 'independent_test', 'owner_report']))}>
               {tr('Exporter les prédictions (CSV)', 'Export predictions (CSV)')}
             </button>
-            <button className="btn-outline" onClick={() => selected && downloadJson(`${slug(project?.name ?? 'projet')}.n4a.json`, {
-              format: 'quali-nirs4all/n4a', version: 1, createdAt: selected.result.createdAt, engine: selected.result.engine,
-              method: project?.method, pipeline: selected.variant.label.en, leaderboard: scored.map((s) => ({ pipeline: s.variant.label.en, engine: s.result.engine, metrics: s.result.refit.metrics, evaluation: s.result.evaluation, candidateIssues: s.result.candidateIssues })),
-              metrics: selected.result.refit.metrics, evaluation: selected.result.evaluation, candidateIssues: selected.result.candidateIssues, failedPipelines: failures, model: selected.result.model,
-              nFeatures: selected.result.model.nFeatures, yRange,
-            })}>
-              {tr('Exporter le modèle (.n4a)', 'Export model (.n4a)')}
+            <button className="btn-outline" disabled={!selected || exporting} onClick={() => { void exportSelected(); }}>
+              {exporting ? 'Exporting owner container…' : 'Export model (.n4a)'}
             </button>
+            {exportError && <p role="alert">{exportError}</p>}
+            <p className="text-xs text-muted-foreground">Quali host profile only; other hosts may inventory this container but cannot execute it. These fitted states hold no training rows; the file still contains training IDs, graph, parameters and reports.</p>
           </div>
         </>
       )}
@@ -226,7 +250,7 @@ export function Calibrate({ projectId }: { projectId: string }) {
   );
 }
 
-function VariantDetail({ scored, bestId, lang, tr }: { scored: Scored; bestId: string; lang: 'fr' | 'en'; tr: (fr: string, en: string) => string }) {
+function VariantDetail({ scored, lang, tr }: { scored: Scored; lang: 'fr' | 'en'; tr: (fr: string, en: string) => string }) {
   const m = scored.result.refit.metrics;
   const independent = scored.result.evaluation?.scope === 'independent_test' && scored.result.evaluation.independent_test;
   const report = buildModelReportView(m, undefined, 'en');
@@ -234,13 +258,16 @@ function VariantDetail({ scored, bestId, lang, tr }: { scored: Scored; bestId: s
     ...report,
     gradeLabel: independent ? report.gradeLabel : evaluationLabel(scored.result.evaluation),
     verdict: independent ? report.verdict : 'Independent validation is required before qualifying routine use.',
-    metrics: report.metrics.map((metric) => ({
-      ...metric,
-      label: metric.key === 'rmse' ? 'RMSE' : metric.label,
-      reading: metric.key === 'rmse' ? evaluationLabel(scored.result.evaluation) : independent ? metric.reading : '',
-    })),
+    metrics: report.metrics.map((metric) => {
+      const reason = scored.result.refit.ownerReport?.undefined_metrics?.[metric.key];
+      return {
+        ...metric,
+        label: metric.key === 'rmse' ? 'RMSE' : metric.label,
+        display: reason ? `undefined (${reason})` : metric.display,
+        reading: reason ?? (metric.key === 'rmse' ? evaluationLabel(scored.result.evaluation) : independent ? metric.reading : ''),
+      };
+    }),
   };
-  const isBest = scored.variant.id === bestId;
   // pipeline-composition strip: the chosen setting (best n_components / α / operator)
   const sel = scored.result.variants?.find((z) => z.selected);
   const selLabel = sel ? (sel.label ?? String(sel.x)) : undefined;
@@ -249,9 +276,9 @@ function VariantDetail({ scored, bestId, lang, tr }: { scored: Scored; bestId: s
     <>
       <div className="mb-3 flex items-center gap-2 text-sm">
         <span className="font-medium">{tr('Modèle retenu', 'Selected model')} : {tr(scored.variant.label.fr, scored.variant.label.en)}</span>
-        {isBest && <span className="n4-pill n4-pill--green">🏆 {tr('meilleur', 'best')}</span>}
       </div>
       <p className="mb-3 text-xs text-muted-foreground">{evaluationLabel(scored.result.evaluation)}. {evaluationNote(scored.result.evaluation)}</p>
+      <p className="mb-3 text-xs">{populationLabel(scored.result.population)}. Deployment fit: {scored.result.engine === 'dag-ml-methods-ridge' ? 'all labelled rows' : 'KS training rows only'}. Reported scores remain selection validation.</p>
       <ModelReportCard
         locale={lang}
         view={reportView}

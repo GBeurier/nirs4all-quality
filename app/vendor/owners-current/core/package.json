@@ -1,0 +1,110 @@
+{
+  "name": "nirs4all",
+  "version": "0.5.0",
+  "description": "Portable nirs4all aggregate binding for JavaScript and WASM",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./classic-ml": {
+      "types": "./src/classic-ml.d.ts",
+      "default": "./src/ml-estimator-adapters.js"
+    }
+  },
+  "types": "./src/index.d.ts",
+  "files": [
+    "src",
+    "native",
+    "README.md",
+    "LICENSE",
+    "LICENSES",
+    "LICENSING.md",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "scripts": {
+    "build:native": "wasm-pack build ../wasm-native --target web --out-dir ../wasm/native --release",
+    "prepack": "npm run build:native && node scripts/prepare-native-package.mjs",
+    "test": "npm run build:native && npm run test:js && npm run typecheck",
+    "test:js": "node --test tests/*.test.js",
+    "qualify:archive-v2": "node scripts/qualify-archive-v2.mjs",
+    "test:v1-surface": "npm run build:native && node --test tests/index.test.js tests/archive-v2.test.js && npm run typecheck",
+    "typecheck": "tsc --project tsconfig.typecheck.json"
+  },
+  "license": "(CECILL-2.1 OR AGPL-3.0-or-later)",
+  "homepage": "https://nirs4all-core.readthedocs.io/en/latest/",
+  "bugs": {
+    "url": "https://github.com/GBeurier/nirs4all-core/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GBeurier/nirs4all-core.git",
+    "directory": "bindings/wasm"
+  },
+  "keywords": [
+    "nirs",
+    "spectroscopy",
+    "chemometrics",
+    "wasm"
+  ],
+  "dependencies": {
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@tensorflow/tfjs": "^3.21.0",
+    "dag-ml-wasm": "^0.4.0",
+    "ml": "^8.0.0",
+    "ml-random-forest": "^2.1.0",
+    "scikitjs": "^1.24.0",
+    "typescript": "5.9.3"
+  },
+  "peerDependencies": {
+    "@nirs4all/datasets-wasm": "*",
+    "@nirs4all/formats-wasm": ">=0.2.16",
+    "@nirs4all/io-wasm": ">=0.3.1",
+    "@nirs4all/methods": ">=1.3.15 <2",
+    "@tensorflow/tfjs": "^3.21.0",
+    "dag-ml-data-wasm": ">=0.2.16",
+    "dag-ml-wasm": ">=0.4.0",
+    "ml": "^8.0.0",
+    "ml-random-forest": "^2.1.0",
+    "scikitjs": "^1.24.0"
+  },
+  "peerDependenciesMeta": {
+    "@nirs4all/datasets-wasm": {
+      "optional": true
+    },
+    "@nirs4all/formats-wasm": {
+      "optional": true
+    },
+    "@nirs4all/io-wasm": {
+      "optional": true
+    },
+    "@nirs4all/methods": {
+      "optional": true
+    },
+    "dag-ml-wasm": {
+      "optional": true
+    },
+    "dag-ml-data-wasm": {
+      "optional": true
+    },
+    "ml-random-forest": {
+      "optional": true
+    },
+    "ml": {
+      "optional": true
+    },
+    "scikitjs": {
+      "optional": true
+    },
+    "@tensorflow/tfjs": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

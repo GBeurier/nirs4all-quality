@@ -1,45 +1,46 @@
 import { countSampleStatuses } from 'nirs4all-ui/lab';
 import { FlaskConical, Plus, RotateCcw } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import type { Project } from '@/domain/model';
 import { useTr } from '@/i18n';
-import { analyzeFiles, assembleDataset, readRawFiles } from '@/lib/dataset';
-import { newId, nowIso } from '@/lib/ids';
+import { emptyImport, readImportFiles, replaceBindings } from '@/lib/ioImport';
+import { newId } from '@/lib/ids';
 import { clearState } from '@/lib/persist';
-import { useLab } from '@/store/store';
+import { useLab, type LabState } from '@/store/store';
 import { Dropzone } from '@/ui/Dropzone';
+
+export async function quickStartDraft(files: File[], saved: LabState['setupImportDraft']) {
+  const added = await readImportFiles(files);
+  return {
+    projectId: saved?.projectId ?? newId('p'),
+    record: replaceBindings(saved?.record ?? emptyImport(), added),
+    name: saved?.name ?? (files[0]?.name ?? 'project').replace(/\.[^.]+$/, ''),
+  };
+}
 
 export function Projects({ onOpen, onNew }: { onOpen: (projectId: string) => void; onNew: () => void }) {
   const { state, dispatch } = useLab();
   const tr = useTr();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const active = useRef(true);
+  const pending = useRef(false);
+  useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
 
   async function onDrop(files: File[]) {
-    if (files.length === 0) return;
+    if (files.length === 0 || pending.current) return;
+    pending.current = true;
     setBusy(true); setErr(null);
     try {
-      const raw = await readRawFiles(files);
-      const analysis = analyzeFiles(raw);
-      const id = newId('p');
-      const { samples, spectra } = assembleDataset(id, analysis, analysis.leading);
-      const project: Project = {
-        id,
-        name: (files[0]?.name ?? 'projet').replace(/\.[^.]+$/, ''),
-        method: { target: analysis.targetName === 'y' ? '' : analysis.targetName, unit: '%', basis: 'dry', matrix: '', referenceMethod: 'HPLC', sopVersion: 'SOP-v1', taskType: 'regression' },
-        instrumentId: null,
-        hplcBudget: 15,
-        createdAt: nowIso(),
-        updatedAt: nowIso(),
-        activeModelVersionId: null,
-      };
-      dispatch({ kind: 'create_project', project, samples, spectra });
-      onOpen(id);
+      const draft = await quickStartDraft(files, state.setupImportDraft);
+      if (!active.current) return;
+      dispatch({ kind: 'set_setup_import_draft', draft });
+      onNew();
     } catch (e) {
-      setErr(tr('CSV illisible : ', 'Unreadable CSV: ') + (e instanceof Error ? e.message : ''));
+      if (active.current) setErr('Unreadable input: ' + (e instanceof Error ? e.message : ''));
     } finally {
-      setBusy(false);
+      pending.current = false;
+      if (active.current) setBusy(false);
     }
   }
 
@@ -55,7 +56,7 @@ export function Projects({ onOpen, onNew }: { onOpen: (projectId: string) => voi
           >
             <RotateCcw size={14} /> {tr('Réinitialiser', 'Reset')}
           </button>
-          <button className="btn-primary" onClick={onNew}>
+          <button className="btn-primary" onClick={onNew} disabled={busy}>
             <Plus size={16} /> {tr('Nouveau projet', 'New project')}
           </button>
         </div>

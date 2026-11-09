@@ -33,7 +33,7 @@ export function buildTrainingDataset(
   const y = new Float64Array(n);
   const sampleIds: string[] = [];
   vecs.forEach((row, i) => {
-    for (let j = 0; j < p; j++) { const val = row.v[j]; X[i * p + j] = Number.isFinite(val) ? (val as number) : 0; }
+    for (let j = 0; j < p; j++) X[i * p + j] = row.v[j]!;
     y[i] = row.y;
     sampleIds.push(row.id);
   });

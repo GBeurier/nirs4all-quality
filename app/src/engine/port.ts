@@ -17,6 +17,8 @@
 // It must stay structurally compatible — see the compat check in ./wasmEngine.ts.
 
 import type { Evaluation } from './evaluation.js';
+import type { OwnerPredictionBlock, OwnerRegressionReport } from './ownerReports.js';
+export type { OwnerRegressionReport } from './ownerReports.js';
 
 export type TaskType = 'regression' | 'binary' | 'multiclass';
 export type Partition = 'train' | 'test' | 'predict';
@@ -77,6 +79,7 @@ export interface ScoreNode {
   name: string;
   kind: 'refit' | 'cv' | 'fold';
   metrics: Metrics;
+  ownerReport?: OwnerRegressionReport;
   predictions: PredRow[];
   status: 'completed' | 'running' | 'failed';
 }
@@ -88,6 +91,13 @@ export interface FittedModel {
   classes?: string[];
   /** engine-specific serialized state (preprocessing + model) */
   state: unknown;
+}
+
+export interface SelectionPopulation {
+  split: { method: 'KennardStone'; test_size: 0.25 } | { method: 'KennardStone'; n_train: number };
+  trainingSampleIds: string[];
+  validationSampleIds: string[];
+  foldId: string;
 }
 
 export interface RunResult {
@@ -104,6 +114,7 @@ export interface RunResult {
   scoreMetric: keyof Metrics;
   /** Missing only for older saved results or engines without evaluation context. */
   evaluation?: Evaluation;
+  population?: SelectionPopulation;
   /** Backend refusals and runtime failures, including candidates scored by fallback. */
   candidateIssues?: CandidateIssue[];
   model: FittedModel;
@@ -133,8 +144,19 @@ export interface RunOptions {
   allowFallback?: boolean;
 }
 
+export interface PredictionContext {
+  /** These IDs identify the corresponding input spectral rows. */
+  sampleIds: string[];
+  targetName?: string;
+  references?: { sampleId: string; actual?: number | null }[];
+}
+
 export interface PredictResult {
   values: Float64Array;
+  sampleIds?: string[];
+  predictionBlock?: OwnerPredictionBlock;
+  report?: OwnerRegressionReport;
+  unscoredSampleIds?: string[];
   labels?: string[];
 }
 
@@ -145,7 +167,9 @@ export interface PredictResult {
 export interface LabEngine {
   readonly name: string;
   run(ds: MaterializedDataset, dsl: PipelineDSL, opts?: RunOptions): Promise<RunResult>;
-  predict(model: FittedModel, Xnew: Float64Array, nSamples: number, nFeatures: number): Promise<PredictResult>;
+  runPlsBank?(ds: MaterializedDataset, bank: import('./ownerRecipes.js').PlsBank, name: string, id: string): Promise<RunResult>;
+  runRidgeBank?(ds: MaterializedDataset, bank: import('./ownerRidgeBanks.js').RidgeBank, name: string, id: string): Promise<RunResult>;
+  predict(model: FittedModel, Xnew: Float64Array, nSamples: number, nFeatures: number, context?: PredictionContext): Promise<PredictResult>;
 }
 
 /** Which backend the app is wired to. */

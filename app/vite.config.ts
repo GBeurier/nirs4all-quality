@@ -6,6 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import { methodsRoot, qualifiedMethodsStage } from './scripts/methods-stage.mjs';
+import { ioImportRoot, qualifiedIOImportStage } from './scripts/io-stage.mjs';
 
 // quali-nirs4all — thin-shell WASM app.
 //
@@ -25,15 +26,23 @@ const staged = (p: string) => process.env.NIRS4ALL_WASM_ROOT ? resolve(process.e
 export default defineConfig(async ({ mode }) => {
   const single = mode === 'singlefile';
   const methodsCohort = await qualifiedMethodsStage();
+  const ioStage = await qualifiedIOImportStage();
+  const importRoot = ioImportRoot();
   return {
     base: './',
+    define: { __QUALI_IO_IMPORT_STAGE__: JSON.stringify(ioStage) },
     plugins: [react(), tailwindcss(), {
       name: 'qualified-methods-cohort',
       generateBundle() { this.emitFile({ type: 'asset', fileName: 'methods-cohort.json', source: JSON.stringify(methodsCohort, null, 2) }); },
+    }, {
+      name: 'io-import-stage',
+      generateBundle() { this.emitFile({ type: 'asset', fileName: 'io-import-stage.json', source: JSON.stringify(ioStage, null, 2) }); },
     }, ...(single ? [viteSingleFile()] : [])],
     resolve: {
       alias: [
         { find: '@', replacement: abs('./src') },
+        { find: /^@quali\/io-import-wasm$/, replacement: resolve(importRoot, 'nirs4all_io_wasm.js') },
+        { find: /^@quali\/io-import-numeric$/, replacement: resolve(importRoot, 'numeric-wire.mjs') },
         { find: '@nirs4all/methods', replacement: resolve(methodsRoot, 'index.js') },
         { find: '@nirs4all/methods-wasm', replacement: resolve(methodsRoot, 'index.js') },
         { find: '@nirs4all/formats-wasm', replacement: staged('formats/nirs4all_formats_wasm.js') },
