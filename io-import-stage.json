@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "status": "HASH_VERIFIED_BROWSER_RUNTIME_UNQUALIFIED",
+  "owner": "nirs4all-io",
+  "browser_receipt": "/home/delete/nirs4all/_worktrees/2026-11-09-quali-main-merge/app/vendor/owners-current/IO_STAGE.json",
+  "companion_receipt": "/home/delete/nirs4all/_worktrees/2026-11-09-quali-main-merge/app/vendor/owners-current/IO_COMPANION.json",
+  "types_receipt": "/home/delete/nirs4all/_worktrees/2026-11-09-quali-main-merge/app/vendor/owners-current/IO_STAGE.json",
+  "loader_sha256": "7dd87d55807f43b163cd017a48751cd56273b044bc731be137f1c9256dbee5f7",
+  "wasm_sha256": "9bd041658f0cdb87042926e0ae608af6fc318568bc01d9c594ae33fd0d5f1012",
+  "companion_sha256": "82e35e14f51aa49f6ad2da382e26d080e7b4ec84b257b6cf77da52b5410d618b",
+  "companion_declaration_sha256": "48a26a8d6754a59e3d074c3c52351970e3f5725f3991899913bf61810229c0b0",
+  "public_types_sha256": "6d6f5a8c0f445e740c15f81e0c00298bfaa9915eba05a1a53b4a1b2bc35c91f5",
+  "publication_claimed": false
+}

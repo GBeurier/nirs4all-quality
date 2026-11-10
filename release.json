@@ -1,8 +1,0 @@
-{
-  "product": "quali-nirs4all",
-  "version": "0.0.6",
-  "source_commit": "c9d6d091e9521d6dee82f286dc3da4d5936765c3",
-  "release_url": "https://github.com/GBeurier/nirs4all-quality/releases/tag/v0.0.6",
-  "provenance_sha256": "4fe66ed098bb8eb76cf5eb2ccee39a1262c6344d2011fbdc747208179ef50180",
-  "qualification_summary_sha256": "8fb741abb27c8099c851701f35c63e1695440ae950299e33b187fac6a434221d"
-}
