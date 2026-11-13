@@ -11,7 +11,7 @@ import { useLab, useProjectSpectra, type StoredModel } from '@/store/store';
 import { Explain } from '@/ui/Explain';
 import { EXPLAIN } from '@/ui/explanations';
 import { TrainingResults } from '@/screens/TrainingResults';
-import { exportModelContainer, QUALI_HOST } from '@/lib/modelIo';
+import { buildModelBundle, exportModelContainer } from '@/lib/modelIo';
 import { populationLabel } from '@/engine/evaluation';
 import { validateCalibrationDataset } from '@/engine/evaluation';
 
@@ -75,6 +75,8 @@ export function Calibrate({ projectId }: { projectId: string }) {
       population: s.result.population!, selectedProfileId: s.variant.id,
       metrics: s.result.refit.metrics, yRange, nFeatures: ds.nFeatures, createdAt: s.result.createdAt,
       ...(s.result.evaluation ? { evaluation: s.result.evaluation } : {}),
+      ...(scored ? { sourceBundle: buildModelBundle(s.variant.id, project?.method, yRange,
+        scored.map(({ variant, result }) => ({ variantId: variant.id, result })), failures) } : {}),
     };
     dispatch({ kind: 'set_model', projectId, model: m });
   };
@@ -119,17 +121,8 @@ export function Calibrate({ projectId }: { projectId: string }) {
     if (!selected || !scored) return;
     setExporting(true); setExportError(null);
     try {
-      const r = selected.result;
-      const bytes = await exportModelContainer({
-        schema: QUALI_HOST.schema, schema_version: 1, selectedProfileId: selected.variant.id,
-        createdAt: r.createdAt, engine: r.engine, method: project?.method, pipeline: selected.variant.label.en,
-        targetName: r.targetName, model: r.model, nFeatures: r.model.nFeatures, yRange,
-        population: r.population, metrics: r.refit.metrics, ownerReport: r.refit.ownerReport,
-        evaluation: r.evaluation, candidateIssues: r.candidateIssues ?? [], failedPipelines: failures,
-        leaderboard: scored.map(({ variant, result }) => ({ profileId: variant.id, pipeline: variant.label.en,
-          engine: result.engine, metrics: result.refit.metrics, ownerReport: result.refit.ownerReport,
-          population: result.population, evaluation: result.evaluation, candidateIssues: result.candidateIssues ?? [] })),
-      });
+      const bytes = await exportModelContainer(buildModelBundle(selected.variant.id, project?.method, yRange,
+        scored.map(({ variant, result }) => ({ variantId: variant.id, result })), failures));
       downloadBytes(`${slug(project?.name ?? 'project')}.n4a`, bytes);
     } catch (error) { setExportError(error instanceof Error ? error.message : String(error)); }
     finally { setExporting(false); }

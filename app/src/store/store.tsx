@@ -10,6 +10,7 @@ import { newId, nowIso } from '@/lib/ids';
 import { loadState, saveState } from '@/lib/persist';
 import type { RetainedImport } from '@/lib/ioImport';
 import { applyReferenceDeltaToState, type ReferenceDelta } from '@/lib/referenceImport';
+import { restoreProjectWorkspace, type ProjectWorkspace } from '@/lib/serverWorkspace';
 
 /** The active fitted model for a project (produced by Calibrate, used by Predict). */
 export interface StoredModel {
@@ -22,6 +23,8 @@ export interface StoredModel {
   selectedProfileId?: string;
   /** Exact imported host metadata, including reports and recorded failures. */
   sourceBundle?: Record<string, unknown>;
+  /** Exact imported owner container, reused only for an explicitly consented export. */
+  archiveBlob?: Blob;
   evaluation?: Evaluation;
   /** Imported evaluation claims are retained as provenance, not verified qualification. */
   evaluationDeclaredOnly?: boolean;
@@ -65,6 +68,7 @@ export interface LabState {
 }
 
 export type LabAction =
+  | { kind: 'restore_server_project'; snapshot: ProjectWorkspace; importedModel?: StoredModel }
   | { kind: 'create_project'; project: Project; samples: Sample[]; spectra?: SpectraDataset; retainedImport?: RetainedImport }
   | { kind: 'set_setup_import_draft'; draft: LabState['setupImportDraft'] }
   | { kind: 'set_sample_status'; projectId: string; sampleIds: string[]; status: SampleStatus; justification?: string }
@@ -92,6 +96,8 @@ function auditEntry(state: LabState, projectId: string, action: AuditEntry['acti
 
 function reducer(state: LabState, action: LabAction): LabState {
   switch (action.kind) {
+    case 'restore_server_project':
+      return restoreProjectWorkspace(state, action.snapshot, action.importedModel);
     case 'set_setup_import_draft':
       return { ...state, setupImportDraft: action.draft };
     case 'create_project': {
@@ -165,14 +171,14 @@ function reducer(state: LabState, action: LabAction): LabState {
     case 'audit':
       return { ...state, audit: [...state.audit, action.entry] };
     case 'hydrate':
-      // defensively fill fields that older persisted states may lack
-      return { ...action.state, importsByProject: action.state.importsByProject ?? {}, setupImportDraft: action.state.setupImportDraft ?? null, modelByProject: action.state.modelByProject ?? {}, calibByProject: action.state.calibByProject ?? {}, cropByProject: action.state.cropByProject ?? {}, previewPpByProject: action.state.previewPpByProject ?? {}, repModeByProject: action.state.repModeByProject ?? {} };
+      // Local IndexedDB stores project data; fitted handles and calibration objects stay memory-only.
+      return { ...action.state, importsByProject: action.state.importsByProject ?? {}, setupImportDraft: action.state.setupImportDraft ?? null, modelByProject: {}, calibByProject: {}, cropByProject: action.state.cropByProject ?? {}, previewPpByProject: action.state.previewPpByProject ?? {}, repModeByProject: action.state.repModeByProject ?? {} };
     default:
       return state;
   }
 }
 
-const LabContext = createContext<{ state: LabState; dispatch: Dispatch<LabAction> } | null>(null);
+const LabContext = createContext<{ state: LabState; dispatch: Dispatch<LabAction>; hydrated: boolean } | null>(null);
 
 export function LabProvider({ initial, children }: { initial: LabState; children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initial);
@@ -211,7 +217,7 @@ export function LabProvider({ initial, children }: { initial: LabState; children
     return () => { window.removeEventListener('pagehide', flush); document.removeEventListener('visibilitychange', onHidden); };
   }, [hydrated]);
 
-  const value = useMemo(() => ({ state, dispatch }), [state]);
+  const value = useMemo(() => ({ state, dispatch, hydrated }), [state, hydrated]);
   return <LabContext.Provider value={value}>{children}</LabContext.Provider>;
 }
 
