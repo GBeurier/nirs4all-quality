@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "smoke": "node scripts/wasm-smoke.mjs",
     "test:model-import": "node scripts/model-import-contract.mjs",
+    "test:server-workspace": "node scripts/server-workspace-contract.mjs",
     "deploy": "bash scripts/deploy-pages.sh",
     "test:science": "npm run test:science:native && npm run test:calibration",
     "test:methods-cohort": "node --test scripts/methods-cohort-contract.mjs",
@@ -22,6 +23,7 @@
     "test:calibration": "node --test scripts/scientific-contract.test.mjs"
   },
   "dependencies": {
+    "@nirs4all/server-client": "file:vendor/npm/nirs4all-server-client-0.1.0-local.20261113.2.tgz",
     "lucide-react": "0.487.0",
     "nirs4all": "file:vendor/owners-current/core",
     "nirs4all-ui": "file:vendor/npm/nirs4all-ui-0.2.2-local.20261107.2.tgz",

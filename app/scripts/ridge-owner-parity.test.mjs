@@ -84,7 +84,8 @@ const load = path => server.ssrLoadModule(`/src/${path}`);
 const { CALIB_VARIANTS, runVariant } = await load('engine/variants.ts');
 const { dagEngine, runRidgeBank, predictDagModel } = await load('engine/dagEngine.ts');
 const { lowerRidgeBank, ridgeTrainCount, ridgeSelectionSplit } = await load('engine/ownerRidgeBanks.ts');
-const { importModelContainer, exportModelContainer, QUALI_HOST, qualiHostManifest } = await load('lib/modelIo.ts');
+const { buildModelBundle, importModelContainer, exportModelContainer, QUALI_HOST, qualiHostManifest } = await load('lib/modelIo.ts');
+const { exportProjectModel } = await load('lib/serverWorkspace.ts');
 const { reportToMetrics } = await load('engine/ownerReports.ts');
 const { fitEval: frozenFitEval, runJsVariant: frozenRunRidge } = await load('engine/testing/oracle/jsEngine.ts');
 const { kennardStoneTest: frozenKs } = await load('engine/testing/oracle/jsNumerics.ts');
@@ -260,6 +261,29 @@ test('Ridge all three D1 banks use one owner batch, native ordinal selection and
       evaluation: result.evaluation, candidateIssues: result.candidateIssues ?? [], failedPipelines: [],
       leaderboard: [{ profileId: variant.id, ownerReport: result.refit.ownerReport, population: result.population, evaluation: result.evaluation }] };
     const refitsBefore = api('execute_initial_full_refit_json').length;
+    // The server route exports this completed owner result; it cannot fit again.
+    const { makeDemoState } = await load('store/demo.ts');
+    const activeState = makeDemoState(), activeProject = activeState.projects[0];
+    activeState.calibByProject[activeProject.id] = {
+      selectedId: variant.id, results: [{ variantId: variant.id, result }], failures: [],
+    };
+    activeState.modelByProject[activeProject.id] = {
+      model: result.model, engine: result.engine, pipelineName: variant.label.en,
+      metrics: result.refit.metrics, ownerReport: result.refit.ownerReport,
+      population: result.population, selectedProfileId: variant.id,
+      evaluation: result.evaluation, yRange: bundle.yRange, nFeatures: ds.nFeatures, createdAt: result.createdAt,
+    };
+    const activeArchive = await exportProjectModel(activeState, activeProject.id);
+    const activeImported = await importModelContainer(activeArchive);
+    assert.ok('model' in activeImported);
+    assert.deepEqual(activeImported.model.sourceBundle,
+      buildModelBundle(variant.id, activeProject.method, bundle.yRange,
+        activeState.calibByProject[activeProject.id].results, []));
+    assert.equal(activeImported.model.model.state.packageJson, result.model.state.packageJson);
+    assert.deepEqual(activeImported.model.ownerReport, result.refit.ownerReport);
+    assert.equal(api('execute_initial_full_refit_json').length, refitsBefore, 'Workspace export creates no fresh fit');
+    delete activeState.calibByProject[activeProject.id];
+    await assert.rejects(() => exportProjectModel(activeState, activeProject.id), /no exact completed export provenance/);
     const bytes = await exportModelContainer(bundle);
     if (process.env.QUALI_MODEL_OUTPUT_DIR) await writeFile(resolve(process.env.QUALI_MODEL_OUTPUT_DIR, `${variant.id}-d1.n4a`), bytes, { flag: 'wx' });
     const opened = await storage.openN4aContainer(bytes);

@@ -182,6 +182,89 @@ SMOKE_URL=http://localhost:4399/ npm run test:assessment-browser
 owner migration/parity gate. `scripts/science-browser.mjs` still assumes the old
 engine label and automatic model activation and is not the current replay smoke.
 
+## Optional private server workspaces
+
+The **Optional server workspace** panel connects only after an explicit operator
+action. Enter an HTTPS server URL (loopback HTTP is admitted for qualification)
+and a project token. The token field clears immediately; the client and verified
+principal stay in memory only. The panel displays the server-verified project,
+principal, services and rights. Disconnect aborts requests and fences late
+callbacks. Opaque `file://` origins retain local functionality and refuse server
+connection; an HTTP(S) origin must be explicitly admitted by the server's CORS
+configuration.
+
+Choose one local project, workspace ID and name. By default, **Save workspace**
+uploads only its description, crop, preprocessing preview and repetition mode.
+It excludes dataset arrays, original sources, split identities, audit and fitted
+state. The optional data checkbox includes the exact selected project's samples,
+spectra, immutable audit history, retained IO owner objects and source files.
+An explicit consent checkbox is required before any such upload. Other projects,
+the user account, the setup draft and calibration handles are excluded.
+
+An active model may be explicitly excluded while saving project data; saving
+does not change that local model. Alternatively, **Include the active fitted
+model** uses the existing qualified `modelIo` export/import route. Supported
+PLS/Ridge states contain no training rows, but the transfer includes fitted
+weights, training identities, graph, parameters and owner reports. The complete
+current calibration export payload is shared with the local model download;
+imported models retain their original container Blob and source bundle for exact
+resave. Unsupported/missing model export provenance refuses before upload. No
+training, selection or evaluation is performed during workspace storage.
+
+Core writes a V1 `.n4a` attachment with owner/content type
+`nirs4all.quali.workspace`, version 1, feature `nirs4all-quali-workspace@1` and
+`workspace/state.json`. The shared browser-state codec preserves typed-array
+bytes, nonfinite values, negative zero, masks, File/Blob metadata and retained
+owner provenance; no host ZIP parser or numerical/data-assembly substitute is
+used. An optional model remains its exact existing owner `.n4a` Blob inside the
+attachment. The server workspace JSON contains only app/schema metadata and the
+archive reference. This host storage profile makes no cross-host execution or
+scientific qualification claim.
+
+Refresh lists the verified server project's workspaces. **Open** reads the latest
+revision, validates Core inventory and host profile, admits any included model
+through its existing owner route, then asks before adding/replacing the target
+local project and activating that included model. The Core container SHA-256 is
+compared to the selected server artifact reference before reading host members.
+The opening confirmation explicitly discloses that project data and retained
+source files enter local IndexedDB and remain after the page closes, and asks
+consent before applying them. Model/calibration handles and the retained model
+archive stay in memory only and are excluded from local persistence. Other projects and prior
+immutable audit records remain intact; conflicting audit identities refuse the
+operation. Imported evaluation remains declared-only. Settings imports preserve
+existing dataset/source provenance, while changed model inputs invalidate the
+ephemeral predictor as local controls do. Data imports clear ephemeral
+calibration and restore a model only when explicitly included and confirmed.
+Revision compare-and-swap conflicts preserve local work and require explicit
+open/reload or a new workspace ID; no silent overwrite occurs.
+
+The coordinated source batch uses private browser-client candidate
+`@nirs4all/server-client@0.1.0-local.20261113.2` from
+`vendor/npm/nirs4all-server-client-0.1.0-local.20261113.2.tgz`, with identical
+tarball bytes staged in Web and Quali. This is a local delivery, not a registry
+release. Core remains the pinned `file:vendor/owners-current/core` dependency;
+the WASM owners are the explicitly selected `vendor/owners-current/wasm` cohort.
+Use `npm ci` with the checked-in lockfile; preserve the exact local owner and client pins.
+
+```bash
+npm ci
+# Add --offline only when all locked packages are already cached.
+```
+
+The tracked .npmrc (install-links=true) copies the staged local file dependencies.
+Runtime admission remains in force: the build and first Methods load inspect the
+actual version/ABI, and owner operations refuse unsupported profiles. Do not
+replace the pinned cohort with unrelated packages based only on matching labels.
+
+After installing this staged candidate, run `npm run test:server-workspace`, the existing
+model-import gate with an already-produced `QUALI_MODEL_FIXTURE`, typecheck and
+the affected served/offline builds. The workspace test uses real Core storage
+with synthetic host data (not an IO qualification claim). Real-server browser
+qualification must also compare restored IDs, binary data and provenance in a
+fresh browser context, exercise consent/conflicts/wrong projects/disconnect, and
+check that no token enters browser persistence or artifacts. No command in this
+paragraph is a recorded passing check.
+
 ## Methods delivery floor
 
 The optional npm peer range records `@nirs4all/methods >=1.3.15 <2` in the
@@ -208,3 +291,5 @@ measured runtime version, ABI and WASM/loader hashes with
 refusal of the old ABI, missing identities and unqualified major versions.
 The 19 real-WASM scientific tests require wide T²/Q availability in every
 qualified run.
+
+Client source and distributed license texts: [public/legal/server-client/NOTICE.md](public/legal/server-client/NOTICE.md).

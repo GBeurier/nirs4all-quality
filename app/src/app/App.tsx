@@ -12,6 +12,7 @@ import { SelectHplc } from '@/screens/SelectHplc';
 import { Calibrate } from '@/screens/Calibrate';
 import { Predict } from '@/screens/Predict';
 import { Maintenance } from '@/screens/Maintenance';
+import { ServerWorkspacePanel } from '@/components/server/ServerWorkspacePanel';
 
 interface StepDef { id: string; fr: string; en: string; capFr: string; capEn: string }
 const STEP_DEFS: StepDef[] = [
@@ -57,6 +58,7 @@ export default function App() {
         </div>
       </header>
       <div className="n4-spectrum-strip" />
+      <ServerWorkspacePanel onOpened={(projectId) => setView({ kind: 'workflow', projectId, step: 'explore' })} />
 
       {view.kind === 'projects' && (
         <Projects

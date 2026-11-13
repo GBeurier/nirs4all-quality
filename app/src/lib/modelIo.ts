@@ -2,7 +2,8 @@
 // packageJson is inspected read-only and always transported as its exact string.
 import { openN4aContainer, writeN4aContainer, type N4aSource } from 'nirs4all';
 import type { FittedModel, SelectionPopulation } from '@/engine/port';
-import type { StoredModel } from '@/store/store';
+import type { StoredModel, CalibrationState } from '@/store/store';
+import type { Method } from '@/domain/model';
 import { loadDag } from '@/engine/dagRuntime';
 import { refuseLegacyState } from '@/engine/legacyState';
 import { artifactDigest } from '@/engine/artifactDigest';
@@ -14,6 +15,29 @@ import { lowerRidgeBank } from '@/engine/ownerRidgeBanks';
 export const QUALI_HOST = { owner: 'nirs4all.quali-host', feature: 'nirs4all-quali-host@1',
   schema: 'nirs4all.quali-host.bundle', version: 1, path: 'host/bundle.json',
   entrypoint: 'host-predict', operation: 'host.predict', fingerprintProfile: 'sha256.raw.v1' } as const;
+
+/** Package the completed owner result for local export or an explicitly consented workspace save. */
+export function buildModelBundle(selectedProfileId: string, method: Method | undefined, yRange: [number, number],
+  results: CalibrationState['results'], failures: CalibrationState['failures'] = []): Record<string, unknown> {
+  const selected = results.find(item => item.variantId === selectedProfileId);
+  const variant = CALIB_VARIANTS.find(item => item.id === selectedProfileId);
+  requireValue(selected && variant, 'The selected completed calibration profile is unavailable.');
+  const r = selected.result;
+  return {
+    schema: QUALI_HOST.schema, schema_version: 1, selectedProfileId,
+    createdAt: r.createdAt, engine: r.engine, method, pipeline: variant.label.en,
+    targetName: r.targetName, model: r.model, nFeatures: r.model.nFeatures, yRange,
+    population: r.population, metrics: r.refit.metrics, ownerReport: r.refit.ownerReport,
+    evaluation: r.evaluation, candidateIssues: r.candidateIssues ?? [], failedPipelines: failures,
+    leaderboard: results.map(({ variantId, result }) => {
+      const profile = CALIB_VARIANTS.find(item => item.id === variantId);
+      requireValue(profile, 'A completed calibration profile is unavailable.');
+      return { profileId: profile.id, pipeline: profile.label.en,
+        engine: result.engine, metrics: result.refit.metrics, ownerReport: result.refit.ownerReport,
+        population: result.population, evaluation: result.evaluation, candidateIssues: result.candidateIssues ?? [] };
+    }),
+  };
+}
 
 // Boundary records are unknown until the checks below admit each used field.
 type RecordValue = Record<string, any>;
@@ -174,6 +198,7 @@ export async function importModelContainer(source: N4aSource): Promise<{ model: 
       const dag = await loadDag();
       dag.validate_initial_full_refit_package_json(exact);
       requireValue((model.model.state as { packageJson: string }).packageJson === exact, 'Exact owner package string changed during admission.');
+      if (source instanceof Blob) model.archiveBlob = source;
       return { model };
     } finally { container.close(); }
   } catch (error) {
