@@ -267,11 +267,15 @@ paragraph is a recorded passing check.
 
 ## Methods delivery floor
 
-The optional npm peer range records `@nirs4all/methods >=1.3.15 <2` in the
-manifest and lock. Optional resolution permits explicit staging delivery; it
-does not waive runtime admission. Builds and the first Methods load check the actual
-WASM version and ABI (`>=2.22 <3`), rather than an npm label. Both Methods aliases
-resolve to the same verified artifact.
+The optional npm peer range records `@nirs4all/methods ^1.3.0` in the
+manifest and lock: cross-repository constraints are declared at minor
+granularity, never more precisely (the ecosystem contract in
+`docs/contracts/release/VERSION_CONSTRAINTS.md` of `nirs4all-ecosystem`; an
+owner patch release changes no wire format, persisted schema or native ABI).
+Optional resolution permits explicit staging delivery; it does not waive runtime
+admission. Builds and the first Methods load check the actual WASM version
+(`>=1.3.15 <2`, the fixed owner floor) and ABI (`>=2.22 <3`), rather than an npm
+label. Both Methods aliases resolve to the same verified artifact.
 
 The current private snapshot is recorded in `vendor/owners-current/DELIVERY.json`:
 Core 0.5.0, Methods 1.3.15, DAG 0.4.0, DMD 0.2.16, Formats 0.2.14, IO 0.3.0 and
