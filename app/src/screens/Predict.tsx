@@ -68,7 +68,7 @@ export function predictionInput(routine: SampleSpectra[], p: number, projectSamp
 }
 
 // Routine prediction uses an explicitly activated model and a separate calibration population.
-export function Predict({ projectId }: { projectId: string }) {
+export function Predict({ projectId, onCalibrate }: { projectId: string; onCalibrate?: () => void }) {
   const { state, dispatch } = useLab();
   const [assessment, setAssessment] = useState<SharedAssessment | null>(null);
   const tr = useTr();
@@ -248,7 +248,17 @@ export function Predict({ projectId }: { projectId: string }) {
     return <div className="mx-auto max-w-4xl">{header}<Empty text={error} /></div>;
   }
   if (!stored && !usedModel) {
-    return <div className="mx-auto max-w-4xl">{header}<Empty text="Choose a completed calibration profile explicitly, or import a qualified Quali host model." /></div>;
+    const hasProfiles = !!state.calibByProject[projectId]?.results.length;
+    return <div className="mx-auto max-w-4xl">{header}
+      <div className="card p-5 text-sm">
+        <p className="mb-3">{hasProfiles
+          ? 'Your completed calibration profiles are ready. Activate one to predict with it.'
+          : 'Calibrate a model on this project, then activate a completed profile to predict. You can also import a Quali model above.'}</p>
+        {onCalibrate && <button type="button" className="btn-primary" onClick={onCalibrate}>
+          {hasProfiles ? 'Choose a calibration profile' : 'Calibrate a model'}
+        </button>}
+      </div>
+    </div>;
   }
   if (!rel) {
     return (

@@ -25,7 +25,7 @@ const GROUP_LABEL: Record<VariantGroup, { fr: string; en: string }> = {
 const GROUP_ORDER: VariantGroup[] = ['cart', 'aom'];
 
 // Every owner profile keeps its own selection population. Activation is explicit.
-export function Calibrate({ projectId }: { projectId: string }) {
+export function Calibrate({ projectId, onPredict }: { projectId: string; onPredict?: () => void }) {
   const { state, dispatch } = useLab();
   const tr = useTr();
   const { lang } = useLang();
@@ -117,6 +117,7 @@ export function Calibrate({ projectId }: { projectId: string }) {
 
   const toggle = (id: string) => setChecked((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const selected = scored?.find((s) => s.variant.id === selectedId) ?? null;
+  const selectedIsActive = !!selected && state.modelByProject[projectId]?.model === selected.result.model;
   async function exportSelected() {
     if (!selected || !scored) return;
     setExporting(true); setExportError(null);
@@ -185,7 +186,7 @@ export function Calibrate({ projectId }: { projectId: string }) {
             <table className="w-full text-sm">
               <thead className="text-left text-xs text-muted-foreground">
                 <tr>
-                  <th className="px-3 py-1.5">Selected</th>
+                  <th className="px-3 py-1.5">Active</th>
                   <th className="px-3 py-1.5">{tr('Pipeline', 'Pipeline')}</th>
                   <th className="px-3 py-1.5 text-right">RMSE</th>
                   <th className="px-3 py-1.5 text-right">R²</th>
@@ -198,10 +199,16 @@ export function Calibrate({ projectId }: { projectId: string }) {
                   const m = s.result.refit.metrics;
                   const reasons = s.result.refit.ownerReport?.undefined_metrics;
                   const on = s.variant.id === selectedId;
+                  const active = state.modelByProject[projectId]?.model === s.result.model;
                   return (
                     <tr key={s.variant.id} onClick={() => pick(s)}
                       className={`cursor-pointer border-t border-border ${on ? 'bg-primary/[0.06]' : 'hover:bg-muted/40'}`}>
-                      <td className="px-3 py-2">{on ? '✓' : ''}</td>
+                      <td className="px-3 py-2">
+                        <button type="button" className="btn-outline" aria-label={`Activate ${s.variant.label.en}`}
+                          aria-pressed={active} onClick={(event) => { event.stopPropagation(); pick(s); }}>
+                          {active ? '✓ Active' : 'Activate'}
+                        </button>
+                      </td>
                       <td className="px-3 py-2">
                         <span className="font-medium">{tr(s.variant.label.fr, s.variant.label.en)}</span>
                         <span className="ml-2 rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">{s.result.engine}</span>
@@ -223,7 +230,8 @@ export function Calibrate({ projectId }: { projectId: string }) {
           {selected && <VariantDetail scored={selected} lang={lang} tr={tr} />}
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <button className="btn-outline" onClick={() => selected && downloadText(
+            {selectedIsActive && onPredict && <button type="button" className="btn-primary" onClick={onPredict}>Predict with this model</button>}
+            <button className="btn-outline" disabled={!selected} onClick={() => selected && downloadText(
               `${slug(project?.name ?? 'projet')}-${slug(selected.variant.label.en)}-predictions.csv`,
               toCsv(selected.result.refit.predictions.map((r) => ({ sample_id: r.sampleId, observed: r.actual, predicted: r.predicted, residual: r.residual,
                 evaluation_scope: selected.result.evaluation?.scope ?? 'unknown', independent_test: selected.result.evaluation?.independent_test ?? false,

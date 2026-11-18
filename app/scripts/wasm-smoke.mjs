@@ -60,7 +60,7 @@ async function importBytes(target, bytes, name = 'qualified-model.n4a') {
 }
 try {
   await openPredict(page);
-  await page.getByText('Choose a completed calibration profile explicitly, or import a qualified Quali host model.').waitFor();
+  await page.getByRole('button', { name: 'Calibrate a model', exact: true }).waitFor();
   await importBytes(page, copy);
   await page.getByText('These predictions are unqualified for routine use until independently validated.', { exact: false }).waitFor({ timeout: 90000 });
   const body = await page.locator('main').innerText();

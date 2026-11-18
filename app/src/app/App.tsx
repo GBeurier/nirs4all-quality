@@ -158,8 +158,8 @@ function Workflow({ projectId, step, onStep, onExit }: {
         {step === 'explore' && <DatasetExplorer projectId={projectId} />}
         {step === 'health' && <Health projectId={projectId} />}
         {step === 'select' && <SelectHplc projectId={projectId} />}
-        {step === 'calibrate' && <Calibrate projectId={projectId} />}
-        {step === 'predict' && <Predict projectId={projectId} />}
+        {step === 'calibrate' && <Calibrate projectId={projectId} onPredict={() => onStep('predict')} />}
+        {step === 'predict' && <Predict projectId={projectId} onCalibrate={() => onStep('calibrate')} />}
         {step === 'maintain' && <Maintenance projectId={projectId} />}
       </main>
     </div>
