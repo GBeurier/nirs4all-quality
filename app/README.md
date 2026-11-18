@@ -268,10 +268,11 @@ paragraph is a recorded passing check.
 ## Methods delivery floor
 
 The optional npm peer range records `@nirs4all/methods ^1.3.0` in the
-manifest and lock: cross-repository constraints are declared at minor
-granularity, never more precisely (the ecosystem contract in
-`docs/contracts/release/VERSION_CONSTRAINTS.md` of `nirs4all-ecosystem`; an
-owner patch release changes no wire format, persisted schema or native ABI).
+manifest and lock. That 1.x caret range predates the ecosystem rule that a
+cross-repository range accepts one tested minor series (for example
+`~1.4.1`; the contract is `docs/contracts/release/VERSION_CONSTRAINTS.md` in
+`nirs4all-ecosystem`) and is aligned at the next release; an owner patch
+release changes no existing output, wire format, schema or ABI symbol.
 Optional resolution permits explicit staging delivery; it does not waive runtime
 admission. Builds and the first Methods load check the actual WASM version
 (`>=1.3.15 <2`, the fixed owner floor) and ABI (`>=2.22 <3`), rather than an npm
