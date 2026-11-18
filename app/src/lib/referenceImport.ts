@@ -3,10 +3,10 @@
 // this module only forwards the user's explicit choices, matches exact sample ids and
 // plans/applies the resulting delta. No CSV parsing, no Number(text), no positional
 // fallback and no change to the historical retained import.
-import type { AssembledDataset, NamedFile, TableDescription } from '../../../../nirs4all-io/bindings/wasm/types/nirs4all-io';
+import type { AssembledDataset, NamedFile, TableDescription } from '../../vendor/owners-current/wasm/io/types/nirs4all-io';
 import type { AuditEntry, Sample } from '@/domain/model';
 
-export type ReferenceOwner = Pick<typeof import('../../../../nirs4all-io/bindings/wasm/types/nirs4all-io'),
+export type ReferenceOwner = Pick<typeof import('../../vendor/owners-current/wasm/io/types/nirs4all-io'),
   'describeTables' | 'validate' | 'assembleDataset'>;
 
 export interface ReferenceFile { name: string; bytes: Uint8Array; sha256: string }

@@ -1,5 +1,5 @@
 // Setup host orchestration only. IO owns parsing, inference and assembly.
-import type { AssembledDataset, ConfirmedLock, NamedFile, Proposal, ProposeResult } from '../../../../nirs4all-io/bindings/wasm/types/nirs4all-io';
+import type { AssembledDataset, ConfirmedLock, NamedFile, Proposal, ProposeResult } from '../../vendor/owners-current/wasm/io/types/nirs4all-io';
 import { numericCoordinates } from '@quali/io-import-numeric';
 import type { Sample } from '@/domain/model';
 import type { SpectraDataset } from '@/domain/spectra';
@@ -80,7 +80,7 @@ export interface RetainedImport {
 }
 
 /** The IO public type handshake supplies every owner operation and DTO. */
-export type ImportOwner = Pick<typeof import('../../../../nirs4all-io/bindings/wasm/types/nirs4all-io'),
+export type ImportOwner = Pick<typeof import('../../vendor/owners-current/wasm/io/types/nirs4all-io'),
   'version' | 'proposeDataset' | 'validate' | 'assembleDataset'>;
 
 export function emptyImport(): RetainedImport {

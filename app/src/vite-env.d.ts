@@ -12,5 +12,5 @@ declare module '@quali/io-import-wasm' {
 }
 
 declare module '@quali/io-import-numeric' {
-  export const numericCoordinates: typeof import('../../../nirs4all-io/bindings/wasm/numeric-wire')['numericCoordinates'];
+  export const numericCoordinates: typeof import('../vendor/owners-current/wasm/io/numeric-wire')['numericCoordinates'];
 }
