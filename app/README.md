@@ -132,9 +132,9 @@ samples; routine or candidate rows are projected without refitting the reference
 The cold-start HPLC view explicitly uses the pool as its descriptive reference.
 Hotelling T² and Q values and alpha=0.05 control limits come from the native
 `HotellingT2` and `QResiduals` procedures. Unsupported populations are displayed
-as unavailable, never as a clean diagnostic. Quality requires the fixed owner Methods **1.3.15 or later within major 1**,
-with **ABI 2.22 or later within major 2**. Build admission and the first Methods load
-query the loaded WASM version/ABI; the old 1.3.4 staging is refused. The
+as unavailable, never as a clean diagnostic. Quality requires the fixed owner Methods **1.5.0 or later within the 1.5 series**,
+with **ABI 2.24 or later within major 2**. Build admission and the first Methods load
+query the loaded WASM version/ABI; the previous 1.3.15 staging is refused. The
 `methods-cohort.json` build receipt identifies the actual WASM/loader hashes.
 
 Routine spectra are aligned with the native `Resampler` on physical wavelength
@@ -267,21 +267,22 @@ paragraph is a recorded passing check.
 
 ## Methods delivery floor
 
-The optional npm peer range records `@nirs4all/methods ^1.3.0` in the
-manifest and lock: cross-repository constraints are declared at minor
-granularity, never more precisely (the ecosystem contract in
-`docs/contracts/release/VERSION_CONSTRAINTS.md` of `nirs4all-ecosystem`; an
-owner patch release changes no wire format, persisted schema or native ABI).
+The optional npm peer range records `@nirs4all/methods ~1.5.0` in the
+manifest and lock, admitting one selected minor series under the ecosystem
+version-constraint contract. The 1.5.0 floor supplies the corrected owner
+numerics; compatible patches remain admissible.
 Optional resolution permits explicit staging delivery; it does not waive runtime
 admission. Builds and the first Methods load check the actual WASM version
-(`>=1.3.15 <2`, the fixed owner floor) and ABI (`>=2.22 <3`), rather than an npm
+(`>=1.5.0 <1.6`, the selected owner series) and ABI (`>=2.24 <3`), rather than an npm
 label. Both Methods aliases resolve to the same verified artifact.
 
-The current private snapshot is recorded in `vendor/owners-current/DELIVERY.json`:
-Core 0.5.0, Methods 1.3.15, DAG 0.4.0, DMD 0.2.16, Formats 0.2.14, IO 0.3.0 and
-Datasets 0.3.18 are its package metadata. That receipt describes staged bytes and
-explicitly claims neither publication nor runtime qualification. Package versions
-alone do not identify a qualified cohort; retain the receipt and exact hashes.
+The current snapshot is recorded in `vendor/owners-current/DELIVERY.json`.
+It now contains the exact public Methods 1.5.0 projection; Core 0.5.0 and DAG 0.4.0
+remain staged while the release awaits public Core 0.6 and DAG 0.5. The other
+owners and the independently identified Formats/IO browser artifacts retain their
+existing receipts and bytes. The delivery receipt explicitly distinguishes these
+profiles and does not claim overall publication or runtime qualification. Package
+versions alone do not identify a qualified cohort; retain the receipt and hashes.
 `IO_STAGE.json` and `IO_COMPANION.json` accompany the separate Setup admission.
 Use the explicit snapshot paths above; the historical owner cohort is provenance.
 
@@ -292,7 +293,7 @@ measured runtime version, ABI and WASM/loader hashes with
 `publication_claimed: false`; a build receipt does not certify browser or scientific qualification.
 
 `npm run test:methods-cohort` checks admission of compatible versions and
-refusal of the old ABI, missing identities and unqualified major versions.
+refusal of the old ABI, missing identities and unqualified minor or major series.
 The 19 real-WASM scientific tests require wide T²/Q availability in every
 qualified run.
 
