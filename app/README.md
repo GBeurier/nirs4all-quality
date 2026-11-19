@@ -277,8 +277,8 @@ admission. Builds and the first Methods load check the actual WASM version
 label. Both Methods aliases resolve to the same verified artifact.
 
 The current snapshot is recorded in `vendor/owners-current/DELIVERY.json`.
-It now contains the exact public Methods 1.5.0 projection; Core 0.5.0 and DAG 0.4.0
-remain staged while the release awaits public Core 0.6 and DAG 0.5. The other
+It now contains the exact public Methods 1.5.0 and DAG 0.5.0 projections; Core 0.5.0
+remains staged while the release awaits public Core 0.6. The other
 owners and the independently identified Formats/IO browser artifacts retain their
 existing receipts and bytes. The delivery receipt explicitly distinguishes these
 profiles and does not claim overall publication or runtime qualification. Package
