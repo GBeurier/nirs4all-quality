@@ -292,6 +292,10 @@ it unset to use the snapshot's staged Methods. `methods-cohort.json` records the
 measured runtime version, ABI and WASM/loader hashes with
 `publication_claimed: false`; a build receipt does not certify browser or scientific qualification.
 
+Served and offline builds include the selected Methods runtime's unchanged
+license texts and third-party notices under `public/legal/methods`, with a
+source/archive/hash receipt. Refresh those files together with the Methods cohort.
+
 `npm run test:methods-cohort` checks admission of compatible versions and
 refusal of the old ABI, missing identities and unqualified minor or major series.
 The 19 real-WASM scientific tests require wide T²/Q availability in every

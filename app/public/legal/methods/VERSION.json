@@ -1,0 +1,38 @@
+{
+  "schema": "nirs4all.methods-runtime-notices.v1",
+  "package": "@nirs4all/methods",
+  "version": "1.5.0",
+  "scope": "Exact upstream license and notice files accompanying the staged runtime; no numerical qualification claim.",
+  "source": {
+    "repository": "https://github.com/GBeurier/nirs4all-methods",
+    "commit": "70b631cc36d0fed830bcacd34dd7bc4291a30dc3",
+    "tree": "dce95aebf56a12b770826948f252ef45e704b427",
+    "tag": "v1.5.0"
+  },
+  "archive": {
+    "metadata_url": "https://registry.npmjs.org/@nirs4all/methods/1.5.0",
+    "tarball_url": "https://registry.npmjs.org/@nirs4all/methods/-/methods-1.5.0.tgz",
+    "size": 2010945,
+    "sha256": "0645d94f7cc2ff27e59a24989640c1ce451d4785241b4e44f92e6692ee82c061",
+    "sha1": "3645f47aeab7e4c26957300f94b8a01b802bd7b9",
+    "integrity": "sha512-4q5bDyHpGX7ugX7TDK8ax7vlXYWU/jn8aQ6h/FXfHAtT9w9/bXDSWXqlpYznVhv1gRJwgHtgVIQdCYIZ+CGKvA=="
+  },
+  "files": {
+    "LICENSE": "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee",
+    "LICENSE-CeCILL-2.1": "4ea234937bc7b0aa5247e436690d1eb9324875bc7590ecde50befd38e35190a5",
+    "LICENSES/AGPL-3.0-or-later.txt": "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee",
+    "LICENSES/Apache-2.0.txt": "074e6e32c86a4c0ef8b3ed25b721ca23aca83df277cd88106ef7177c354615ff",
+    "LICENSES/BSD-3-Clause.txt": "5a93d5831e1297ab10fe643e1a631e83be392896da14ee2951285a79012df69d",
+    "LICENSES/COMMERCIAL-LICENSE.md": "f26f5d9ce50fbbebf089b921bcb44add711cb066ec4dbb767da450dc767a81a6",
+    "LICENSES/COMMERCIAL-LICENSE_FR.md": "d6cb8560f7f4ba35443d91e47280da0e9b2369ba05b597db9d812646cc4336ee",
+    "LICENSES/CeCILL-2.1.txt": "4ea234937bc7b0aa5247e436690d1eb9324875bc7590ecde50befd38e35190a5",
+    "LICENSES/MIT.txt": "b05785f9f18e6716bab63424b11454513b9943a222595b70411009202fc592b5",
+    "LICENSES/mixeff-dependencies.txt": "615134447ecde123ee8d7476751381df67685530bfa146558b1f49207371169b",
+    "LICENSES/mixeff-rs.txt": "5ebc3be0ec21c6767ecbb21c9ba42ee10b644cc02a6c012335aac24bd5ab5903",
+    "LICENSES/rfr-cereal.txt": "18fd7618c44c9fe28b5f54cd19747df3c0472ed33e8507fea571e2acf6e72f34",
+    "LICENSES/rfr-rapidjson.txt": "a140e5d46fe734a1c78f1a3c3ef207871dd75648be71fdda8e309b23ab8b1f32",
+    "LICENSES/rfr.txt": "36b7da08b417f0378297391cf06b2c886739475d0d9b36263539fe424e2bc79a",
+    "LICENSES/rust-standard-library.txt": "5b87c6cf33f65fa1a3093c03b106954cd38ec40f7d9a8d96c5ddc0df36617db0",
+    "THIRD_PARTY_LICENSES.md": "3da01033fea5f1efe31a5865693d294c7c378aad51d81f1e5dc9c07e668f752f"
+  }
+}
