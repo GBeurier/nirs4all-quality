@@ -83,7 +83,7 @@ Methods controller. Known references are scored by the native DAG report API
 using explicit sample identities; absent references remain unscored.
 
 Run from `app/` with Node 24, installed dependencies and the current owner
-snapshot already supplied. Methods must be `>=1.3.15 <2` with ABI `>=2.22 <3`.
+snapshot already supplied. Methods must be in the selected `>=1.5.0 <1.6` series with ABI `>=2.24 <3`.
 The following commands are verification entrypoints, not recorded passing results:
 
 ```sh
