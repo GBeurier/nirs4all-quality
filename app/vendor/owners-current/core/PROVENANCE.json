@@ -1,19 +1,20 @@
 {
   "schema": "nirs4all-web.public-npm-acquisition.v1",
   "package": "nirs4all",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "source": {
     "repository": "https://github.com/GBeurier/nirs4all-core",
-    "commit": "53f53b727e983057f137f42ca0f87d7368db5990",
-    "tree": "77dfd729cad80579b61a63d80a80cec442289dc6"
+    "commit": "ef74d999b48e8eb4b8cce46355598673c0fc08b8",
+    "tree": "18112da2c33172eefdf5716b21f551e58b479415",
+    "tag": "v0.6.0"
   },
   "acquisition": {
-    "metadata_url": "https://registry.npmjs.org/nirs4all/0.5.0",
-    "tarball_url": "https://registry.npmjs.org/nirs4all/-/nirs4all-0.5.0.tgz",
-    "size": 4526405,
-    "sha256": "ed99284503dd0096f514e631329b70377e13093ed858428f4631a2b2a317b847",
-    "sha1": "d66674bdbd4885d503e7eb35969980b36393f22c",
-    "integrity": "sha512-eg/jFzuacaxb1XIKvgF6jPAgoOwU0Dsmkhf734FriPYw36lBjzoHKSDEZPlIzcZ5pc2QhoSBe0JPzfnGH4LOog=="
+    "metadata_url": "https://registry.npmjs.org/nirs4all/0.6.0",
+    "tarball_url": "https://registry.npmjs.org/nirs4all/-/nirs4all-0.6.0.tgz",
+    "size": 4534923,
+    "sha256": "4101c30f8e922f9e476db8cede9602ca45ea371d5165ea0d6c09158b28fd8b15",
+    "sha1": "f872479a931c155e53cd4011008f1e7c5cb44bf5",
+    "integrity": "sha512-d3vMEQ9IHV3pVEzDU4LgZ+ppEF8f9d++ngjU3rnF2VC7cSGg3yIbKhtTttDuQUTp+7cOKK7QxXgD44gHIjg7mQ=="
   },
   "reproducibility": {
     "performed_by_web": false,
@@ -57,8 +58,8 @@
       "sha256": "46c57e67ed1e40c98a714f32a968b343650b02df3627744c28e9ceba011b7447"
     },
     "README.md": {
-      "size": 23430,
-      "sha256": "90d8dd681db1a06c00337a91a1d096b7997868e114bd2f51b85bb710420d1642"
+      "size": 23431,
+      "sha256": "930e49ded460cc0e29bfe204ccb8c894ec7f16a8500dadb9c0e28da951acdfc7"
     },
     "THIRD_PARTY_NOTICES.md": {
       "size": 1582,
@@ -66,15 +67,15 @@
     },
     "native/nirs4all_core_wasm_native.d.ts": {
       "size": 35143,
-      "sha256": "65a5b66cfdf1e32afc6cef7ad2c25d7e8e690722d0f02c1b89ea6cc832a472f6"
+      "sha256": "92e26ef62b9c48f4f1b9a9d58449c86b077981fb2f9611d6b57622d074744ae6"
     },
     "native/nirs4all_core_wasm_native.js": {
       "size": 97851,
-      "sha256": "39f8505794cc05e81c121654403cbac1d83d57b8a3a5d100e1191af1b9598f40"
+      "sha256": "1e7dafbbd2c0f1f9f6e7b685c0843572fd8f3018e53297def572752888be89a4"
     },
     "native/nirs4all_core_wasm_native_bg.wasm": {
-      "size": 15085273,
-      "sha256": "e2282ab4a978a38b0978baa259db11cb25887e5b75724a354cf6447c13ca67c6"
+      "size": 15114785,
+      "sha256": "3f7a8688a33bdf05147cb0fbf39a9f33d6dc845e5ed77494dedaa6e122cb14ae"
     },
     "native/nirs4all_core_wasm_native_bg.wasm.d.ts": {
       "size": 14614,
@@ -82,11 +83,11 @@
     },
     "native/package.json": {
       "size": 570,
-      "sha256": "d961991c8a17308feb0e9d3053e880d6c5d5646bc97726e5af5cc0cf3f92e801"
+      "sha256": "4a03d12b57b0bfa09de697ab25fd78f93fa078e7727aaf25973d8f345de76692"
     },
     "package.json": {
-      "size": 2798,
-      "sha256": "1e5320531d6e4d5f69d31917f60e3606b1cf57eb0813e8c272d66b41f9d3387c"
+      "size": 2827,
+      "sha256": "5ad7dd3488a0ba99fa9bb280b74cc6a5626252330b140a8399042314eeb9e270"
     },
     "src/archive-v2.js": {
       "size": 20637,
@@ -113,8 +114,8 @@
       "sha256": "c76ba67b25263bf578f9a72357325c7f86c728e9071dde23634e92686aa13d62"
     },
     "src/classic-ml.d.ts": {
-      "size": 3492,
-      "sha256": "84b0bb294a01dba395b31dec48813d866014df0e635f0e71c4ec8b084f00cd04"
+      "size": 3657,
+      "sha256": "0b443562216b50234fe5b808c573fda4de0d8d8b1da097a3e115d1922cd5d788"
     },
     "src/conformal.d.ts": {
       "size": 1012,
@@ -125,20 +126,20 @@
       "sha256": "1f587895ff94b4757476f9efb51c8864886c13c87e7e90a6d57d8a8f4692ad75"
     },
     "src/index.d.ts": {
-      "size": 19973,
-      "sha256": "0e8badc20cd23d86e8fa38f61f5731c8f2dbfc13b9e44c0d68fc01227b42c4cb"
+      "size": 20179,
+      "sha256": "e3f380a4975cd0371410e95bd5654a54e0dcf1db324f801cdce63b4f80efc7ba"
     },
     "src/index.js": {
-      "size": 12372,
-      "sha256": "dcb15058d4175cda4ed777610b7cac5c21b2e39a9662be68a1580c2a6627499c"
+      "size": 12453,
+      "sha256": "761111c145bc8083af9c1a0c1745ad043c518ed293f244b9b9f3c665be4a7b79"
     },
     "src/js-estimator-controller.js": {
       "size": 24069,
       "sha256": "24166d1a8694c8afc9bfd104e574422ac3e08cd9e02dd069bc06bcac64236061"
     },
     "src/ml-estimator-adapters.js": {
-      "size": 11340,
-      "sha256": "530e3081a3caba6e4f726f21fff7aaa48b0b95b10680e60c4d70531e0f399701"
+      "size": 12756,
+      "sha256": "756f959e7735841379e079d7403dde14a6b3d169dbd2bf79222550ce55678024"
     },
     "src/multimodal-archive.d.ts": {
       "size": 560,
@@ -155,6 +156,14 @@
     "src/multimodal.js": {
       "size": 3702,
       "sha256": "27aa40f2deae14bd982572dca41e7db5e6f5381f463b5a6e92986ef5cf611204"
+    },
+    "src/n4a-inspection.d.ts": {
+      "size": 1820,
+      "sha256": "ba3907a4ad8854ce82dcd380346642b3f18934a34403bb5815c25f08d13d9c7b"
+    },
+    "src/n4a-inspection.js": {
+      "size": 4713,
+      "sha256": "d7d7b0f2568477a4b60477944ad7d700d3e91d19ac7020bbadf1a78b1cc5f906"
     },
     "src/n4a.d.ts": {
       "size": 11528,

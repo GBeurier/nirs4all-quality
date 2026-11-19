@@ -1,20 +1,20 @@
 {
   "schema": "nirs4all-web.public-npm-acquisition.v1",
   "package": "@nirs4all/methods",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "source": {
     "repository": "https://github.com/GBeurier/nirs4all-methods",
-    "commit": "70b631cc36d0fed830bcacd34dd7bc4291a30dc3",
-    "tree": "dce95aebf56a12b770826948f252ef45e704b427",
-    "tag": "v1.5.0"
+    "commit": "25041f88bebb21a19748799c1681e138a3d55dfb",
+    "tree": "78ef29128ed21c2c38655235d8de7dcbc8c5e1c3",
+    "tag": "v1.5.1"
   },
   "acquisition": {
-    "metadata_url": "https://registry.npmjs.org/@nirs4all/methods/1.5.0",
-    "tarball_url": "https://registry.npmjs.org/@nirs4all/methods/-/methods-1.5.0.tgz",
+    "metadata_url": "https://registry.npmjs.org/@nirs4all/methods/1.5.1",
+    "tarball_url": "https://registry.npmjs.org/@nirs4all/methods/-/methods-1.5.1.tgz",
     "size": 2010945,
-    "sha256": "0645d94f7cc2ff27e59a24989640c1ce451d4785241b4e44f92e6692ee82c061",
-    "sha1": "3645f47aeab7e4c26957300f94b8a01b802bd7b9",
-    "integrity": "sha512-4q5bDyHpGX7ugX7TDK8ax7vlXYWU/jn8aQ6h/FXfHAtT9w9/bXDSWXqlpYznVhv1gRJwgHtgVIQdCYIZ+CGKvA=="
+    "sha256": "2fc930feba7f27f793573242f31ba6fd77207a03692b03786b78f9ea4b0b129d",
+    "sha1": "25d0e36eee796ccdd724c57681cd6e5d631e52c8",
+    "integrity": "sha512-/qox7z8t8cKHaXl6Dtq6M/wuJ7l9uyjQTZGIx0xNabtTdlZ62Ty851gbzdp+BV3laNLdYWWFTCDYW7JGkfRcPA=="
   },
   "reproducibility": {
     "performed_by_web": false,
@@ -183,7 +183,7 @@
     },
     "n4m.wasm": {
       "size": 5134990,
-      "sha256": "760207d1a691556e230e0281f3f5a8463cbebb1a8eacd001a2bed1abf4894849"
+      "sha256": "66d57fa3e43a8d15985f9131321de06f44e5bd94d69f7f5d0b9106c2c4bc9687"
     },
     "nativeAugmentation.d.ts": {
       "size": 1340,
@@ -227,7 +227,7 @@
     },
     "package.json": {
       "size": 3409,
-      "sha256": "bb5c01b2f4585814a8cfe806d1380d27bb0aa2de08c66a5786b33f94daa79729"
+      "sha256": "3cd55e2985949a27a3ca38faade9f11dca4815f57837bc919bfa91ea166b2230"
     },
     "preflightDiagnostics.d.ts": {
       "size": 20381,

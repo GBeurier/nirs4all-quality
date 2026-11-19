@@ -277,11 +277,14 @@ admission. Builds and the first Methods load check the actual WASM version
 label. Both Methods aliases resolve to the same verified artifact.
 
 The current snapshot is recorded in `vendor/owners-current/DELIVERY.json`.
-It now contains the exact public Methods 1.5.0 and DAG 0.5.0 projections; Core 0.5.0
-remains staged while the release awaits public Core 0.6. The other
+It contains the exact public Core 0.6.0, DAG 0.5.0 and Methods 1.5.1
+projections. This Quali profile passes the existing science/calibration and
+unchanged PLS/Ridge parity gates, positive model import/workspace storage,
+typecheck, both build modes and all three actual-browser journeys. The other
 owners and the independently identified Formats/IO browser artifacts retain their
 existing receipts and bytes. The delivery receipt explicitly distinguishes these
-profiles and does not claim overall publication or runtime qualification. Package
+profiles and records the executed Quali profile; it does not claim overall
+publication or universal owner or cross-host qualification. Package
 versions alone do not identify a qualified cohort; retain the receipt and hashes.
 `IO_STAGE.json` and `IO_COMPANION.json` accompany the separate Setup admission.
 Use the explicit snapshot paths above; the historical owner cohort is provenance.

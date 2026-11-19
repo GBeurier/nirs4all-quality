@@ -1,31 +1,32 @@
 {
   "schema_version": 1,
-  "status": "PARTIAL_PUBLIC_STAGE_AWAITING_CORE_AND_FINAL_GATES",
-  "captured_at_utc": "2026-11-19T18:42:47.104781+00:00",
+  "status": "PUBLIC_OWNER_PROJECTIONS_QUALI_PROFILE_QUALIFIED",
+  "captured_at_utc": "2026-11-19T20:39:34.078600+00:00",
   "owner": "nirs4all-quality",
-  "scope": "Exact public Methods1.5.0 and DAG0.5.0 projections copied unchanged from the coordinated Web stager. Core0.5.0 awaits explicit public0.6 adoption. Existing IO/Formats browser profiles, DMD, Datasets, UI and historical fixtures are retained unchanged. Final consumer gates are recorded separately.",
+  "scope": "Exact public Core0.6.0, DAG0.5.0 and Methods1.5.1 projections copied unchanged from the coordinated Web stager. The named Quali0.1.0 PLS/Ridge, diagnostics, storage and browser profiles passed the existing consumer gates. Existing IO/Formats browser profiles, DMD, Datasets, UI and historical fixtures retain their original bytes and receipts.",
   "packages": {
     "core": {
-      "source_directory": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all",
+      "source_directory": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all",
       "directory": "core",
       "package": "nirs4all",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "omitted": [
         "node_modules"
       ],
       "publication_claimed": true,
       "source": {
         "repository": "https://github.com/GBeurier/nirs4all-core",
-        "commit": "53f53b727e983057f137f42ca0f87d7368db5990",
-        "tree": "77dfd729cad80579b61a63d80a80cec442289dc6"
+        "commit": "ef74d999b48e8eb4b8cce46355598673c0fc08b8",
+        "tree": "18112da2c33172eefdf5716b21f551e58b479415",
+        "tag": "v0.6.0"
       },
       "registry": {
-        "metadata_url": "https://registry.npmjs.org/nirs4all/0.5.0",
-        "tarball_url": "https://registry.npmjs.org/nirs4all/-/nirs4all-0.5.0.tgz",
-        "size": 4526405,
-        "sha256": "ed99284503dd0096f514e631329b70377e13093ed858428f4631a2b2a317b847",
-        "sha1": "d66674bdbd4885d503e7eb35969980b36393f22c",
-        "integrity": "sha512-eg/jFzuacaxb1XIKvgF6jPAgoOwU0Dsmkhf734FriPYw36lBjzoHKSDEZPlIzcZ5pc2QhoSBe0JPzfnGH4LOog=="
+        "metadata_url": "https://registry.npmjs.org/nirs4all/0.6.0",
+        "tarball_url": "https://registry.npmjs.org/nirs4all/-/nirs4all-0.6.0.tgz",
+        "size": 4534923,
+        "sha256": "4101c30f8e922f9e476db8cede9602ca45ea371d5165ea0d6c09158b28fd8b15",
+        "sha1": "f872479a931c155e53cd4011008f1e7c5cb44bf5",
+        "integrity": "sha512-d3vMEQ9IHV3pVEzDU4LgZ+ppEF8f9d++ngjU3rnF2VC7cSGg3yIbKhtTttDuQUTp+7cOKK7QxXgD44gHIjg7mQ=="
       },
       "provenance_file": "core/PROVENANCE.json",
       "recompiled": false
@@ -58,22 +59,22 @@
       "source_directory": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/methods",
       "directory": "wasm/methods",
       "package": "@nirs4all/methods",
-      "version": "1.5.0",
+      "version": "1.5.1",
       "omitted": [],
       "publication_claimed": true,
       "source": {
         "repository": "https://github.com/GBeurier/nirs4all-methods",
-        "commit": "70b631cc36d0fed830bcacd34dd7bc4291a30dc3",
-        "tree": "dce95aebf56a12b770826948f252ef45e704b427",
-        "tag": "v1.5.0"
+        "commit": "25041f88bebb21a19748799c1681e138a3d55dfb",
+        "tree": "78ef29128ed21c2c38655235d8de7dcbc8c5e1c3",
+        "tag": "v1.5.1"
       },
       "registry": {
-        "metadata_url": "https://registry.npmjs.org/@nirs4all/methods/1.5.0",
-        "tarball_url": "https://registry.npmjs.org/@nirs4all/methods/-/methods-1.5.0.tgz",
+        "metadata_url": "https://registry.npmjs.org/@nirs4all/methods/1.5.1",
+        "tarball_url": "https://registry.npmjs.org/@nirs4all/methods/-/methods-1.5.1.tgz",
         "size": 2010945,
-        "sha256": "0645d94f7cc2ff27e59a24989640c1ce451d4785241b4e44f92e6692ee82c061",
-        "sha1": "3645f47aeab7e4c26957300f94b8a01b802bd7b9",
-        "integrity": "sha512-4q5bDyHpGX7ugX7TDK8ax7vlXYWU/jn8aQ6h/FXfHAtT9w9/bXDSWXqlpYznVhv1gRJwgHtgVIQdCYIZ+CGKvA=="
+        "sha256": "2fc930feba7f27f793573242f31ba6fd77207a03692b03786b78f9ea4b0b129d",
+        "sha1": "25d0e36eee796ccdd724c57681cd6e5d631e52c8",
+        "integrity": "sha512-/qox7z8t8cKHaXl6Dtq6M/wuJ7l9uyjQTZGIx0xNabtTdlZ62Ty851gbzdp+BV3laNLdYWWFTCDYW7JGkfRcPA=="
       },
       "provenance_file": "wasm/methods/PROVENANCE.json",
       "recompiled": false
@@ -151,10 +152,10 @@
   },
   "publication_claimed": false,
   "independent_rebuild_claimed": false,
-  "runtime_qualification_claimed": false,
+  "runtime_qualification_claimed": true,
   "native_core_and_dag_execution_claimed": false,
-  "execution_scope": "Consumer staging only: exact public npm Methods1.5.0/DAG0.5.0 projections copied unchanged; no owner compilation or new publication. Core replacement and final qualification pending.",
-  "methods_delivery": "staged_artifact; exact published npm Methods1.5.0 projection copied byte-for-byte from the coordinated release Web worktree, including all upstream licenses and provenance.",
+  "execution_scope": "Qualification is limited to the executed Quali0.1.0 Linux x86_64/Node24/Chromium profiles below, using the exact staged artifacts. No universal owner equivalence, cross-host execution, independent outer evaluation or overall package publication is claimed.",
+  "methods_delivery": "Exact published npm Methods1.5.1 projection copied byte-for-byte from the coordinated Web release worktree, including all upstream notices and provenance.",
   "historical_baseline": "Former full owners-current snapshot preserved in /home/delete/nirs4all/_implementation/2026-11-03-ecosystem-consolidation/release-integration-20261109/web-quali-public-stage/20261109T045130Z/preimages/quali-owners-current.tar; original DELIVERY.json is inside it. IO_STAGE.json, IO_COMPANION.json and hardcoded IO admission remain unchanged. IO stage, companions, admission script and snapshot immediately before this replacement are preserved in /home/delete/nirs4all/_implementation/2026-11-03-ecosystem-consolidation/release-integration-20261109/web-quali-public-stage/io-browser-owner-stage-20261109/preimages.",
   "companion_receipt_source": "/home/delete/nirs4all/_worktrees/2026-11-08-quali-io-inputs/app/vendor/owners-current/IO_COMPANION.json",
   "files": [
@@ -169,330 +170,6 @@
       "bytes": 8792,
       "sha256": "cfedc90ac43d0757af6a744910fec509f8467ad6652e1981af547a8490dd3188",
       "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-quali-io-inputs/app/vendor/owners-current/IO_STAGE.json"
-    },
-    {
-      "path": "core/LICENSE",
-      "bytes": 34020,
-      "sha256": "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/LICENSE"
-    },
-    {
-      "path": "core/LICENSES/AGPL-3.0-or-later.txt",
-      "bytes": 34020,
-      "sha256": "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/LICENSES/AGPL-3.0-or-later.txt"
-    },
-    {
-      "path": "core/LICENSES/Apache-2.0.txt",
-      "bytes": 10280,
-      "sha256": "074e6e32c86a4c0ef8b3ed25b721ca23aca83df277cd88106ef7177c354615ff",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/LICENSES/Apache-2.0.txt"
-    },
-    {
-      "path": "core/LICENSES/BSD-3-Clause.txt",
-      "bytes": 1460,
-      "sha256": "5a93d5831e1297ab10fe643e1a631e83be392896da14ee2951285a79012df69d",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/LICENSES/BSD-3-Clause.txt"
-    },
-    {
-      "path": "core/LICENSES/COMMERCIAL-LICENSE.md",
-      "bytes": 674,
-      "sha256": "4340124a3a1d3c82577ea3aebc834cb9d37ee196d83fbf320af218a751449702",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/LICENSES/COMMERCIAL-LICENSE.md"
-    },
-    {
-      "path": "core/LICENSES/COMMERCIAL-LICENSE_FR.md",
-      "bytes": 763,
-      "sha256": "e05393d17534ba7129cd04f51c2ebe00448a4b427a50204f52ea37e906bf115a",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/LICENSES/COMMERCIAL-LICENSE_FR.md"
-    },
-    {
-      "path": "core/LICENSES/CeCILL-2.1.txt",
-      "bytes": 21778,
-      "sha256": "4ea234937bc7b0aa5247e436690d1eb9324875bc7590ecde50befd38e35190a5",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/LICENSES/CeCILL-2.1.txt"
-    },
-    {
-      "path": "core/LICENSES/MIT.txt",
-      "bytes": 1078,
-      "sha256": "b05785f9f18e6716bab63424b11454513b9943a222595b70411009202fc592b5",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/LICENSES/MIT.txt"
-    },
-    {
-      "path": "core/LICENSING.md",
-      "bytes": 2058,
-      "sha256": "46c57e67ed1e40c98a714f32a968b343650b02df3627744c28e9ceba011b7447",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/LICENSING.md"
-    },
-    {
-      "path": "core/PROVENANCE.json",
-      "bytes": 8381,
-      "sha256": "e82dc926ebcaf7ec9239dd33a32eb487cfd1f84893c881283715de54d6b9f613",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/PROVENANCE.json"
-    },
-    {
-      "path": "core/README.md",
-      "bytes": 23430,
-      "sha256": "90d8dd681db1a06c00337a91a1d096b7997868e114bd2f51b85bb710420d1642",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/README.md"
-    },
-    {
-      "path": "core/THIRD_PARTY_NOTICES.md",
-      "bytes": 1582,
-      "sha256": "36239a5e2cfb203f0f9b1a4d78578e938b35fc696e7bedc613e4030954ba14ac",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/THIRD_PARTY_NOTICES.md"
-    },
-    {
-      "path": "core/native/nirs4all_core_wasm_native.d.ts",
-      "bytes": 35143,
-      "sha256": "65a5b66cfdf1e32afc6cef7ad2c25d7e8e690722d0f02c1b89ea6cc832a472f6",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/native/nirs4all_core_wasm_native.d.ts"
-    },
-    {
-      "path": "core/native/nirs4all_core_wasm_native.js",
-      "bytes": 97851,
-      "sha256": "39f8505794cc05e81c121654403cbac1d83d57b8a3a5d100e1191af1b9598f40",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/native/nirs4all_core_wasm_native.js"
-    },
-    {
-      "path": "core/native/nirs4all_core_wasm_native_bg.wasm",
-      "bytes": 15085273,
-      "sha256": "e2282ab4a978a38b0978baa259db11cb25887e5b75724a354cf6447c13ca67c6",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/native/nirs4all_core_wasm_native_bg.wasm"
-    },
-    {
-      "path": "core/native/nirs4all_core_wasm_native_bg.wasm.d.ts",
-      "bytes": 14614,
-      "sha256": "66448c41a5672a6e29c181aca9634975df1d7450f475d11960463764cb10ff4a",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/native/nirs4all_core_wasm_native_bg.wasm.d.ts"
-    },
-    {
-      "path": "core/native/package.json",
-      "bytes": 570,
-      "sha256": "d961991c8a17308feb0e9d3053e880d6c5d5646bc97726e5af5cc0cf3f92e801",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/native/package.json"
-    },
-    {
-      "path": "core/package.json",
-      "bytes": 2798,
-      "sha256": "1e5320531d6e4d5f69d31917f60e3606b1cf57eb0813e8c272d66b41f9d3387c",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/package.json"
-    },
-    {
-      "path": "core/src/archive-v2.js",
-      "bytes": 20637,
-      "sha256": "476aa917ac84be062877bf5086f20bcd34dd375536f843ccf24866c1331d8025",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/archive-v2.js"
-    },
-    {
-      "path": "core/src/browser-native-pipeline.d.ts",
-      "bytes": 2185,
-      "sha256": "cea682b9d91d29ed1ecf4dc4c7ccc88eac68973c4999b6583140791a6b871f59",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/browser-native-pipeline.d.ts"
-    },
-    {
-      "path": "core/src/browser-native-pipeline.js",
-      "bytes": 17016,
-      "sha256": "9ad929007ac34f8c4fb698818d22c6672beb3b2b8a416894e94c280a33bcf3cb",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/browser-native-pipeline.js"
-    },
-    {
-      "path": "core/src/browser-tuning.d.ts",
-      "bytes": 1626,
-      "sha256": "21d5ae6f8a26847a5639065a3c443637db662494bb4fd2a19b312b5f7cca1712",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/browser-tuning.d.ts"
-    },
-    {
-      "path": "core/src/browser-tuning.js",
-      "bytes": 15727,
-      "sha256": "514cbdee20097d190885988a9339af04a790b85e11f2460ccecbf9301f993224",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/browser-tuning.js"
-    },
-    {
-      "path": "core/src/capability-profiles.js",
-      "bytes": 88758,
-      "sha256": "c76ba67b25263bf578f9a72357325c7f86c728e9071dde23634e92686aa13d62",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/capability-profiles.js"
-    },
-    {
-      "path": "core/src/classic-ml.d.ts",
-      "bytes": 3492,
-      "sha256": "84b0bb294a01dba395b31dec48813d866014df0e635f0e71c4ec8b084f00cd04",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/classic-ml.d.ts"
-    },
-    {
-      "path": "core/src/conformal.d.ts",
-      "bytes": 1012,
-      "sha256": "5d58fd90afa24990b7b06ff081f0c8db718f85854bc4bd8d4a017a75bb9cc9e7",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/conformal.d.ts"
-    },
-    {
-      "path": "core/src/conformal.js",
-      "bytes": 13310,
-      "sha256": "1f587895ff94b4757476f9efb51c8864886c13c87e7e90a6d57d8a8f4692ad75",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/conformal.js"
-    },
-    {
-      "path": "core/src/index.d.ts",
-      "bytes": 19973,
-      "sha256": "0e8badc20cd23d86e8fa38f61f5731c8f2dbfc13b9e44c0d68fc01227b42c4cb",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/index.d.ts"
-    },
-    {
-      "path": "core/src/index.js",
-      "bytes": 12372,
-      "sha256": "dcb15058d4175cda4ed777610b7cac5c21b2e39a9662be68a1580c2a6627499c",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/index.js"
-    },
-    {
-      "path": "core/src/js-estimator-controller.js",
-      "bytes": 24069,
-      "sha256": "24166d1a8694c8afc9bfd104e574422ac3e08cd9e02dd069bc06bcac64236061",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/js-estimator-controller.js"
-    },
-    {
-      "path": "core/src/ml-estimator-adapters.js",
-      "bytes": 11340,
-      "sha256": "530e3081a3caba6e4f726f21fff7aaa48b0b95b10680e60c4d70531e0f399701",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/ml-estimator-adapters.js"
-    },
-    {
-      "path": "core/src/multimodal-archive.d.ts",
-      "bytes": 560,
-      "sha256": "5673c776ec1c95445f5373456f5e4774c5b550f223108e4c7710a5d8236dbae5",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/multimodal-archive.d.ts"
-    },
-    {
-      "path": "core/src/multimodal-archive.js",
-      "bytes": 1178,
-      "sha256": "a9f98fc3f9e056d4c8d1420966a721b0db5024d99a7dbf86b765f94484c8952f",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/multimodal-archive.js"
-    },
-    {
-      "path": "core/src/multimodal.d.ts",
-      "bytes": 1028,
-      "sha256": "ba31be8aa9d3c1e3bfb5424802d79e33a8314a0a13f84f604840baeb3eaa4ff5",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/multimodal.d.ts"
-    },
-    {
-      "path": "core/src/multimodal.js",
-      "bytes": 3702,
-      "sha256": "27aa40f2deae14bd982572dca41e7db5e6f5381f463b5a6e92986ef5cf611204",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/multimodal.js"
-    },
-    {
-      "path": "core/src/n4a.d.ts",
-      "bytes": 11528,
-      "sha256": "50d43225ab4902366eebc6f30bde9e3d6875a29f42e0160d7af41dccf94d282f",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/n4a.d.ts"
-    },
-    {
-      "path": "core/src/n4a.js",
-      "bytes": 34516,
-      "sha256": "809d0d0e6ab3ad3948300307408a98d2aa0f638343580390808a96bc864e9eb4",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/n4a.js"
-    },
-    {
-      "path": "core/src/n4m-roles.js",
-      "bytes": 15356,
-      "sha256": "d7cb38db892bfc20f1f4225da1fe3cb3bb486f4d15fd574aaa8ad5ef107b0c32",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/n4m-roles.js"
-    },
-    {
-      "path": "core/src/native-augmentation.js",
-      "bytes": 2784,
-      "sha256": "eefca27e7d15c711e87f78a5661357f0db5afda6de8d7446cfefffa997d3ac2a",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/native-augmentation.js"
-    },
-    {
-      "path": "core/src/native-multimodal.d.ts",
-      "bytes": 962,
-      "sha256": "ebca23e4145e1d74d6dbc2dfa129170cb82ab93a50204bea72fadd056a907a1f",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/native-multimodal.d.ts"
-    },
-    {
-      "path": "core/src/native-multimodal.js",
-      "bytes": 4137,
-      "sha256": "61c80287661219c83ccb0597b9a4841e78351521fa39dc0d79d30cbc426ece1f",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/native-multimodal.js"
-    },
-    {
-      "path": "core/src/native-pipeline.d.ts",
-      "bytes": 1078,
-      "sha256": "77fabecf16226777dba55ae40d86a848f523f996158ffa87ff72aa62e47f7232",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/native-pipeline.d.ts"
-    },
-    {
-      "path": "core/src/native-pipeline.js",
-      "bytes": 4060,
-      "sha256": "9ee7dfe9713c6713fc6a4b1fe2104b9813263ae4b8812edc3af2a7bab7f07159",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/native-pipeline.js"
-    },
-    {
-      "path": "core/src/result-view.d.ts",
-      "bytes": 2364,
-      "sha256": "fde34ced1775a9ffa798bf1bf9f4aa5ea52459bcf5cb4d8fc3e553066c8d1e17",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/result-view.d.ts"
-    },
-    {
-      "path": "core/src/result-view.js",
-      "bytes": 12933,
-      "sha256": "78327f0ee84096a049dcbba586d2293a3e148d37d94772c1ad7410e75c3ad0e2",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/result-view.js"
-    },
-    {
-      "path": "core/src/robustness.d.ts",
-      "bytes": 496,
-      "sha256": "d7c3a95e21508d90a058ceb010f448e28e48d7f65b1acb159c0142bd13dd27f0",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/robustness.d.ts"
-    },
-    {
-      "path": "core/src/robustness.js",
-      "bytes": 4157,
-      "sha256": "babebdf05c35c91ace4cb568df762cfc13aeb5987474331462b7345919e61035",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/robustness.js"
-    },
-    {
-      "path": "core/src/tuning.d.ts",
-      "bytes": 1877,
-      "sha256": "3f2b3e31175e912c8d68730f29bf1e50a7cec1fa9f72723b6efdd418966b50c0",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/tuning.d.ts"
-    },
-    {
-      "path": "core/src/tuning.js",
-      "bytes": 7946,
-      "sha256": "c1c35e4d43b31799dff295a617f4791fc4a3b915a15a1fd9806caee2359dcaf9",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/tuning.js"
-    },
-    {
-      "path": "core/src/uncertainty-cohort.js",
-      "bytes": 588,
-      "sha256": "3d6326a86bbaa19bccae17e1f6a236bce3a214437960cdbbc4f3ca3070d897ce",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/uncertainty-cohort.js"
-    },
-    {
-      "path": "core/src/workflow.d.ts",
-      "bytes": 1790,
-      "sha256": "cae8a9d196e0eeca446cc38cd4a8dea3748e9dfe59e1aa2dda4c3122e44ccd14",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/workflow.d.ts"
-    },
-    {
-      "path": "core/src/workflow.js",
-      "bytes": 23015,
-      "sha256": "cedcb61fe97d0332b2aa55969a28ce83a28ee9c7d87039db7097fd915b007bb6",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/workflow.js"
-    },
-    {
-      "path": "core/src/workspace.d.ts",
-      "bytes": 988,
-      "sha256": "e40aff470aaef6d599952d9a35bda8eb25e8052bc215bd38ba77588348452107",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/workspace.d.ts"
-    },
-    {
-      "path": "core/src/workspace.js",
-      "bytes": 4481,
-      "sha256": "5a862b1bf551ecfa161856b21dc085c5292d45223c68b94ff193b587a9a2fc17",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/vendor/nirs4all/src/workspace.js"
     },
     {
       "path": "wasm/dagml-data/LICENSE",
@@ -1419,6 +1096,162 @@
       "origin": "/home/delete/nirs4all/_worktrees/2026-11-08-web-owner-runner-retirement/web-app/src/engine/wasm/io/types/nirs4all-io.d.ts"
     },
     {
+      "path": "wasm/dagml/LICENSE",
+      "bytes": 34020,
+      "sha256": "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/LICENSE"
+    },
+    {
+      "path": "wasm/dagml/LICENSES/AGPL-3.0-or-later.txt",
+      "bytes": 34020,
+      "sha256": "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/LICENSES/AGPL-3.0-or-later.txt"
+    },
+    {
+      "path": "wasm/dagml/LICENSES/Apache-2.0.txt",
+      "bytes": 10280,
+      "sha256": "074e6e32c86a4c0ef8b3ed25b721ca23aca83df277cd88106ef7177c354615ff",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/LICENSES/Apache-2.0.txt"
+    },
+    {
+      "path": "wasm/dagml/LICENSES/BSD-3-Clause.txt",
+      "bytes": 1460,
+      "sha256": "5a93d5831e1297ab10fe643e1a631e83be392896da14ee2951285a79012df69d",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/LICENSES/BSD-3-Clause.txt"
+    },
+    {
+      "path": "wasm/dagml/LICENSES/CeCILL-2.1.txt",
+      "bytes": 21778,
+      "sha256": "4ea234937bc7b0aa5247e436690d1eb9324875bc7590ecde50befd38e35190a5",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/LICENSES/CeCILL-2.1.txt"
+    },
+    {
+      "path": "wasm/dagml/LICENSES/MIT.txt",
+      "bytes": 1078,
+      "sha256": "b05785f9f18e6716bab63424b11454513b9943a222595b70411009202fc592b5",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/LICENSES/MIT.txt"
+    },
+    {
+      "path": "wasm/dagml/LICENSING.md",
+      "bytes": 1406,
+      "sha256": "f9f26e32462eb28e350d0bd4db913ee5ccbd3a1eb88d97e78d187e1b35b86ae9",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/LICENSING.md"
+    },
+    {
+      "path": "wasm/dagml/LICENSING_FR.md",
+      "bytes": 1521,
+      "sha256": "6f907830be970cbd87723ebaa1e58ffd3dd3f69692a5b211edfc6ee964d93aff",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/LICENSING_FR.md"
+    },
+    {
+      "path": "wasm/dagml/PROVENANCE.json",
+      "bytes": 4582,
+      "sha256": "7645d7260ded5905feaa98a0e62f36b212a10ec16f7636e164f9e30f62368955",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/PROVENANCE.json"
+    },
+    {
+      "path": "wasm/dagml/README.md",
+      "bytes": 9899,
+      "sha256": "dae30eb39ac141d1f4eea1fb49608ab4189994d71446e3b71d2f763e817e1516",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/README.md"
+    },
+    {
+      "path": "wasm/dagml/THIRD_PARTY_NOTICES.md",
+      "bytes": 1573,
+      "sha256": "01a4064f18fa28336f49c40a4e2db4b40ebee4766160320174e5aaadc41304fd",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/THIRD_PARTY_NOTICES.md"
+    },
+    {
+      "path": "wasm/dagml/dag_ml_wasm.d.ts",
+      "bytes": 26920,
+      "sha256": "0cabed8661af4414ec1d990f3e1954c2f7c55a3fee0e700ad20af21d922efe43",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/dag_ml_wasm.d.ts"
+    },
+    {
+      "path": "wasm/dagml/dag_ml_wasm.js",
+      "bytes": 75035,
+      "sha256": "07547bf005d6eeb82f3b94782f951025aaed0d852d6e0b27808b9ba17f3fe92c",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/dag_ml_wasm.js"
+    },
+    {
+      "path": "wasm/dagml/dag_ml_wasm_bg.wasm",
+      "bytes": 10814460,
+      "sha256": "944cde9d9250e8ba2ec427cd7e857ab16b8e8841ac702ac4ffa7f0613be474c0",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/dag_ml_wasm_bg.wasm"
+    },
+    {
+      "path": "wasm/dagml/multimodal_archive.mjs",
+      "bytes": 1997,
+      "sha256": "caaf58882459a24b6add0f04f40b128cd4d89f952af0900c79043dc990bef011",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/multimodal_archive.mjs"
+    },
+    {
+      "path": "wasm/dagml/multimodal_dataset_replay.mjs",
+      "bytes": 5816,
+      "sha256": "892fbca7465a316fb83b69ac50617a04fa8d929d8627d2eb783451c5933f7bf3",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/multimodal_dataset_replay.mjs"
+    },
+    {
+      "path": "wasm/dagml/n4m_controller.d.ts",
+      "bytes": 2796,
+      "sha256": "30555a04e56a8cf1f8c9a5d5efd19f3bc8b4974b2fa6d237c654a9e63943517a",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_controller.d.ts"
+    },
+    {
+      "path": "wasm/dagml/n4m_controller.mjs",
+      "bytes": 22810,
+      "sha256": "9fa386748f3d9c3d5ecd16df01769ed20eee2ab73e2ff835a74c35dd1f195374",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_controller.mjs"
+    },
+    {
+      "path": "wasm/dagml/n4m_estimator_controller.d.ts",
+      "bytes": 1019,
+      "sha256": "5bef931949ee5875f3089dc993660539597b6cc4979ef77b7e1c96a1fc8bb084",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_estimator_controller.d.ts"
+    },
+    {
+      "path": "wasm/dagml/n4m_estimator_controller.mjs",
+      "bytes": 18968,
+      "sha256": "2c40a06f2a62324f292139b454a677282c6661da4c551de7bab6dcfef335e8d8",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_estimator_controller.mjs"
+    },
+    {
+      "path": "wasm/dagml/n4m_hpo_optimizer.d.ts",
+      "bytes": 1339,
+      "sha256": "b02ef2d5df584f5f972c1544e0dfc324c931123cfb4ccb4ed9ebc4420570119b",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_hpo_optimizer.d.ts"
+    },
+    {
+      "path": "wasm/dagml/n4m_hpo_optimizer.mjs",
+      "bytes": 12276,
+      "sha256": "5664f662bc1af50026a3f5446be289d16dc6725d2fbeaf24098a32f6246b8ff5",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_hpo_optimizer.mjs"
+    },
+    {
+      "path": "wasm/dagml/n4m_multimodal_controller.mjs",
+      "bytes": 25073,
+      "sha256": "9c5354d3dc0e6ff4f63be6f88640445c4ea3736c9759ef505672fa21d4ee2a63",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_multimodal_controller.mjs"
+    },
+    {
+      "path": "wasm/dagml/n4m_source_controller.d.ts",
+      "bytes": 2412,
+      "sha256": "46dd52eebd778df690f5b1183115a2ae98d19118e1a61c90381d6476f538ad52",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_source_controller.d.ts"
+    },
+    {
+      "path": "wasm/dagml/n4m_source_controller.mjs",
+      "bytes": 33725,
+      "sha256": "c3a85ea24f5f06a37bf1719c439072348928b2c92b5d842d05ff17dd6fe16767",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_source_controller.mjs"
+    },
+    {
+      "path": "wasm/dagml/package.json",
+      "bytes": 1929,
+      "sha256": "07a9bdba12d9363d03ef59c6b8de9db3d57de59472588459e69bd819713e9e58",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/package.json"
+    },
+    {
       "path": "wasm/methods/LICENSE",
       "bytes": 34020,
       "sha256": "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee",
@@ -1511,7 +1344,7 @@
     {
       "path": "wasm/methods/PROVENANCE.json",
       "bytes": 10495,
-      "sha256": "6e906e7ae80a0ef6d8de6569a6e65430e780daa9ee55681e91a0af711dcfcaf8",
+      "sha256": "9f7233bd040975ba120b59768cb70accc66bccd255a6af788e6f6656cd917a22",
       "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/methods/PROVENANCE.json"
     },
     {
@@ -1667,7 +1500,7 @@
     {
       "path": "wasm/methods/n4m.wasm",
       "bytes": 5134990,
-      "sha256": "760207d1a691556e230e0281f3f5a8463cbebb1a8eacd001a2bed1abf4894849",
+      "sha256": "66d57fa3e43a8d15985f9131321de06f44e5bd94d69f7f5d0b9106c2c4bc9687",
       "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/methods/n4m.wasm"
     },
     {
@@ -1733,7 +1566,7 @@
     {
       "path": "wasm/methods/package.json",
       "bytes": 3409,
-      "sha256": "bb5c01b2f4585814a8cfe806d1380d27bb0aa2de08c66a5786b33f94daa79729",
+      "sha256": "3cd55e2985949a27a3ca38faade9f11dca4815f57837bc919bfa91ea166b2230",
       "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/methods/package.json"
     },
     {
@@ -1833,160 +1666,340 @@
       "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/methods/types.js"
     },
     {
-      "path": "wasm/dagml/LICENSE",
+      "path": "core/LICENSE",
       "bytes": 34020,
       "sha256": "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/LICENSE"
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/LICENSE"
     },
     {
-      "path": "wasm/dagml/LICENSES/AGPL-3.0-or-later.txt",
+      "path": "core/LICENSES/AGPL-3.0-or-later.txt",
       "bytes": 34020,
       "sha256": "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/LICENSES/AGPL-3.0-or-later.txt"
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/LICENSES/AGPL-3.0-or-later.txt"
     },
     {
-      "path": "wasm/dagml/LICENSES/Apache-2.0.txt",
+      "path": "core/LICENSES/Apache-2.0.txt",
       "bytes": 10280,
       "sha256": "074e6e32c86a4c0ef8b3ed25b721ca23aca83df277cd88106ef7177c354615ff",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/LICENSES/Apache-2.0.txt"
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/LICENSES/Apache-2.0.txt"
     },
     {
-      "path": "wasm/dagml/LICENSES/BSD-3-Clause.txt",
+      "path": "core/LICENSES/BSD-3-Clause.txt",
       "bytes": 1460,
       "sha256": "5a93d5831e1297ab10fe643e1a631e83be392896da14ee2951285a79012df69d",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/LICENSES/BSD-3-Clause.txt"
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/LICENSES/BSD-3-Clause.txt"
     },
     {
-      "path": "wasm/dagml/LICENSES/CeCILL-2.1.txt",
+      "path": "core/LICENSES/COMMERCIAL-LICENSE.md",
+      "bytes": 674,
+      "sha256": "4340124a3a1d3c82577ea3aebc834cb9d37ee196d83fbf320af218a751449702",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/LICENSES/COMMERCIAL-LICENSE.md"
+    },
+    {
+      "path": "core/LICENSES/COMMERCIAL-LICENSE_FR.md",
+      "bytes": 763,
+      "sha256": "e05393d17534ba7129cd04f51c2ebe00448a4b427a50204f52ea37e906bf115a",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/LICENSES/COMMERCIAL-LICENSE_FR.md"
+    },
+    {
+      "path": "core/LICENSES/CeCILL-2.1.txt",
       "bytes": 21778,
       "sha256": "4ea234937bc7b0aa5247e436690d1eb9324875bc7590ecde50befd38e35190a5",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/LICENSES/CeCILL-2.1.txt"
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/LICENSES/CeCILL-2.1.txt"
     },
     {
-      "path": "wasm/dagml/LICENSES/MIT.txt",
+      "path": "core/LICENSES/MIT.txt",
       "bytes": 1078,
       "sha256": "b05785f9f18e6716bab63424b11454513b9943a222595b70411009202fc592b5",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/LICENSES/MIT.txt"
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/LICENSES/MIT.txt"
     },
     {
-      "path": "wasm/dagml/LICENSING.md",
-      "bytes": 1406,
-      "sha256": "f9f26e32462eb28e350d0bd4db913ee5ccbd3a1eb88d97e78d187e1b35b86ae9",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/LICENSING.md"
+      "path": "core/LICENSING.md",
+      "bytes": 2058,
+      "sha256": "46c57e67ed1e40c98a714f32a968b343650b02df3627744c28e9ceba011b7447",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/LICENSING.md"
     },
     {
-      "path": "wasm/dagml/LICENSING_FR.md",
-      "bytes": 1521,
-      "sha256": "6f907830be970cbd87723ebaa1e58ffd3dd3f69692a5b211edfc6ee964d93aff",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/LICENSING_FR.md"
+      "path": "core/PROVENANCE.json",
+      "bytes": 8686,
+      "sha256": "f88422ffa5d0f4266aa1249b41361b93281040a1fd52245113240409d523c67d",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/PROVENANCE.json"
     },
     {
-      "path": "wasm/dagml/PROVENANCE.json",
-      "bytes": 4582,
-      "sha256": "7645d7260ded5905feaa98a0e62f36b212a10ec16f7636e164f9e30f62368955",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/PROVENANCE.json"
+      "path": "core/README.md",
+      "bytes": 23431,
+      "sha256": "930e49ded460cc0e29bfe204ccb8c894ec7f16a8500dadb9c0e28da951acdfc7",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/README.md"
     },
     {
-      "path": "wasm/dagml/README.md",
-      "bytes": 9899,
-      "sha256": "dae30eb39ac141d1f4eea1fb49608ab4189994d71446e3b71d2f763e817e1516",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/README.md"
+      "path": "core/THIRD_PARTY_NOTICES.md",
+      "bytes": 1582,
+      "sha256": "36239a5e2cfb203f0f9b1a4d78578e938b35fc696e7bedc613e4030954ba14ac",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/THIRD_PARTY_NOTICES.md"
     },
     {
-      "path": "wasm/dagml/THIRD_PARTY_NOTICES.md",
-      "bytes": 1573,
-      "sha256": "01a4064f18fa28336f49c40a4e2db4b40ebee4766160320174e5aaadc41304fd",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/THIRD_PARTY_NOTICES.md"
+      "path": "core/native/nirs4all_core_wasm_native.d.ts",
+      "bytes": 35143,
+      "sha256": "92e26ef62b9c48f4f1b9a9d58449c86b077981fb2f9611d6b57622d074744ae6",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/native/nirs4all_core_wasm_native.d.ts"
     },
     {
-      "path": "wasm/dagml/dag_ml_wasm.d.ts",
-      "bytes": 26920,
-      "sha256": "0cabed8661af4414ec1d990f3e1954c2f7c55a3fee0e700ad20af21d922efe43",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/dag_ml_wasm.d.ts"
+      "path": "core/native/nirs4all_core_wasm_native.js",
+      "bytes": 97851,
+      "sha256": "1e7dafbbd2c0f1f9f6e7b685c0843572fd8f3018e53297def572752888be89a4",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/native/nirs4all_core_wasm_native.js"
     },
     {
-      "path": "wasm/dagml/dag_ml_wasm.js",
-      "bytes": 75035,
-      "sha256": "07547bf005d6eeb82f3b94782f951025aaed0d852d6e0b27808b9ba17f3fe92c",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/dag_ml_wasm.js"
+      "path": "core/native/nirs4all_core_wasm_native_bg.wasm",
+      "bytes": 15114785,
+      "sha256": "3f7a8688a33bdf05147cb0fbf39a9f33d6dc845e5ed77494dedaa6e122cb14ae",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/native/nirs4all_core_wasm_native_bg.wasm"
     },
     {
-      "path": "wasm/dagml/dag_ml_wasm_bg.wasm",
-      "bytes": 10814460,
-      "sha256": "944cde9d9250e8ba2ec427cd7e857ab16b8e8841ac702ac4ffa7f0613be474c0",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/dag_ml_wasm_bg.wasm"
+      "path": "core/native/nirs4all_core_wasm_native_bg.wasm.d.ts",
+      "bytes": 14614,
+      "sha256": "66448c41a5672a6e29c181aca9634975df1d7450f475d11960463764cb10ff4a",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/native/nirs4all_core_wasm_native_bg.wasm.d.ts"
     },
     {
-      "path": "wasm/dagml/multimodal_archive.mjs",
-      "bytes": 1997,
-      "sha256": "caaf58882459a24b6add0f04f40b128cd4d89f952af0900c79043dc990bef011",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/multimodal_archive.mjs"
+      "path": "core/native/package.json",
+      "bytes": 570,
+      "sha256": "4a03d12b57b0bfa09de697ab25fd78f93fa078e7727aaf25973d8f345de76692",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/native/package.json"
     },
     {
-      "path": "wasm/dagml/multimodal_dataset_replay.mjs",
-      "bytes": 5816,
-      "sha256": "892fbca7465a316fb83b69ac50617a04fa8d929d8627d2eb783451c5933f7bf3",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/multimodal_dataset_replay.mjs"
+      "path": "core/package.json",
+      "bytes": 2827,
+      "sha256": "5ad7dd3488a0ba99fa9bb280b74cc6a5626252330b140a8399042314eeb9e270",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/package.json"
     },
     {
-      "path": "wasm/dagml/n4m_controller.d.ts",
-      "bytes": 2796,
-      "sha256": "30555a04e56a8cf1f8c9a5d5efd19f3bc8b4974b2fa6d237c654a9e63943517a",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_controller.d.ts"
+      "path": "core/src/archive-v2.js",
+      "bytes": 20637,
+      "sha256": "476aa917ac84be062877bf5086f20bcd34dd375536f843ccf24866c1331d8025",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/archive-v2.js"
     },
     {
-      "path": "wasm/dagml/n4m_controller.mjs",
-      "bytes": 22810,
-      "sha256": "9fa386748f3d9c3d5ecd16df01769ed20eee2ab73e2ff835a74c35dd1f195374",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_controller.mjs"
+      "path": "core/src/browser-native-pipeline.d.ts",
+      "bytes": 2185,
+      "sha256": "cea682b9d91d29ed1ecf4dc4c7ccc88eac68973c4999b6583140791a6b871f59",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/browser-native-pipeline.d.ts"
     },
     {
-      "path": "wasm/dagml/n4m_estimator_controller.d.ts",
-      "bytes": 1019,
-      "sha256": "5bef931949ee5875f3089dc993660539597b6cc4979ef77b7e1c96a1fc8bb084",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_estimator_controller.d.ts"
+      "path": "core/src/browser-native-pipeline.js",
+      "bytes": 17016,
+      "sha256": "9ad929007ac34f8c4fb698818d22c6672beb3b2b8a416894e94c280a33bcf3cb",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/browser-native-pipeline.js"
     },
     {
-      "path": "wasm/dagml/n4m_estimator_controller.mjs",
-      "bytes": 18968,
-      "sha256": "2c40a06f2a62324f292139b454a677282c6661da4c551de7bab6dcfef335e8d8",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_estimator_controller.mjs"
+      "path": "core/src/browser-tuning.d.ts",
+      "bytes": 1626,
+      "sha256": "21d5ae6f8a26847a5639065a3c443637db662494bb4fd2a19b312b5f7cca1712",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/browser-tuning.d.ts"
     },
     {
-      "path": "wasm/dagml/n4m_hpo_optimizer.d.ts",
-      "bytes": 1339,
-      "sha256": "b02ef2d5df584f5f972c1544e0dfc324c931123cfb4ccb4ed9ebc4420570119b",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_hpo_optimizer.d.ts"
+      "path": "core/src/browser-tuning.js",
+      "bytes": 15727,
+      "sha256": "514cbdee20097d190885988a9339af04a790b85e11f2460ccecbf9301f993224",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/browser-tuning.js"
     },
     {
-      "path": "wasm/dagml/n4m_hpo_optimizer.mjs",
-      "bytes": 12276,
-      "sha256": "5664f662bc1af50026a3f5446be289d16dc6725d2fbeaf24098a32f6246b8ff5",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_hpo_optimizer.mjs"
+      "path": "core/src/capability-profiles.js",
+      "bytes": 88758,
+      "sha256": "c76ba67b25263bf578f9a72357325c7f86c728e9071dde23634e92686aa13d62",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/capability-profiles.js"
     },
     {
-      "path": "wasm/dagml/n4m_multimodal_controller.mjs",
-      "bytes": 25073,
-      "sha256": "9c5354d3dc0e6ff4f63be6f88640445c4ea3736c9759ef505672fa21d4ee2a63",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_multimodal_controller.mjs"
+      "path": "core/src/classic-ml.d.ts",
+      "bytes": 3657,
+      "sha256": "0b443562216b50234fe5b808c573fda4de0d8d8b1da097a3e115d1922cd5d788",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/classic-ml.d.ts"
     },
     {
-      "path": "wasm/dagml/n4m_source_controller.d.ts",
-      "bytes": 2412,
-      "sha256": "46dd52eebd778df690f5b1183115a2ae98d19118e1a61c90381d6476f538ad52",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_source_controller.d.ts"
+      "path": "core/src/conformal.d.ts",
+      "bytes": 1012,
+      "sha256": "5d58fd90afa24990b7b06ff081f0c8db718f85854bc4bd8d4a017a75bb9cc9e7",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/conformal.d.ts"
     },
     {
-      "path": "wasm/dagml/n4m_source_controller.mjs",
-      "bytes": 33725,
-      "sha256": "c3a85ea24f5f06a37bf1719c439072348928b2c92b5d842d05ff17dd6fe16767",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/n4m_source_controller.mjs"
+      "path": "core/src/conformal.js",
+      "bytes": 13310,
+      "sha256": "1f587895ff94b4757476f9efb51c8864886c13c87e7e90a6d57d8a8f4692ad75",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/conformal.js"
     },
     {
-      "path": "wasm/dagml/package.json",
-      "bytes": 1929,
-      "sha256": "07a9bdba12d9363d03ef59c6b8de9db3d57de59472588459e69bd819713e9e58",
-      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/src/engine/wasm/dagml/package.json"
+      "path": "core/src/index.d.ts",
+      "bytes": 20179,
+      "sha256": "e3f380a4975cd0371410e95bd5654a54e0dcf1db324f801cdce63b4f80efc7ba",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/index.d.ts"
+    },
+    {
+      "path": "core/src/index.js",
+      "bytes": 12453,
+      "sha256": "761111c145bc8083af9c1a0c1745ad043c518ed293f244b9b9f3c665be4a7b79",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/index.js"
+    },
+    {
+      "path": "core/src/js-estimator-controller.js",
+      "bytes": 24069,
+      "sha256": "24166d1a8694c8afc9bfd104e574422ac3e08cd9e02dd069bc06bcac64236061",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/js-estimator-controller.js"
+    },
+    {
+      "path": "core/src/ml-estimator-adapters.js",
+      "bytes": 12756,
+      "sha256": "756f959e7735841379e079d7403dde14a6b3d169dbd2bf79222550ce55678024",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/ml-estimator-adapters.js"
+    },
+    {
+      "path": "core/src/multimodal-archive.d.ts",
+      "bytes": 560,
+      "sha256": "5673c776ec1c95445f5373456f5e4774c5b550f223108e4c7710a5d8236dbae5",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/multimodal-archive.d.ts"
+    },
+    {
+      "path": "core/src/multimodal-archive.js",
+      "bytes": 1178,
+      "sha256": "a9f98fc3f9e056d4c8d1420966a721b0db5024d99a7dbf86b765f94484c8952f",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/multimodal-archive.js"
+    },
+    {
+      "path": "core/src/multimodal.d.ts",
+      "bytes": 1028,
+      "sha256": "ba31be8aa9d3c1e3bfb5424802d79e33a8314a0a13f84f604840baeb3eaa4ff5",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/multimodal.d.ts"
+    },
+    {
+      "path": "core/src/multimodal.js",
+      "bytes": 3702,
+      "sha256": "27aa40f2deae14bd982572dca41e7db5e6f5381f463b5a6e92986ef5cf611204",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/multimodal.js"
+    },
+    {
+      "path": "core/src/n4a-inspection.d.ts",
+      "bytes": 1820,
+      "sha256": "ba3907a4ad8854ce82dcd380346642b3f18934a34403bb5815c25f08d13d9c7b",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/n4a-inspection.d.ts"
+    },
+    {
+      "path": "core/src/n4a-inspection.js",
+      "bytes": 4713,
+      "sha256": "d7d7b0f2568477a4b60477944ad7d700d3e91d19ac7020bbadf1a78b1cc5f906",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/n4a-inspection.js"
+    },
+    {
+      "path": "core/src/n4a.d.ts",
+      "bytes": 11528,
+      "sha256": "50d43225ab4902366eebc6f30bde9e3d6875a29f42e0160d7af41dccf94d282f",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/n4a.d.ts"
+    },
+    {
+      "path": "core/src/n4a.js",
+      "bytes": 34516,
+      "sha256": "809d0d0e6ab3ad3948300307408a98d2aa0f638343580390808a96bc864e9eb4",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/n4a.js"
+    },
+    {
+      "path": "core/src/n4m-roles.js",
+      "bytes": 15356,
+      "sha256": "d7cb38db892bfc20f1f4225da1fe3cb3bb486f4d15fd574aaa8ad5ef107b0c32",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/n4m-roles.js"
+    },
+    {
+      "path": "core/src/native-augmentation.js",
+      "bytes": 2784,
+      "sha256": "eefca27e7d15c711e87f78a5661357f0db5afda6de8d7446cfefffa997d3ac2a",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/native-augmentation.js"
+    },
+    {
+      "path": "core/src/native-multimodal.d.ts",
+      "bytes": 962,
+      "sha256": "ebca23e4145e1d74d6dbc2dfa129170cb82ab93a50204bea72fadd056a907a1f",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/native-multimodal.d.ts"
+    },
+    {
+      "path": "core/src/native-multimodal.js",
+      "bytes": 4137,
+      "sha256": "61c80287661219c83ccb0597b9a4841e78351521fa39dc0d79d30cbc426ece1f",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/native-multimodal.js"
+    },
+    {
+      "path": "core/src/native-pipeline.d.ts",
+      "bytes": 1078,
+      "sha256": "77fabecf16226777dba55ae40d86a848f523f996158ffa87ff72aa62e47f7232",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/native-pipeline.d.ts"
+    },
+    {
+      "path": "core/src/native-pipeline.js",
+      "bytes": 4060,
+      "sha256": "9ee7dfe9713c6713fc6a4b1fe2104b9813263ae4b8812edc3af2a7bab7f07159",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/native-pipeline.js"
+    },
+    {
+      "path": "core/src/result-view.d.ts",
+      "bytes": 2364,
+      "sha256": "fde34ced1775a9ffa798bf1bf9f4aa5ea52459bcf5cb4d8fc3e553066c8d1e17",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/result-view.d.ts"
+    },
+    {
+      "path": "core/src/result-view.js",
+      "bytes": 12933,
+      "sha256": "78327f0ee84096a049dcbba586d2293a3e148d37d94772c1ad7410e75c3ad0e2",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/result-view.js"
+    },
+    {
+      "path": "core/src/robustness.d.ts",
+      "bytes": 496,
+      "sha256": "d7c3a95e21508d90a058ceb010f448e28e48d7f65b1acb159c0142bd13dd27f0",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/robustness.d.ts"
+    },
+    {
+      "path": "core/src/robustness.js",
+      "bytes": 4157,
+      "sha256": "babebdf05c35c91ace4cb568df762cfc13aeb5987474331462b7345919e61035",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/robustness.js"
+    },
+    {
+      "path": "core/src/tuning.d.ts",
+      "bytes": 1877,
+      "sha256": "3f2b3e31175e912c8d68730f29bf1e50a7cec1fa9f72723b6efdd418966b50c0",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/tuning.d.ts"
+    },
+    {
+      "path": "core/src/tuning.js",
+      "bytes": 7946,
+      "sha256": "c1c35e4d43b31799dff295a617f4791fc4a3b915a15a1fd9806caee2359dcaf9",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/tuning.js"
+    },
+    {
+      "path": "core/src/uncertainty-cohort.js",
+      "bytes": 588,
+      "sha256": "3d6326a86bbaa19bccae17e1f6a236bce3a214437960cdbbc4f3ca3070d897ce",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/uncertainty-cohort.js"
+    },
+    {
+      "path": "core/src/workflow.d.ts",
+      "bytes": 1790,
+      "sha256": "cae8a9d196e0eeca446cc38cd4a8dea3748e9dfe59e1aa2dda4c3122e44ccd14",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/workflow.d.ts"
+    },
+    {
+      "path": "core/src/workflow.js",
+      "bytes": 23015,
+      "sha256": "cedcb61fe97d0332b2aa55969a28ce83a28ee9c7d87039db7097fd915b007bb6",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/workflow.js"
+    },
+    {
+      "path": "core/src/workspace.d.ts",
+      "bytes": 988,
+      "sha256": "e40aff470aaef6d599952d9a35bda8eb25e8052bc215bd38ba77588348452107",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/workspace.d.ts"
+    },
+    {
+      "path": "core/src/workspace.js",
+      "bytes": 4481,
+      "sha256": "5a862b1bf551ecfa161856b21dc085c5292d45223c68b94ff193b587a9a2fc17",
+      "origin": "/home/delete/nirs4all/_worktrees/2026-11-19-release-methods-1.5/nirs4all-web/web-app/vendor/nirs4all/src/workspace.js"
     }
   ],
   "staging_evidence_directory": "/home/delete/nirs4all/_implementation/2026-11-03-ecosystem-consolidation/release-integration-20261109/io-wasm-numeric-wire-private",
@@ -1997,5 +2010,55 @@
     "git_path": "app/vendor/owners-current",
     "delivery_sha256": "ce88711bef75399b8c7ed484035c78ac3bd83ea0dd358e6cb38d5d396a220bcf",
     "receipt_backup": "quality-evidence/previous-delivery.json"
+  },
+  "consumer_qualification": {
+    "product": "quali-nirs4all",
+    "version": "0.1.0",
+    "platform": "Linux x86_64; Node24.16.0; actual Google Chrome",
+    "gates": {
+      "typecheck": "PASS",
+      "methods_admission": "4 PASS, 0 skip",
+      "assessment": "33 PASS, 0 skip",
+      "real_wasm_science": "19 PASS, 0 skip",
+      "calibration": "17 PASS, 0 skip",
+      "historical_pls_production_parity": "11 PASS, 0 skip; unchanged frozen inputs and assertions",
+      "ridge_production_parity": "4 PASS, 0 skip",
+      "model_import": "47 cases PASS; existing final-cohort fixture supplied",
+      "server_workspace": "PASS including positive included-model replay/storage",
+      "served_build": "PASS",
+      "single_file_build": "PASS",
+      "browser_replay": "PASS, already-produced fixture; no training",
+      "browser_assessment": "PASS",
+      "browser_public_demo": "PASS; four owner profiles, explicit activation, export/replay, prediction and maintenance; no server requests"
+    },
+    "frozen_oracles": "Original SNAPSHOT918d4883 and all50 Core/71 Methods files verified before and after final gates; no values/tolerances regenerated.",
+    "evidence_directory": "/home/delete/nirs4all/_receipts/2026-11-19-release-methods-1.5/quality-evidence",
+    "evidence_files": [
+      "final-artifact-verification.json",
+      "frozen-oracles-after-final-cohort.json",
+      "final-npm-ci-complete-core.log",
+      "final-typecheck.log",
+      "final-methods-cohort.log",
+      "final-assessment.log",
+      "final-science.log",
+      "final-pls-parity.log",
+      "final-ridge-parity.log",
+      "final-model-import.log",
+      "final-server-workspace.log",
+      "final-build.log",
+      "final-build-single.log",
+      "final-browser-replay.log",
+      "final-browser-assessment.log",
+      "final-browser-demo.log",
+      "final-qualification.json",
+      "dag-public-archive-verification.json"
+    ],
+    "limits": [
+      "Other owner browser profiles retain their original local/public provenance.",
+      "Server workspace gate uses synthetic host storage data, not real-server or IO scientific qualification.",
+      "Static product release tagging and deployment are separate root-owned actions."
+    ],
+    "verified_at_utc": "2026-11-19T20:54:15.382406+00:00",
+    "independent_review": "PASS; read-only Opus final public cohort review, no blocking findings. quality-final-public-cohort-opus-review.log in release receipts."
   }
 }

@@ -1,21 +1,21 @@
 {
   "schema": "nirs4all.methods-runtime-notices.v1",
   "package": "@nirs4all/methods",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "scope": "Exact upstream license and notice files accompanying the staged runtime; no numerical qualification claim.",
   "source": {
     "repository": "https://github.com/GBeurier/nirs4all-methods",
-    "commit": "70b631cc36d0fed830bcacd34dd7bc4291a30dc3",
-    "tree": "dce95aebf56a12b770826948f252ef45e704b427",
-    "tag": "v1.5.0"
+    "commit": "25041f88bebb21a19748799c1681e138a3d55dfb",
+    "tree": "78ef29128ed21c2c38655235d8de7dcbc8c5e1c3",
+    "tag": "v1.5.1"
   },
   "archive": {
-    "metadata_url": "https://registry.npmjs.org/@nirs4all/methods/1.5.0",
-    "tarball_url": "https://registry.npmjs.org/@nirs4all/methods/-/methods-1.5.0.tgz",
+    "metadata_url": "https://registry.npmjs.org/@nirs4all/methods/1.5.1",
+    "tarball_url": "https://registry.npmjs.org/@nirs4all/methods/-/methods-1.5.1.tgz",
     "size": 2010945,
-    "sha256": "0645d94f7cc2ff27e59a24989640c1ce451d4785241b4e44f92e6692ee82c061",
-    "sha1": "3645f47aeab7e4c26957300f94b8a01b802bd7b9",
-    "integrity": "sha512-4q5bDyHpGX7ugX7TDK8ax7vlXYWU/jn8aQ6h/FXfHAtT9w9/bXDSWXqlpYznVhv1gRJwgHtgVIQdCYIZ+CGKvA=="
+    "sha256": "2fc930feba7f27f793573242f31ba6fd77207a03692b03786b78f9ea4b0b129d",
+    "sha1": "25d0e36eee796ccdd724c57681cd6e5d631e52c8",
+    "integrity": "sha512-/qox7z8t8cKHaXl6Dtq6M/wuJ7l9uyjQTZGIx0xNabtTdlZ62Ty851gbzdp+BV3laNLdYWWFTCDYW7JGkfRcPA=="
   },
   "files": {
     "LICENSE": "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee",
