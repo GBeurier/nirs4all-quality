@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "package": "@nirs4all/methods",
-  "minimum_version": "1.3.15",
-  "runtime_version": "1.3.15+abi.2.22.0",
+  "minimum_version": "1.5.0",
+  "runtime_version": "1.5.1+abi.2.24.0",
   "abi": [
     2,
-    22,
+    24,
     0
   ],
   "delivery": "staged_artifact",
-  "wasm_sha256": "c96a9d6cf0d56bba2a37efc7d332f5bfde76d8dc1a7ae3185ea274e16b49e52c",
-  "loader_sha256": "bafa16109c344fcefcca5ca993591d1377a85fc7370e6d352693f5d63d875500",
+  "wasm_sha256": "66d57fa3e43a8d15985f9131321de06f44e5bd94d69f7f5d0b9106c2c4bc9687",
+  "loader_sha256": "3b59ac1085f4ad5801f23ad1de8472e87f71c85c64b6872584feffc1964c955d",
   "publication_claimed": false
 }
