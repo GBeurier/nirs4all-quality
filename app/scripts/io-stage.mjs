@@ -10,9 +10,9 @@ const app = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const stageManifest = resolve(app, 'vendor/owners-current/IO_STAGE.json');
 const companionDelivery = resolve(app, 'vendor/owners-current/IO_COMPANION.json');
 
-// Exact local-unpublished IO0.3.2 browser build from source 6c1a256.
-const EXPECTED_LOADER = '7dd87d55807f43b163cd017a48751cd56273b044bc731be137f1c9256dbee5f7';
-const EXPECTED_WASM = '9bd041658f0cdb87042926e0ae608af6fc318568bc01d9c594ae33fd0d5f1012';
+// Published browser module and companion declarations from IO 0.4.0.
+const EXPECTED_LOADER = 'd3388bccc2540ead86cc41c27d0a932d732293df3ff61df8a85b2ff1f83bdc8c';
+const EXPECTED_WASM = '8aa49ab5482f0485fbb6434d1e30e02117bf0c02f0ca1d0382fdb4184bb8d247';
 const EXPECTED_TYPES = '6d6f5a8c0f445e740c15f81e0c00298bfaa9915eba05a1a53b4a1b2bc35c91f5';
 // Historical IO0.3 witnesses are refused, including the prior Setup stage (1e55dbf1...).
 // That stage remains provenance only and is not reproducible through this current script.
@@ -50,7 +50,7 @@ export async function qualifiedIOImportStage() {
   }
   if (browserHash('nirs4all_io_wasm.js') !== EXPECTED_LOADER
       || browserHash('nirs4all_io_wasm_bg.wasm') !== EXPECTED_WASM) {
-    throw new Error('IO stage manifest differs from the pinned IO0.3.2 browser build; review the cohort before changing it.');
+    throw new Error('IO stage manifest differs from the pinned IO 0.4.0 browser build; review the cohort before changing it.');
   }
   const loader_sha256 = await verify(root, 'nirs4all_io_wasm.js', browserHash('nirs4all_io_wasm.js'));
   const wasm_sha256 = await verify(root, 'nirs4all_io_wasm_bg.wasm', browserHash('nirs4all_io_wasm_bg.wasm'));
@@ -76,12 +76,12 @@ export async function qualifiedIOImportStage() {
   const public_types_sha256 = await verify(root, 'types/nirs4all-io.d.ts', EXPECTED_TYPES);
   return {
     schema_version: 1,
-    status: 'HASH_VERIFIED_BROWSER_RUNTIME_UNQUALIFIED',
+    status: 'HASH_VERIFIED_OWNER_RELEASE',
     owner: 'nirs4all-io',
     browser_receipt: browserReceipt,
     companion_receipt: companionReceipt,
     types_receipt: browserReceipt,
     loader_sha256, wasm_sha256, companion_sha256, companion_declaration_sha256, public_types_sha256,
-    publication_claimed: false,
+    publication_claimed: true,
   };
 }

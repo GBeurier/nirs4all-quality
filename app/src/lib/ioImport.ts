@@ -18,7 +18,7 @@ export interface ImportStage {
   companion_sha256: string;
   companion_declaration_sha256: string;
   public_types_sha256: string;
-  publication_claimed: false;
+  publication_claimed: boolean;
 }
 
 export interface TargetRowConfirmation {
